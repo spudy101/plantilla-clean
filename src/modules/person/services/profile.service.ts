@@ -61,7 +61,7 @@ class ProfileService {
       throw AppError.notFound('Usuario no encontrado');
     }
     const [consentTypes, consents] = await Promise.all([
-      this.consentTypeRepository.findAllActive(),
+      this.consentTypeRepository.listActive(),
       this.userConsentRepository.findCurrentByUser(userId)
     ]);
     await audit.record('PROFILE_VIEWED', {
@@ -79,7 +79,7 @@ class ProfileService {
       throw AppError.notFound('Usuario no encontrado');
     }
     const [consentTypes, consents] = await Promise.all([
-      this.consentTypeRepository.findAllActive(),
+      this.consentTypeRepository.listActive(),
       this.userConsentRepository.findCurrentByUser(userId)
     ]);
     await audit.record('PROFILE_EXTENDED_VIEWED', {

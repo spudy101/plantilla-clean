@@ -36,16 +36,16 @@ jest.mock('../repositories/auth-trusted-device.repository', () => ({
   updateLastSeen: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../legal/repositories/privacy-policy.repository', () => ({
+jest.mock('../../legal/infrastructure/persistence/prisma-privacy-policy.repository', () => ({
   findActive: jest.fn()
 }));
 
-jest.mock('../../legal/repositories/user-consent.repository', () => ({
+jest.mock('../../legal/infrastructure/persistence/prisma-user-consent.repository', () => ({
   grant: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../legal/repositories/consent-type.repository', () => ({
-  findByCode: jest.fn()
+jest.mock('../../legal/infrastructure/persistence/prisma-consent-type.repository', () => ({
+  findActiveByCode: jest.fn()
 }));
 
 jest.mock('../repositories/biometric.repository', () => ({
@@ -124,11 +124,11 @@ import userLoginAttemptRepositoryModule from '../../audit/repositories/user-logi
 const userLoginAttemptRepository = mocked(userLoginAttemptRepositoryModule);
 import trustedDeviceRepositoryModule from '../repositories/auth-trusted-device.repository';
 const trustedDeviceRepository = mocked(trustedDeviceRepositoryModule);
-import privacyPolicyRepositoryModule from '../../legal/repositories/privacy-policy.repository';
+const privacyPolicyRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-privacy-policy.repository').PrismaPrivacyPolicyRepository>('../../legal/infrastructure/persistence/prisma-privacy-policy.repository');
 const privacyPolicyRepository = mocked(privacyPolicyRepositoryModule);
-import userConsentRepositoryModule from '../../legal/repositories/user-consent.repository';
+const userConsentRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-user-consent.repository').PrismaUserConsentRepository>('../../legal/infrastructure/persistence/prisma-user-consent.repository');
 const userConsentRepository = mocked(userConsentRepositoryModule);
-import consentTypeRepositoryModule from '../../legal/repositories/consent-type.repository';
+const consentTypeRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-consent-type.repository').PrismaConsentTypeRepository>('../../legal/infrastructure/persistence/prisma-consent-type.repository');
 const consentTypeRepository = mocked(consentTypeRepositoryModule);
 import biometricRepositoryModuleModule from '../repositories/biometric.repository';
 const biometricRepositoryModule = mocked(biometricRepositoryModuleModule);
@@ -544,7 +544,7 @@ describe('AuthBiometricService', () => {
 
     it('con acceptPolicy=true actualiza la versión, registra consent y audita (devuelve null)', async () => {
       privacyPolicyRepository.findActive.mockResolvedValue({ version: 3, privacyPolicyId: 'pp-3' });
-      consentTypeRepository.findByCode.mockResolvedValue({ consentTypeId: 'ct-1' });
+      consentTypeRepository.findActiveByCode.mockResolvedValue({ consentTypeId: 'ct-1' });
       const user = { userId: USER_ID, role: { name: 'client' }, privacyPolicyVersion: 2 };
 
       const result = await service._checkPrivacyPolicy(fixture(user), true, '1.2.3.4');

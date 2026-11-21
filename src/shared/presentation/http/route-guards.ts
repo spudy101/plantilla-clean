@@ -9,4 +9,6 @@ export interface RouteGuards {
   authenticate: RequestHandler;
   /** Exige el permiso `action` sobre el módulo RBAC `moduleName`. */
   requirePermission(moduleName: string, action: string): RequestHandler;
+  /** Exige un usuario autenticado cuyo rol esté en `roles` (rutas del portal cliente). */
+  requireRole(roles: readonly string[]): RequestHandler;
 }

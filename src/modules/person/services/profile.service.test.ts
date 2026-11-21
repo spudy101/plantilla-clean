@@ -11,8 +11,8 @@ jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule:
 
 jest.mock('../../iam/repositories/user.repository', () => ({ findByUserId: jest.fn() }));
 jest.mock('../repositories/person.repository', () => ({ findById: jest.fn() }));
-jest.mock('../../legal/repositories/user-consent.repository', () => ({ findCurrentByUser: jest.fn() }));
-jest.mock('../../legal/repositories/consent-type.repository', () => ({ findAllActive: jest.fn() }));
+jest.mock('../../legal/infrastructure/persistence/prisma-user-consent.repository', () => ({ findCurrentByUser: jest.fn() }));
+jest.mock('../../legal/infrastructure/persistence/prisma-consent-type.repository', () => ({ listActive: jest.fn() }));
 jest.mock('../repositories/person-contact.repository', () => ({
   findByPersonIdWithPrefixes: jest.fn()
 }));
@@ -75,9 +75,9 @@ import userRepositoryModule from '../../iam/repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);
 import personRepositoryModule from '../repositories/person.repository';
 const personRepository = mocked(personRepositoryModule);
-import userConsentRepositoryModule from '../../legal/repositories/user-consent.repository';
+const userConsentRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-user-consent.repository').PrismaUserConsentRepository>('../../legal/infrastructure/persistence/prisma-user-consent.repository');
 const userConsentRepository = mocked(userConsentRepositoryModule);
-import consentTypeRepositoryModule from '../../legal/repositories/consent-type.repository';
+const consentTypeRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-consent-type.repository').PrismaConsentTypeRepository>('../../legal/infrastructure/persistence/prisma-consent-type.repository');
 const consentTypeRepository = mocked(consentTypeRepositoryModule);
 import personContactRepositoryModule from '../repositories/person-contact.repository';
 const personContactRepository = mocked(personContactRepositoryModule);
@@ -128,7 +128,7 @@ describe('ProfileService', () => {
     it('usuario existente: arma BasicProfileDTO con consentimientos y audita', async () => {
       const user = { userId: 'u-1' };
       userRepository.findByUserId.mockResolvedValue(user);
-      consentTypeRepository.findAllActive.mockResolvedValue(['ct']);
+      consentTypeRepository.listActive.mockResolvedValue(['ct']);
       userConsentRepository.findCurrentByUser.mockResolvedValue(['c']);
 
       const result = await service.getProfile('u-1');
@@ -152,7 +152,7 @@ describe('ProfileService', () => {
     it('usuario existente: pide el user full y arma ExtendedProfileDTO', async () => {
       const user = { userId: 'u-1' };
       userRepository.findByUserId.mockResolvedValue(user);
-      consentTypeRepository.findAllActive.mockResolvedValue([]);
+      consentTypeRepository.listActive.mockResolvedValue([]);
       userConsentRepository.findCurrentByUser.mockResolvedValue([]);
 
       await service.getExtendedProfile('u-1');

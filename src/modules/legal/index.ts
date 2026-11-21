@@ -1,67 +1,104 @@
-// API pública del módulo legal: lo ÚNICO que otros módulos (y src/app.ts) pueden importar.
-// Lo que no está acá es interno del módulo (docs/ARCHITECTURE.md, regla 2).
+// API pública del módulo legal para los módulos que todavía no están en Clean Architecture (iam, person,
+// audit).
 //
-// Cada export se carga al usarse (getter): los módulos se usan entre sí y un index que cargara todo
-// de una vez crearía ciclos de carga. Uso: import legalModule from '…/legal'; const { X } = legalModule;
-import { interopDefault } from '../../shared/kernel/interop.util';
+// En Clean, legal no se usa importando este index: src/main/container.ts arma el módulo (createLegalModule en
+// legal.module.ts). Lo que queda acá es TRANSITORIO: lecturas puntuales (devuelven entidades del dominio), el
+// registro de consentimientos del registro y el login, y las piezas de respuesta que otros módulos incluyen.
+// Cuando esos módulos se migren, pedirán lo suyo con un puerto propio y esto se borra.
+import type { PrismaConsentTypeRepository } from './infrastructure/persistence/prisma-consent-type.repository';
+import type { PrismaPrivacyPolicyRepository } from './infrastructure/persistence/prisma-privacy-policy.repository';
+import type { PrismaUserConsentRepository } from './infrastructure/persistence/prisma-user-consent.repository';
+import type { GrantPrivacyPolicyConsentInput } from './application/use-cases/grant-privacy-policy-consent.use-case';
+import type { UserConsent } from './domain/user-consent';
+
+/** Una instancia de la clase exportada `name`; si el módulo está reemplazado por un jest.mock (objeto plano), el mock. */
+function instanceOf<T>(mod: unknown, name: string): T {
+  const Ctor = (mod as Record<string, unknown>)[name];
+  return (typeof Ctor === 'function' ? new (Ctor as new () => T)() : mod) as T;
+}
+
+/** Una instancia por pieza, creada al primer uso (los index se cargan perezosamente: ver ARCHITECTURE.md). */
+const instances = new Map<string, unknown>();
+function lazy<T>(key: string, create: () => T): T {
+  if (!instances.has(key)) {
+    instances.set(key, create());
+  }
+  return instances.get(key) as T;
+}
+
+const repositories = {
+  consentTypes: () =>
+    lazy('consentTypes', () =>
+      instanceOf<PrismaConsentTypeRepository>(
+        require('./infrastructure/persistence/prisma-consent-type.repository'),
+        'PrismaConsentTypeRepository'
+      )
+    ),
+  privacyPolicies: () =>
+    lazy('privacyPolicies', () =>
+      instanceOf<PrismaPrivacyPolicyRepository>(
+        require('./infrastructure/persistence/prisma-privacy-policy.repository'),
+        'PrismaPrivacyPolicyRepository'
+      )
+    ),
+  userConsents: () =>
+    lazy('userConsents', () =>
+      instanceOf<PrismaUserConsentRepository>(
+        require('./infrastructure/persistence/prisma-user-consent.repository'),
+        'PrismaUserConsentRepository'
+      )
+    )
+};
+
+/** Registro de consentimientos que usan registro, login y biometría (iam). */
+export interface ConsentRecorder {
+  grantPrivacyPolicy(input: GrantPrivacyPolicyConsentInput): Promise<UserConsent | null>;
+  grantCommercialCommunications(input: { userId: string; ip?: string | null }): Promise<UserConsent | null>;
+}
 
 export default {
-  get consentTypeRepository() {
-    return interopDefault(
-      require('./repositories/consent-type.repository') as typeof import('./repositories/consent-type.repository')
-    );
+  /** @deprecated Transitorio para iam (política vigente al registrar / iniciar sesión). */
+  get privacyPolicyRepository(): Pick<PrismaPrivacyPolicyRepository, 'findActive'> {
+    return repositories.privacyPolicies();
   },
 
-  get privacyPolicyAdminRepository() {
-    return interopDefault(
-      require('./repositories/privacy-policy-admin.repository') as typeof import('./repositories/privacy-policy-admin.repository')
-    );
+  /** @deprecated Transitorio para person (catálogo de consentimientos del perfil). */
+  get consentTypeRepository(): Pick<PrismaConsentTypeRepository, 'listActive'> {
+    return repositories.consentTypes();
   },
 
-  get privacyPolicyRepository() {
-    return interopDefault(
-      require('./repositories/privacy-policy.repository') as typeof import('./repositories/privacy-policy.repository')
-    );
+  /** @deprecated Transitorio para person (perfil y derecho de supresión) y audit (session-trace). */
+  get userConsentRepository(): Pick<PrismaUserConsentRepository, 'findCurrentByUser' | 'findByIds' | 'revokeAll'> {
+    return repositories.userConsents();
   },
 
-  get userConsentRepository() {
-    return interopDefault(
-      require('./repositories/user-consent.repository') as typeof import('./repositories/user-consent.repository')
-    );
+  /** @deprecated Transitorio para iam: los casos de uso GrantPrivacyPolicyConsent y GrantCommercialCommunicationsConsent. */
+  get consentRecorder(): ConsentRecorder {
+    return lazy('consentRecorder', () => {
+      const { GrantPrivacyPolicyConsent } =
+        require('./application/use-cases/grant-privacy-policy-consent.use-case') as typeof import('./application/use-cases/grant-privacy-policy-consent.use-case');
+      const { GrantCommercialCommunicationsConsent } =
+        require('./application/use-cases/grant-commercial-communications-consent.use-case') as typeof import('./application/use-cases/grant-commercial-communications-consent.use-case');
+      const privacy = new GrantPrivacyPolicyConsent(repositories.consentTypes(), repositories.userConsents(), repositories.privacyPolicies());
+      const commercial = new GrantCommercialCommunicationsConsent(repositories.consentTypes(), repositories.userConsents());
+      return {
+        grantPrivacyPolicy: input => privacy.execute(input),
+        grantCommercialCommunications: input => commercial.execute(input)
+      };
+    });
   },
 
-  get adminUserConsentRoutes() {
-    return interopDefault(require('./routes/admin-user-consent.routes') as typeof import('./routes/admin-user-consent.routes'));
-  },
-
-  get adminConsentTypeRoutes() {
-    return interopDefault(require('./routes/consent-type.routes') as typeof import('./routes/consent-type.routes'));
-  },
-
-  get privacyPolicyAdminRoutes() {
-    return interopDefault(
-      require('./routes/privacy-policy-admin.routes') as typeof import('./routes/privacy-policy-admin.routes')
-    );
-  },
-
-  get userConsentRoutes() {
-    return interopDefault(require('./routes/user-consent.routes') as typeof import('./routes/user-consent.routes'));
-  },
-
-  get consentRecorder() {
-    return interopDefault(require('./services/consent-recorder.service') as typeof import('./services/consent-recorder.service'));
-  },
-
-  /** Componentes de salida (consentimientos, tipos, política) que usan otros módulos. */
+  /** @deprecated Transitorio para person (perfil) y audit (session-trace): salidas de consentimientos. */
   get legalComponentsDto() {
-    return interopDefault(
-      require('./responses/legal-components.response') as typeof import('./responses/legal-components.response')
-    );
+    const m = require('./application/dto/user-consent.output') as typeof import('./application/dto/user-consent.output');
+    return {
+      UserConsentComponent: { build: m.toUserConsentOutput, buildClientCatalogItem: m.toMyConsentCatalogItemOutput }
+    };
   },
 
   /** Esquemas de salida (Zod) de legal que otros módulos incluyen en sus respuestas. */
   get legalSchemas() {
-    const m = require('./responses/legal-components.response') as typeof import('./responses/legal-components.response');
+    const m = require('./presentation/http/responses/legal.response') as typeof import('./presentation/http/responses/legal.response');
     return { MyConsentCatalogItemSchema: m.MyConsentCatalogItemSchema };
   }
 };

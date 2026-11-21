@@ -23,7 +23,7 @@ import authBiometricPaths from '../../modules/iam/docs/auth-biometric.paths';
 import personReferencePaths from '../../modules/person/docs/person-reference.paths';
 
 // ─── Módulos Client — Consentimientos ─────────────────────────
-import userConsentPaths from '../../modules/legal/docs/user-consent.paths';
+import userConsentPaths from '../../modules/legal/presentation/http/docs/user-consent.paths';
 
 // ─── Módulos Client — Actividad reciente del usuario ──────────
 import userActivityPaths from '../../modules/audit/docs/user-activity.paths';

@@ -18,7 +18,7 @@ jest.mock('../../iam/repositories/user-session.repository', () => ({
   findById: jest.fn()
 }));
 
-jest.mock('../../legal/repositories/user-consent.repository', () => ({
+jest.mock('../../legal/infrastructure/persistence/prisma-user-consent.repository', () => ({
   findByIds: jest.fn()
 }));
 
@@ -30,8 +30,8 @@ jest.mock('../../iam/repositories/auth-trusted-device.repository', () => ({
   findByIds: jest.fn()
 }));
 
-jest.mock('../../legal/responses/legal-components.response', () => ({
-  UserConsentComponent: { build: jest.fn(r => ({ built: 'consent', id: r.userConsentId })) }
+jest.mock('../../legal/application/dto/user-consent.output', () => ({
+  toUserConsentOutput: jest.fn(r => ({ built: 'consent', id: r.userConsentId }))
 }));
 
 jest.mock('../responses/audit-components.response', () => ({
@@ -57,7 +57,7 @@ import auditLogRepositoryModule from '../repositories/audit-log.repository';
 const auditLogRepository = mocked(auditLogRepositoryModule);
 import userSessionRepositoryModule from '../../iam/repositories/user-session.repository';
 const userSessionRepository = mocked(userSessionRepositoryModule);
-import userConsentRepositoryModule from '../../legal/repositories/user-consent.repository';
+const userConsentRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-user-consent.repository').PrismaUserConsentRepository>('../../legal/infrastructure/persistence/prisma-user-consent.repository');
 const userConsentRepository = mocked(userConsentRepositoryModule);
 import trustedDeviceRepoModule from '../../iam/repositories/auth-trusted-device.repository';
 const trustedDeviceRepo = mocked(trustedDeviceRepoModule);

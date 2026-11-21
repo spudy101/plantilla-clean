@@ -65,16 +65,16 @@ jest.mock('../repositories/auth-trusted-device.repository', () => ({
   create: jest.fn()
 }));
 
-jest.mock('../../legal/repositories/privacy-policy.repository', () => ({
+jest.mock('../../legal/infrastructure/persistence/prisma-privacy-policy.repository', () => ({
   findActive: jest.fn()
 }));
 
-jest.mock('../../legal/repositories/user-consent.repository', () => ({
+jest.mock('../../legal/infrastructure/persistence/prisma-user-consent.repository', () => ({
   grant: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../legal/repositories/consent-type.repository', () => ({
-  findByCode: jest.fn().mockResolvedValue(null)
+jest.mock('../../legal/infrastructure/persistence/prisma-consent-type.repository', () => ({
+  findActiveByCode: jest.fn().mockResolvedValue(null)
 }));
 
 // ── Utils cripto / tokens ────────────────────────────────────────────────────
@@ -205,7 +205,7 @@ import userSessionRepositoryModule from '../repositories/user-session.repository
 const userSessionRepository = mocked(userSessionRepositoryModule);
 import trustedDeviceRepositoryModule from '../repositories/auth-trusted-device.repository';
 const trustedDeviceRepository = mocked(trustedDeviceRepositoryModule);
-import privacyPolicyRepositoryModule from '../../legal/repositories/privacy-policy.repository';
+const privacyPolicyRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-privacy-policy.repository').PrismaPrivacyPolicyRepository>('../../legal/infrastructure/persistence/prisma-privacy-policy.repository');
 const privacyPolicyRepository = mocked(privacyPolicyRepositoryModule);
 import JwtUtilModule from '../../../shared/infrastructure/security/jwt.util';
 const JwtUtil = mocked(JwtUtilModule);

@@ -18,7 +18,7 @@ import notificationPreferencePaths from '../../modules/notification/docs/notific
 import sendVerificationPaths from '../../modules/notification/docs/send-verification.paths';
 
 // ─── Módulos Admin — Privacidad ───────────────────────────────
-import privacyPolicyPaths from '../../modules/legal/docs/privacy-policy-admin.paths';
+import privacyPolicyPaths from '../../modules/legal/presentation/http/docs/privacy-policy-admin.paths';
 
 // ─── Módulos Admin — KYC ──────────────────────────────────────
 import personPaths from '../../modules/person/docs/person.paths';
@@ -37,8 +37,8 @@ import notificationDeliveryPaths from '../../modules/notification/docs/notificat
 import notificationCategoryPaths from '../../modules/notification/docs/notification-category.paths';
 
 // ─── Módulos Admin — Consentimientos ──────────────────────────
-import consentTypePaths from '../../modules/legal/docs/consent-type.paths';
-import userConsentAuditPaths from '../../modules/legal/docs/admin-user-consent.paths';
+import consentTypePaths from '../../modules/legal/presentation/http/docs/consent-type.paths';
+import userConsentAuditPaths from '../../modules/legal/presentation/http/docs/admin-user-consent.paths';
 
 // ─── Módulos Admin — Configuración global ─────────────────────
 import systemGlobalConfigPaths from '../../modules/settings/presentation/http/docs/system-global-config.paths';

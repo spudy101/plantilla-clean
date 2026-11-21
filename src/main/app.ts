@@ -36,8 +36,6 @@ const { notificationPreferenceRoutes, notificationRoutes, sendVerificationRoutes
 import personModule from '../modules/person';
 const { profileRoutes, adminPersonRoutes, personReferenceRoutes } = personModule;
 // ── Rutas admin ────────────────────────────────────────────────────────────
-import legalModule from '../modules/legal';
-const { privacyPolicyAdminRoutes: adminPrivacyPolicyRoutes, adminConsentTypeRoutes, adminUserConsentRoutes, userConsentRoutes } = legalModule;
 import approvalsModule from '../modules/approvals';
 const { adminApprovalRequestRoutes } = approvalsModule;
 // ── Rutas client ───────────────────────────────────────────────────────────
@@ -71,15 +69,13 @@ function adminRouter(container: Container) {
   router.use('/api/v1/notification', adminNotificationTypeRoutes);
   router.use('/api/v1/notification', adminNotificationCategoryRoutes);
   router.use('/api/v1/notification', adminNotificationDeliveryRoutes);
-  router.use('/api/v1/records', adminPrivacyPolicyRoutes);
+  router.use('/api/v1/records', container.legal.adminRouter);
   router.use('/api/v1/records', adminChangeLogRoutes);
   router.use('/api/v1/records', adminAuditLogRoutes);
   router.use('/api/v1/records', adminAuditAlertRoutes);
   router.use('/api/v1/records', adminAuditActionCatalogRoutes);
   router.use('/api/v1/records', adminSessionTraceRoutes);
   router.use('/api/v1/records', adminOperationRoutes);
-  router.use('/api/v1/records', adminConsentTypeRoutes);
-  router.use('/api/v1/records', adminUserConsentRoutes);
   router.use('/api/v1/core', container.settings.adminRouter);
   router.use('/api/v1/core', container.banners.adminRouter);
   router.use('/api/v1/core', adminApprovalRequestRoutes);
@@ -93,7 +89,7 @@ function clientRouter(container: Container) {
   router.use('/api/v1/auth', authBiometricRoutes);
   router.use('/api/v1/notification', emailBounceWebhookRoutes);
   router.use('/api/v1/kyc', personReferenceRoutes);
-  router.use('/api/v1/records', userConsentRoutes);
+  router.use('/api/v1/records', container.legal.clientRouter);
   router.use('/api/v1/records', userActivityRoutes);
   router.use('/api/v1/core', container.banners.publicRouter);
   return router;

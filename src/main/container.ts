@@ -21,6 +21,10 @@ import {
 import localCache from '../shared/infrastructure/cache/cache.util';
 import { uuidGenerator } from '../shared/infrastructure/ids/uuid-generator';
 import { createBannersModule } from '../modules/banners/banners.module';
+import { createLegalModule } from '../modules/legal/legal.module';
+import { privacyPolicyCacheAdapter } from './adapters/privacy-policy-cache.adapter';
+import unitOfWork from '../shared/infrastructure/database/unit-of-work';
+import constantsModule from '../shared/infrastructure/config';
 
 const { logger } = loggerUtilModule;
 
@@ -48,7 +52,17 @@ export function createContainer() {
     guards: routeGuardsAdapter
   });
 
-  return { settings, catalogs, banners };
+  const legal = createLegalModule({
+    audit: auditTrailAdapter,
+    notifier: notifierAdapter,
+    logger,
+    unitOfWork,
+    guards: routeGuardsAdapter,
+    activePolicyCache: privacyPolicyCacheAdapter(redisClient),
+    notificationLogoUrl: constantsModule.notifications.ses.logoUrl
+  });
+
+  return { settings, catalogs, banners, legal };
 }
 
 export type Container = ReturnType<typeof createContainer>;

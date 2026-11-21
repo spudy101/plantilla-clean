@@ -4,8 +4,9 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 (misma API, mismas funcionalidades). Este documento explica cómo está organizado y dónde va cada cosa.
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
-> **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs` y `banners`
-> están migrados completos (moldes: escritura, solo lectura, y agregado + archivos en S3). Los demás módulos siguen con
+> **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners` y `legal`
+> están migrados completos (moldes: escritura, solo lectura, agregado + archivos en S3, y un módulo que otros
+> usan). Los demás módulos siguen con
 > la estructura en capas de la plantilla original y se migran uno por uno. Ver
 > [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
 
@@ -137,6 +138,25 @@ Casi no tiene reglas, y eso también se modela:
 - **Caché:** la política de privacidad se cachea 12 h a través del puerto `KeyValueCache` de
   `shared/application`. En producción es Redis; en los tests, un `Map`.
 
+## Un módulo que otros usan (legal)
+
+`legal` (tipos de consentimiento, políticas de privacidad y consentimientos otorgados) es el primero que
+otros módulos necesitan para trabajar: iam deja constancia de lo que el usuario aceptó al registrarse o
+iniciar sesión, person muestra los consentimientos en el perfil y audit los muestra en la traza de una sesión.
+
+- **Reglas en las entidades:** `ConsentType` normaliza el código, pone los valores por defecto y decide qué
+  cambia una edición parcial, si un consentimiento se puede revocar y si se puede exigir (la Ley 1581 prohíbe
+  exigir uno opcional). `PrivacyPolicy.documentKey()` decide dónde vive el PDF de cada versión.
+- **Lo que otros usan son casos de uso:** `GrantPrivacyPolicyConsent` y `GrantCommercialCommunicationsConsent`
+  (antes un "ConsentRecorder" con repositorios concretos). `legal.module.ts` los devuelve en `useCases`.
+  Mientras iam no esté migrado, los recibe por el `index.ts` transitorio.
+- **Un módulo invalida lo que otro cachea:** al publicar una versión hay que borrar la política vigente que
+  catalogs guarda en caché. Legal declara el puerto `ActivePrivacyPolicyCache` (`invalidate()`), y
+  `src/main/adapters/privacy-policy-cache.adapter.ts` lo implementa con la clave de catalogs. Ninguno de los
+  dos conoce al otro.
+- **Un middleware que usa un caso de uso:** `requireConsent(code)` (presentation) llama a `VerifyConsent`
+  (application). El módulo lo expone ya armado para usarlo en cualquier ruta.
+
 ## Errores
 
 El dominio lanza errores que dicen **qué regla se rompió**, sin status HTTP:
@@ -198,8 +218,9 @@ Usar `settings` como molde. Por cada módulo:
 | `settings` | ✅ migrado (molde de escritura) |
 | `catalogs` | ✅ migrado (molde de solo lectura; respuestas verificadas idénticas a plantilla-base) |
 | `banners` | ✅ migrado (agregado BannerCatalog, imágenes por el puerto BannerImageStorage) |
-| `legal`, `integration`, `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
-| `index.ts` transitorios de `settings` y `catalogs` (búsquedas que usan iam, person, notification, approvals, audit) | ⏳ se borran al migrar esos módulos |
+| `legal` | ✅ migrado (consentimientos y políticas; casos de uso que usa iam; caché de catalogs por un puerto; respuestas verificadas idénticas a plantilla-base) |
+| `integration`, `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
+| `index.ts` transitorios de `settings`, `catalogs` y `legal` (búsquedas que usan iam, person, notification, approvals, audit) | ⏳ se borran al migrar esos módulos |
 | Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
 
 Mientras dure la migración conviven las dos formas: los módulos con `domain/` siguen estas reglas y los

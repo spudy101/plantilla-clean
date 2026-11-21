@@ -6,5 +6,6 @@ export const routeGuardsAdapter: RouteGuards = {
   get authenticate() {
     return iamModule.AuthMiddleware.authenticate;
   },
-  requirePermission: (moduleName, action) => iamModule.RbacMiddleware.requirePermission(moduleName, action)
+  requirePermission: (moduleName, action) => iamModule.RbacMiddleware.requirePermission(moduleName, action),
+  requireRole: roles => iamModule.AuthMiddleware.requireRole(roles)
 };

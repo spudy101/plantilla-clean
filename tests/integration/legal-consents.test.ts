@@ -8,10 +8,14 @@ import { randomUUID } from 'node:crypto';
 import prisma from '../../src/shared/infrastructure/database/prisma';
 import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
 import userRepository from '../../src/modules/iam/repositories/user.repository';
-import userConsentRepository from '../../src/modules/legal/repositories/user-consent.repository';
-import privacyPolicyAdminRepository from '../../src/modules/legal/repositories/privacy-policy-admin.repository';
-import privacyPolicyRepository from '../../src/modules/legal/repositories/privacy-policy.repository';
+import { PrismaUserConsentRepository } from '../../src/modules/legal/infrastructure/persistence/prisma-user-consent.repository';
+import { PrismaPrivacyPolicyRepository } from '../../src/modules/legal/infrastructure/persistence/prisma-privacy-policy.repository';
 import { page } from '../helpers/page';
+
+const userConsentRepository = new PrismaUserConsentRepository();
+const privacyPolicyRepository = new PrismaPrivacyPolicyRepository();
+const grant = (over: { userId: string; consentTypeId: string; ip?: string }) =>
+  userConsentRepository.grant({ privacyPolicyId: null, ip: null, userAgent: null, ...over });
 
 const TAG = `legal-it-${randomUUID().slice(0, 8)}`;
 let roleId: string;
@@ -44,29 +48,29 @@ describe('Legal (consentimientos y política) · Prisma contra Postgres', () => 
   });
 
   it('otorgar dos veces deja un solo consentimiento vigente; revocar lo cierra', async () => {
-    const first = await userConsentRepository.grant({ userId, consentTypeId, ip: '1.1.1.1' });
-    const second = await userConsentRepository.grant({ userId, consentTypeId, ip: '2.2.2.2' });
+    const first = await grant({ userId, consentTypeId, ip: '1.1.1.1' });
+    const second = await grant({ userId, consentTypeId, ip: '2.2.2.2' });
 
     const current = await userConsentRepository.findCurrentByUserAndType(userId, consentTypeId);
     expect(current?.userConsentId).toBe(second.userConsentId);
     expect((await prisma.userConsent.findUnique({ where: { userConsentId: first.userConsentId } }))?.isCurrent).toBe(false);
 
-    const revoked = await userConsentRepository.revoke({ userId, consentTypeId, reason: 'test' });
+    const revoked = await userConsentRepository.revokeCurrent({ userId, consentTypeId, ip: null, reason: 'test' });
     expect(revoked).toMatchObject({ userConsentId: second.userConsentId, isCurrent: false, revocationReason: 'test' });
     expect(revoked?.revokedAt).toBeInstanceOf(Date);
     expect(await userConsentRepository.findCurrentByUserAndType(userId, consentTypeId)).toBeNull();
-    expect(await userConsentRepository.revoke({ userId, consentTypeId })).toBeNull();
+    expect(await userConsentRepository.revokeCurrent({ userId, consentTypeId, ip: null, reason: null })).toBeNull();
   });
 
-  it('el historial trae tipo, política y usuario con los mismos campos que en Sequelize', async () => {
-    await userConsentRepository.grant({ userId, consentTypeId });
-    const { rows, count } = await userConsentRepository.findHistoryByUser(userId, page({ sortBy: 'grantedAt' }));
+  it('el historial trae tipo, política y usuario y titular', async () => {
+    await grant({ userId, consentTypeId });
+    const { rows, count } = await userConsentRepository.listHistoryByUser(userId, page({ sortBy: 'grantedAt' }));
 
     expect(count).toBe(rows.length);
     expect(rows[0]?.consentType).toEqual(expect.objectContaining({ consentTypeId, code: TAG.toUpperCase() }));
-    expect(rows[0]?.user).toEqual({ userId, username: TAG, person: { firstName: 'Ada', lastName: TAG } });
+    expect(rows[0]?.holder).toEqual({ userId, username: TAG, firstName: 'Ada', lastName: TAG });
 
-    const filtered = await userConsentRepository.findAllPaginatedForAdmin({ userId, consentTypeCode: TAG.toUpperCase(), isCurrent: true }, page({ sortBy: 'grantedAt' }));
+    const filtered = await userConsentRepository.listForAdmin({ userId, consentTypeCode: TAG.toUpperCase(), isCurrent: true }, page({ sortBy: 'grantedAt' }));
     expect(filtered.count).toBe(1);
   });
 
@@ -74,8 +78,8 @@ describe('Legal (consentimientos y política) · Prisma contra Postgres', () => 
     const suffix = TAG.slice(-8);
     const before = await privacyPolicyRepository.findActive();
     try {
-      await privacyPolicyAdminRepository.createVersion({ version: `${suffix}-a`, documentUrl: 'https://x/a.pdf', effectiveDate: new Date() });
-      await privacyPolicyAdminRepository.createVersion({ version: `${suffix}-b`, documentUrl: 'https://x/b.pdf', effectiveDate: new Date() });
+      await privacyPolicyRepository.publish({ version: `${suffix}-a`, documentUrl: 'https://x/a.pdf', documentHash: 'a', summary: null, effectiveDate: new Date() });
+      await privacyPolicyRepository.publish({ version: `${suffix}-b`, documentUrl: 'https://x/b.pdf', documentHash: 'b', summary: null, effectiveDate: new Date() });
 
       expect(await prisma.privacyPolicy.count({ where: { isActive: true } })).toBe(1);
       expect((await privacyPolicyRepository.findActive())?.version).toBe(`${suffix}-b`);
@@ -93,7 +97,7 @@ describe('Legal (consentimientos y política) · Prisma contra Postgres', () => 
     const personId = await newPerson();
     const userIdInUnit = await unitOfWork.run(async () => {
       const user = await userRepository.createWithPassword({ username: `${TAG}-uow`, personId, roleId, password: 'Secret123!' });
-      await userConsentRepository.grant({ userId: user.userId, consentTypeId });
+      await grant({ userId: user.userId, consentTypeId });
       return user.userId;
     });
     await expect(prisma.userConsent.count({ where: { userId: userIdInUnit, consentTypeId } })).resolves.toBe(1);
@@ -105,7 +109,7 @@ describe('Legal (consentimientos y política) · Prisma contra Postgres', () => 
     await expect(
       unitOfWork.run(async () => {
         const user = await userRepository.createWithPassword({ username, personId, roleId, password: 'Secret123!' });
-        await userConsentRepository.grant({ userId: user.userId, consentTypeId });
+        await grant({ userId: user.userId, consentTypeId });
         throw new Error('falla del alta');
       })
     ).rejects.toThrow('falla del alta');

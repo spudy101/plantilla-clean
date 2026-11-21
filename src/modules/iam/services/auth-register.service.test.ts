@@ -44,14 +44,14 @@ jest.mock('../../notification/repositories/user-notification-preference.reposito
 jest.mock('../../catalogs/infrastructure/persistence/prisma-country.repository', () => ({
   findByCode: jest.fn()
 }));
-jest.mock('../../legal/repositories/privacy-policy.repository', () => ({
+jest.mock('../../legal/infrastructure/persistence/prisma-privacy-policy.repository', () => ({
   findActive: jest.fn()
 }));
-jest.mock('../../legal/repositories/user-consent.repository', () => ({
+jest.mock('../../legal/infrastructure/persistence/prisma-user-consent.repository', () => ({
   grant: jest.fn()
 }));
-jest.mock('../../legal/repositories/consent-type.repository', () => ({
-  findByCode: jest.fn()
+jest.mock('../../legal/infrastructure/persistence/prisma-consent-type.repository', () => ({
+  findActiveByCode: jest.fn()
 }));
 jest.mock('../../catalogs/infrastructure/persistence/prisma-gender.repository', () => ({
   exists: jest.fn()
@@ -128,11 +128,11 @@ import userNotificationPreferenceRepositoryModule from '../../notification/repos
 const userNotificationPreferenceRepository = mocked(userNotificationPreferenceRepositoryModule);
 const countryRepositoryModule = catalogsModule.countryRepository;
 const countryRepository = mocked(countryRepositoryModule);
-import privacyPolicyRepositoryModule from '../../legal/repositories/privacy-policy.repository';
+const privacyPolicyRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-privacy-policy.repository').PrismaPrivacyPolicyRepository>('../../legal/infrastructure/persistence/prisma-privacy-policy.repository');
 const privacyPolicyRepository = mocked(privacyPolicyRepositoryModule);
-import userConsentRepositoryModule from '../../legal/repositories/user-consent.repository';
+const userConsentRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-user-consent.repository').PrismaUserConsentRepository>('../../legal/infrastructure/persistence/prisma-user-consent.repository');
 const userConsentRepository = mocked(userConsentRepositoryModule);
-import consentTypeRepositoryModule from '../../legal/repositories/consent-type.repository';
+const consentTypeRepositoryModule = jest.requireMock<import('../../legal/infrastructure/persistence/prisma-consent-type.repository').PrismaConsentTypeRepository>('../../legal/infrastructure/persistence/prisma-consent-type.repository');
 const consentTypeRepository = mocked(consentTypeRepositoryModule);
 const genderRepositoryModule = catalogsModule.genderRepository;
 const genderRepository = mocked(genderRepositoryModule);
@@ -194,7 +194,7 @@ function armHappyRegister() {
   personContactRepository.create.mockResolvedValue({ personContactId: 'pc-1' });
   userRepository.createWithPassword.mockResolvedValue({ userId: 'u-1' });
   userNotificationPreferenceRepository.upsert.mockResolvedValue({});
-  consentTypeRepository.findByCode.mockResolvedValue({ consentTypeId: 'ct-1' });
+  consentTypeRepository.findActiveByCode.mockResolvedValue({ consentTypeId: 'ct-1' });
   userConsentRepository.grant.mockResolvedValue({ userConsentId: 'uc-1' });
 
   userRepository.findByUserId.mockResolvedValue({ userId: 'u-1', role: {}, person: {} });
