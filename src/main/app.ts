@@ -38,8 +38,6 @@ const { profileRoutes, adminPersonRoutes, personReferenceRoutes } = personModule
 // ── Rutas admin ────────────────────────────────────────────────────────────
 import legalModule from '../modules/legal';
 const { privacyPolicyAdminRoutes: adminPrivacyPolicyRoutes, adminConsentTypeRoutes, adminUserConsentRoutes, userConsentRoutes } = legalModule;
-import bannersModule from '../modules/banners';
-const { adminPromotionalBannerRoutes, promotionalBannerRoutes } = bannersModule;
 import approvalsModule from '../modules/approvals';
 const { adminApprovalRequestRoutes } = approvalsModule;
 // ── Rutas client ───────────────────────────────────────────────────────────
@@ -83,7 +81,7 @@ function adminRouter(container: Container) {
   router.use('/api/v1/records', adminConsentTypeRoutes);
   router.use('/api/v1/records', adminUserConsentRoutes);
   router.use('/api/v1/core', container.settings.adminRouter);
-  router.use('/api/v1/core', adminPromotionalBannerRoutes);
+  router.use('/api/v1/core', container.banners.adminRouter);
   router.use('/api/v1/core', adminApprovalRequestRoutes);
   router.use('/api/v1/integration', adminIntegrationMonitoringRoutes);
   return router;
@@ -97,7 +95,7 @@ function clientRouter(container: Container) {
   router.use('/api/v1/kyc', personReferenceRoutes);
   router.use('/api/v1/records', userConsentRoutes);
   router.use('/api/v1/records', userActivityRoutes);
-  router.use('/api/v1/core', promotionalBannerRoutes);
+  router.use('/api/v1/core', container.banners.publicRouter);
   return router;
 }
 

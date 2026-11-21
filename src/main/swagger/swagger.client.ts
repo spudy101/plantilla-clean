@@ -29,7 +29,7 @@ import userConsentPaths from '../../modules/legal/docs/user-consent.paths';
 import userActivityPaths from '../../modules/audit/docs/user-activity.paths';
 
 // ─── Módulos Client — Banners promocionales (público) ─────────
-import promotionalBannerPublicPaths from '../../modules/banners/docs/promotional-banner.paths';
+import promotionalBannerPublicPaths from '../../modules/banners/presentation/http/docs/promotional-banner.paths';
 
 // ─── Merge paths ──────────────────────────────────────────────
 

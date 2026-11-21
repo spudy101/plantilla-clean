@@ -18,6 +18,9 @@ import {
   privacyPolicyCatalogAdapter,
   roleCatalogAdapter
 } from './adapters/catalog-sources.adapter';
+import localCache from '../shared/infrastructure/cache/cache.util';
+import { uuidGenerator } from '../shared/infrastructure/ids/uuid-generator';
+import { createBannersModule } from '../modules/banners/banners.module';
 
 const { logger } = loggerUtilModule;
 
@@ -37,7 +40,15 @@ export function createContainer() {
     privacyPolicies: privacyPolicyCatalogAdapter
   });
 
-  return { settings, catalogs };
+  const banners = createBannersModule({
+    audit: auditTrailAdapter,
+    logger,
+    ids: uuidGenerator,
+    cache: localCache,
+    guards: routeGuardsAdapter
+  });
+
+  return { settings, catalogs, banners };
 }
 
 export type Container = ReturnType<typeof createContainer>;

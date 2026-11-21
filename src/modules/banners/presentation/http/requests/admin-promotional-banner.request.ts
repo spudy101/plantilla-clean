@@ -1,7 +1,7 @@
 // Entrada del mantenedor admin de banners. Un esquema por petición: valida (middleware validate), da el
 // tipo que recibe el service (z.infer) y genera la documentación OpenAPI. Una sola fuente.
-import { z, withHint } from '../../../shared/presentation/validation/z';
-import { uuid, text, optionalText, positiveInt, bool } from '../../../shared/presentation/validation/fields';
+import { z, withHint } from '../../../../../shared/presentation/validation/z';
+import { uuid, text, optionalText, positiveInt, bool } from '../../../../../shared/presentation/validation/fields';
 
 const MAX_BANNERS = 20;
 const IMAGE_MIMES = ['image/png', 'image/jpeg', 'image/webp'] as const;

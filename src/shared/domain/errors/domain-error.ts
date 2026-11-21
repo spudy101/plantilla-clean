@@ -5,7 +5,7 @@
 // Así el mismo caso de uso sirve igual desde una ruta, un worker o un CLI.
 
 /** Familia del error. La presentación decide qué significa en su protocolo (en HTTP: el status). */
-export type DomainErrorKind = 'not_found' | 'conflict' | 'rule_violation' | 'forbidden' | 'unauthorized';
+export type DomainErrorKind = 'not_found' | 'conflict' | 'rule_violation' | 'invalid_input' | 'forbidden' | 'unauthorized';
 
 export abstract class DomainError extends Error {
   abstract readonly kind: DomainErrorKind;
@@ -38,6 +38,11 @@ export class ConflictError extends DomainError {
 /** Los datos son válidos en forma pero rompen una regla de negocio. */
 export class RuleViolationError extends DomainError {
   readonly kind = 'rule_violation' as const;
+}
+
+/** Falta un dato o viene mal formado (lo que normalmente ya filtra la validación de entrada). */
+export class InvalidInputError extends DomainError {
+  readonly kind = 'invalid_input' as const;
 }
 
 /** Quien pide la operación no tiene permiso para hacerla. */

@@ -1,7 +1,7 @@
 # Arquitectura
 
 > **Este repositorio está migrando a Clean Architecture.** La referencia es [CLEAN-ARCHITECTURE.md](CLEAN-ARCHITECTURE.md):
-> `shared/` y los módulos que tienen carpeta `domain/` (hoy: `settings` y `catalogs`) ya la siguen. Este documento describe la
+> `shared/` y los módulos que tienen carpeta `domain/` (hoy: `settings`, `catalogs` y `banners`) ya la siguen. Este documento describe la
 > estructura **en capas** de la plantilla original, que siguen los módulos todavía sin migrar.
 
 Este documento es la referencia de cómo está organizado el proyecto y dónde va cada cosa.

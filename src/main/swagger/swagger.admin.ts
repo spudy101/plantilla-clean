@@ -44,7 +44,7 @@ import userConsentAuditPaths from '../../modules/legal/docs/admin-user-consent.p
 import systemGlobalConfigPaths from '../../modules/settings/presentation/http/docs/system-global-config.paths';
 
 // ─── Módulos Admin — Banners promocionales ────────────────────
-import promotionalBannerAdminPaths from '../../modules/banners/docs/admin-promotional-banner.paths';
+import promotionalBannerAdminPaths from '../../modules/banners/presentation/http/docs/admin-promotional-banner.paths';
 
 // ─── Módulos Admin — Usuarios internos & RBAC ─────────────────
 import adminUserPaths from '../../modules/iam/docs/admin-user.paths';

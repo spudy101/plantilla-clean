@@ -4,8 +4,8 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 (misma API, mismas funcionalidades). Este documento explica cómo está organizado y dónde va cada cosa.
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
-> **Estado de la migración:** `shared/` ya está repartido en capas; `settings` y `catalogs` están migrados
-> completos (son los **moldes** a copiar: uno de escritura, uno de solo lectura). Los demás módulos siguen con
+> **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs` y `banners`
+> están migrados completos (moldes: escritura, solo lectura, y agregado + archivos en S3). Los demás módulos siguen con
 > la estructura en capas de la plantilla original y se migran uno por uno. Ver
 > [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
 
@@ -197,8 +197,9 @@ Usar `settings` como molde. Por cada módulo:
 | Composition root (`src/main/`) | ✅ |
 | `settings` | ✅ migrado (molde de escritura) |
 | `catalogs` | ✅ migrado (molde de solo lectura; respuestas verificadas idénticas a plantilla-base) |
-| `banners`, `legal`, `integration`, `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
-| `index.ts` transitorios de `settings` y `catalogs` (búsquedas que usan iam, person, notification, banners, approvals, audit) | ⏳ se borran al migrar esos módulos |
+| `banners` | ✅ migrado (agregado BannerCatalog, imágenes por el puerto BannerImageStorage) |
+| `legal`, `integration`, `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
+| `index.ts` transitorios de `settings` y `catalogs` (búsquedas que usan iam, person, notification, approvals, audit) | ⏳ se borran al migrar esos módulos |
 | Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
 
 Mientras dure la migración conviven las dos formas: los módulos con `domain/` siguen estas reglas y los

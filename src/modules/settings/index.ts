@@ -2,7 +2,7 @@
 //
 // En Clean, settings no se usa importando este index: src/main/container.ts arma el módulo
 // (createSettingsModule en settings.module.ts) y reparte sus casos de uso a quien los necesite.
-// Lo que queda acá es TRANSITORIO y se borra a medida que se migran banners, approvals y audit
+// Lo que queda acá es TRANSITORIO y se borra a medida que se migran approvals y audit
 // (ver infrastructure/persistence/legacy-system-global-config.repository.ts).
 import { interopDefault } from '../../shared/kernel/interop.util';
 

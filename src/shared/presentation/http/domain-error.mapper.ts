@@ -7,6 +7,7 @@ const STATUS_BY_KIND: Record<DomainErrorKind, number> = {
   not_found: 404,
   conflict: 409,
   rule_violation: 422,
+  invalid_input: 400,
   forbidden: 403,
   unauthorized: 401
 };
