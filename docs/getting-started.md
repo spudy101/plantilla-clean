@@ -69,9 +69,9 @@ La base es funcional con nombre neutro. Para adaptarla a tu proyecto, revisa cad
 
 ### Identidad del proyecto
 - [ ] `package.json` → `name` (`base-project`) y `version`.
-- [ ] `src/shared/constants/index.ts` → `SECURITY.TOTP_ISSUER` (`'BaseProject'`): es el emisor que
+- [ ] `src/shared/infrastructure/config/index.ts` → `SECURITY.TOTP_ISSUER` (`'BaseProject'`): es el emisor que
       aparece en las apps de autenticación (Google Authenticator, etc.).
-- [ ] `src/config/swagger.admin.ts` y `src/config/swagger.client.ts` → `info.title`, `info.description`,
+- [ ] `src/main/swagger.admin.ts` y `src/main/swagger.client.ts` → `info.title`, `info.description`,
       `info.contact`, y las URLs de `servers`.
 - [ ] `Dockerfile`, config de CI y SonarQube (si aplican) → nombre de imagen/proyecto.
 

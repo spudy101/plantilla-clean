@@ -1,16 +1,16 @@
 // modules/admin/kyc/routes/admin-notification-type.routes.ts
 
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { TypeListQuery, TypeIdParams, UpdateTypeBody, GlobalNotificationBody, DirectNotificationBody } from '../requests/notification.request';
 const router = express.Router();
 import NotificationTypeController from '../controllers/admin-notification-type.controller';
 import iamModule from '../../iam';
 const { AuthMiddleware, RbacMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import { idempotent } from '../../../shared/http/idempotency/idempotency.middleware';
-import rbacModule from '../../../shared/constants/rbac';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import { idempotent } from '../../../shared/presentation/http/idempotency/idempotency.middleware';
+import rbacModule from '../../../shared/domain/constants/rbac';
 const { RBAC_MODULES, RBAC_ACTIONS } = rbacModule;
 
 /**

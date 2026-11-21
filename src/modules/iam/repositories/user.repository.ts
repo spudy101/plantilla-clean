@@ -3,12 +3,12 @@
 // Usuarios. Las lecturas con perfil usan los niveles de UserRepository.INCLUDES (mismas relaciones que
 // con Sequelize). La PII de persona y contacto llega descifrada (piiExtension); se filtra por su hash.
 import bcrypt from 'bcryptjs';
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { User } from '../../../shared/database/generated/prisma/client';
-import { hashValue } from '../../../shared/database/pii-fields';
-import AppError from '../../../shared/http/app-error.util';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { User } from '../../../shared/infrastructure/database/generated/prisma/client';
+import { hashValue } from '../../../shared/infrastructure/database/pii-fields';
+import AppError from '../../../shared/presentation/http/app-error.util';
 
 const PROFILE = {
   person: {

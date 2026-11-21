@@ -1,7 +1,7 @@
 import emailBounceSuppressionRepo from '../repositories/email-bounce-suppression.repository';
-import EncryptionUtil from '../../../shared/security/encryption.util';
-import MaskingUtil from '../../../shared/security/masking.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
+import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import auditModule from '../../audit';
 const { audit } = auditModule;

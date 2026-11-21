@@ -57,9 +57,9 @@ describe('Arquitectura — fronteras (docs/ARCHITECTURE.md)', () => {
       return r.startsWith('..') ? null : r.split(path.sep)[0];
     };
     const offenders: string[] = [];
-    // src/config/swagger.*.ts compone la documentación de todos los módulos (sus docs/*.paths.ts): es la
-    // única excepción, hasta que la documentación salga de los esquemas de validación.
-    for (const file of sourceFiles.filter(f => !rel(f).startsWith('src/config/'))) {
+    // src/main/ es el composition root (container, swagger): conecta los módulos por dentro. Es la
+    // única excepción.
+    for (const file of sourceFiles.filter(f => !rel(f).startsWith('src/main/'))) {
       const own = moduleOf(file);
       for (const [, spec] of read(file).matchAll(/(?:from\s+|require\(\s*|import\(\s*)['"](\.[^'"]+)['"]/g)) {
         const target = path.resolve(path.dirname(file), spec!);
@@ -81,7 +81,7 @@ describe('SOLID — guardas de arquitectura', () => {
     ...walk(path.join(ROOT, 'prisma'))
   ];
   const ormLayer = (f: string) =>
-    isRepository(f) || rel(f).startsWith('src/shared/database/');
+    isRepository(f) || rel(f).startsWith('src/shared/infrastructure/database/');
 
   it('nadie importa sequelize (el ORM es Prisma)', () => {
     const offenders = projectFiles.filter(f => SEQUELIZE_REQUIRE.test(read(f))).map(rel);
@@ -97,7 +97,7 @@ describe('SOLID — guardas de arquitectura', () => {
 
   it('los enums generados se leen desde shared/constants/domain-enums (única puerta, con chequeo de exhaustividad)', () => {
     const offenders = sourceFiles
-      .filter(f => !ormLayer(f) && rel(f) !== 'src/shared/constants/domain-enums.ts' && PRISMA_ENUMS_REQUIRE.test(read(f)))
+      .filter(f => !ormLayer(f) && rel(f) !== 'src/shared/infrastructure/database/domain-enums.ts' && PRISMA_ENUMS_REQUIRE.test(read(f)))
       .map(rel);
     expect(offenders).toEqual([]);
   });
@@ -122,7 +122,7 @@ describe('SOLID — guardas de arquitectura', () => {
 
   it('todo repositorio extiende PrismaRepository (L)', () => {
     const offenders = sourceFiles
-      .filter(f => isRepository(f) && !rel(f).startsWith('src/shared/database/'))
+      .filter(f => isRepository(f) && !rel(f).startsWith('src/shared/infrastructure/database/'))
       .filter(f => !/extends\s+PrismaRepository\b/.test(read(f)))
       .map(rel);
     expect(offenders).toEqual([]);

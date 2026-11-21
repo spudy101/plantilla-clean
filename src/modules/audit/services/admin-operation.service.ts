@@ -4,13 +4,13 @@
 // (inicio, fin, resultado), sus operaciones hijas y los hechos de negocio (audit_logs). El detalle paso
 // a paso vive en CloudWatch, incluidas las llamadas a proveedores externos: la respuesta trae la
 // consulta de Logs Insights lista para pegar.
-import AppError from '../../../shared/http/app-error.util';
-import operationRepository from '../../../shared/observability/operation.repository';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import operationRepository from '../../../shared/infrastructure/observability/operation.repository';
 import auditLogRepository from '../repositories/audit-log.repository';
 import adminOperationDtoModule from '../responses/admin-operation.response';
 const { OperationListDTO, OperationTimelineDTO } = adminOperationDtoModule;
 import audit from '../audit.service';
-import { appliedFilters, pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { appliedFilters, pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { OperationListQuery } from '../requests/audit.request';
 
 type OperationFilters = NonNullable<Parameters<(typeof operationRepository)['findAllPaginated']>[0]>;

@@ -1,4 +1,4 @@
-import type { NotificationType } from '../../../shared/database/generated/prisma/client';
+import type { NotificationType } from '../../../shared/infrastructure/database/generated/prisma/client';
 // ============================================================
 // NOTIFICATION CONTENT UTIL
 // ============================================================

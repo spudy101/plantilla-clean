@@ -1,4 +1,4 @@
-import { z } from '../../../shared/validation/z';
+import { z } from '../../../shared/presentation/validation/z';
 import componentsAuditDtoModule from './audit-components.response';
 const { AuditAlertComponent } = componentsAuditDtoModule;
 

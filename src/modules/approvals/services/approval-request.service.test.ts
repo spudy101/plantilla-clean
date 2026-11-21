@@ -5,7 +5,7 @@
 // resolve() delega sin auditar (el core ya audita y valida rol + segregación). Aislamos el core y el
 // logger para verificar SOLO la delegación y las llamadas a logAudit.
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));

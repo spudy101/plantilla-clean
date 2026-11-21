@@ -2,7 +2,7 @@
 //
 // Alta y edición de datos básicos de usuarios internos. Extraído de AdminUserService (SOLID: S).
 
-import type { AdminAuditContext } from '../../../../shared/types/audit-context';
+import type { AdminAuditContext } from '../../../../shared/application/audit-context';
 import userRepository from '../../repositories/user.repository';
 import roleRepository from '../../repositories/role.repository';
 import personModule from '../../../person';
@@ -12,13 +12,13 @@ const { documentTypeRepository } = catalogsModule;
 import InternalUserHelper from '../../helpers/internal-user.helper';
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import auditModule from '../../../audit';
 const { auditDiffUtil: auditDiffUtilModule, audit } = auditModule;
 const { buildAuditDiff } = auditDiffUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { RBAC_ROLES, notifications } = constantsModule;
 import adminUserDtoModule from '../../responses/admin-user.response';
 const { InternalUserDTO, InternalUserCreatedDTO } = adminUserDtoModule;

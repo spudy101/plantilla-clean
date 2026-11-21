@@ -1,12 +1,12 @@
-import type { User } from '../../../../shared/database/generated/prisma/client';
+import type { User } from '../../../../shared/infrastructure/database/generated/prisma/client';
 // modules/admin/kyc/person/services/admin-person/person-creation.service.ts
 //
 // Alta de cuentas de cliente desde el panel admin (persona + contacto + usuario
 // en una transacción) y notificaciones de bienvenida. Extraído de PersonService (SOLID: S).
 
-import type { AdminAuditContext } from '../../../../shared/types/audit-context';
+import type { AdminAuditContext } from '../../../../shared/application/audit-context';
 import { v4 as uuidv4 } from 'uuid';
-import unitOfWork from '../../../../shared/database/unit-of-work';
+import unitOfWork from '../../../../shared/infrastructure/database/unit-of-work';
 import iamModule from '../../../iam';
 const { userRepository, roleRepository } = iamModule;
 import personRepository from '../../repositories/person.repository';
@@ -14,11 +14,11 @@ import personContactRepository from '../../repositories/person-contact.repositor
 import KycSharedUtil from '../../utils/kyc-shared.util';
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import ProfileHelper from '../../helpers/profile.helper';
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { notifications, RBAC_ROLES } = constantsModule;
 
 import adminPersonDtoModule from '../../responses/admin-person.response';

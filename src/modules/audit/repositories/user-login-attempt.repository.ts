@@ -2,10 +2,10 @@
 //
 // Intentos de login. El documento se guarda cifrado (lo cifra este repositorio: no está en la extensión
 // de PII) con su hash de búsqueda, y el bloqueo de la cuenta se consulta por ese hash.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { UserLoginAttempt } from '../../../shared/database/generated/prisma/client';
-import EncryptionUtil from '../../../shared/security/encryption.util';
-import HashUtil from '../../../shared/security/hash.util';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { UserLoginAttempt } from '../../../shared/infrastructure/database/generated/prisma/client';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
+import HashUtil from '../../../shared/infrastructure/security/hash.util';
 
 const MS_PER_MINUTE = 60 * 1000;
 

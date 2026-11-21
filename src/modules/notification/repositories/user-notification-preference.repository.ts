@@ -1,9 +1,9 @@
 // Preferencia de notificación del usuario: una sola por usuario (canales permitidos + horario de
 // silencio). Las categorías críticas la ignoran. El horario (TIME) entra y sale como texto 'HH:MM:SS'
 // (prisma-time). origin_session_id lo completa la extensión de Prisma al crear.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { UserNotificationPreference } from '../../../shared/database/generated/prisma/client';
-import { fromTime, toTime } from '../../../shared/database/prisma-time';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { UserNotificationPreference } from '../../../shared/infrastructure/database/generated/prisma/client';
+import { fromTime, toTime } from '../../../shared/infrastructure/database/prisma-time';
 
 type TimeFields = 'quietHoursStart' | 'quietHoursEnd';
 /** Preferencia con el horario de silencio como texto. */

@@ -65,7 +65,7 @@ jest.mock('../repositories/biometric.repository', () => ({
   }
 }));
 
-jest.mock('../../../shared/security/jwt.util', () => ({
+jest.mock('../../../shared/infrastructure/security/jwt.util', () => ({
   generateAccessToken: jest.fn().mockResolvedValue('access-token'),
   generateRefreshToken: jest.fn().mockResolvedValue('refresh-token')
 }));
@@ -91,13 +91,13 @@ jest.mock('../../notification/notify', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   INTERNAL_ROLE_NAMES: ['admin', 'ejecutivo'],
   notifications: { ses: { logoUrl: 'https://logo.test/x.png' } },
   SECURITY: { MAX_ACTIVE_SESSIONS: 3 },
@@ -136,7 +136,7 @@ const {
   biometricCredentialRepository,
   biometricChallengeRepository
 } = mocked(biometricRepositoryModule);
-import JwtUtilModule from '../../../shared/security/jwt.util';
+import JwtUtilModule from '../../../shared/infrastructure/security/jwt.util';
 const JwtUtil = mocked(JwtUtilModule);
 import RefreshTokenStoreModule from '../utils/refresh-token-store.util';
 const RefreshTokenStore = mocked(RefreshTokenStoreModule);

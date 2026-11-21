@@ -3,7 +3,7 @@
 //
 // Cada export se carga al usarse (getter): los módulos se usan entre sí y un index que cargara todo
 // de una vez crearía ciclos de carga. Uso: import integrationModule from '…/integration'; const { X } = integrationModule;
-import { interopDefault } from '../../shared/utils/interop.util';
+import { interopDefault } from '../../shared/kernel/interop.util';
 
 export default {
   /** onOpen/onClose del circuit breaker: ventanas de fallback y su auditoría (los conecta src/app.ts). */

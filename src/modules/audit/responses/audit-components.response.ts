@@ -1,9 +1,9 @@
 // Componentes reutilizables de auditoría — RF-ADM-03
 
-import MaskingUtil from '../../../shared/security/masking.util';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import type { DbDate, Maybe } from '../../../shared/types/db-rows';
+import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import type { DbDate, Maybe } from '../../../shared/infrastructure/database/db-rows';
 
 /** Usuario adjunto a una fila de auditoría (Prisma): firstName/lastName viven en Person. */
 interface AuditUserRow {

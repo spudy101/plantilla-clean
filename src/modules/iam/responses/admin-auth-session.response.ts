@@ -1,6 +1,6 @@
-import type { PageMetadata } from '../../../shared/http/pagination';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import type { PageMetadata } from '../../../shared/application/pagination';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 import { UserRefSchema, UserSessionSchema } from './auth-components.response';
 import type { SessionWithDeviceAndUser } from '../repositories/user-session.repository';
 import type { AuditLogWithExecutor } from '../../audit';

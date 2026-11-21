@@ -1,7 +1,7 @@
 // config/swagger/modules/shared-endpoints/core/promotional-banner.paths.ts
 
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { toOpenApi } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { toOpenApi } from '../../../shared/presentation/validation/openapi';
 import { PublicBanner, PublicBannerList } from '../responses/promotional-banner.response';
 
 /**

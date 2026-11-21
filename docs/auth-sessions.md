@@ -19,7 +19,7 @@ propios** (`JwtUtil`) + estado en Redis (`TokenBlacklistUtil`, `RefreshTokenStor
 
 | Pieza                                                             | Archivo                                                                  |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Emisión/verificación JWT RS256 (access + refresh)                 | `src/shared/security/jwt.util.ts`                                               |
+| Emisión/verificación JWT RS256 (access + refresh)                 | `src/shared/infrastructure/security/jwt.util.ts`                                               |
 | Store de JTIs de refresh en Redis (rotación + reuse)              | `src/modules/iam/utils/refresh-token-store.util.ts`                               |
 | Blacklist de tokens / umbrales de invalidación                    | `src/modules/iam/utils/token-blacklist.util.ts`                                   |
 | Validación por request (firma + blacklist + inactividad 15 min)   | `src/modules/iam/middlewares/auth.middleware.ts`                                  |
@@ -229,7 +229,7 @@ de cualquier API.
 Todos los 401 salían con `code: 'UNAUTHORIZED'` y solo se distinguían por el texto del mensaje, así
 que el front no podía separar "el access venció, renová y reintentá" de "la sesión murió, andá a
 login" — y ante la duda deslogueaba. Ahora cada 401 lleva su código en **`details.code`** (mismo
-patrón que `MFA_REQUIRED`), catalogado en `src/shared/constants/index.ts#AUTH_ERROR_CODES`.
+patrón que `MFA_REQUIRED`), catalogado en `src/shared/infrastructure/config/index.ts#AUTH_ERROR_CODES`.
 
 | `details.code`              | Origen                                                        | Qué debe hacer el front     |
 | --------------------------- | ------------------------------------------------------------- | --------------------------- |
@@ -286,7 +286,7 @@ sin binding de origin; `signCount` lo envía el cliente). Tras verificar la firm
   `entityType:'UserTrustedDevice'`/`entityTable:'user_trusted_devices'` (homologado).
 - Acciones de auditoría disparadas por workers usan `userId:'system'` (ej. `SESSION_EXPIRED_BY_WORKER`,
   `SESSION_ABSOLUTE_EXPIRED`).
-- No leer `process.env` fuera de `src/shared/constants/`. Inactividad unificada cliente+interno:
+- No leer `process.env` fuera de `src/shared/infrastructure/config/`. Inactividad unificada cliente+interno:
   `SECURITY.SESSION_INACTIVITY_MINUTES` (15); tope absoluto: `SECURITY.ABSOLUTE_SESSION_LIFETIME_HOURS` (8);
   throttle de `last_access_at`: `SECURITY.SESSION_ACCESS_THROTTLE_SECONDS` (60); gracia de rotación:
   `SECURITY.REFRESH_ROTATION_GRACE_SECONDS` (60).

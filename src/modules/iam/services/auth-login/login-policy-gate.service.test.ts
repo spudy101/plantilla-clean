@@ -3,14 +3,14 @@
 // LoginPolicyGateService: compuerta de política de privacidad que comparten el login por
 // contraseña y el biométrico. Dependencias inyectadas por constructor (SOLID: D).
 
-jest.mock('../../../../shared/observability/logger.util', () => ({ logger: { warn: jest.fn() }, logAudit: jest.fn() }));
+jest.mock('../../../../shared/infrastructure/observability/logger.util', () => ({ logger: { warn: jest.fn() }, logAudit: jest.fn() }));
 jest.mock('../../../audit/audit.service', () => ({ record: jest.fn() }));
 
 import { mocked, fixture } from 'tests/helpers/mock';
 import LoginPolicyGateService from './login-policy-gate.service';
 import auditServiceModule from '../../../audit/audit.service';
 const logAudit = mocked(auditServiceModule).record;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { INTERNAL_ROLE_NAMES } = constantsModule;
 
 const ACTIVE_POLICY = { privacyPolicyId: 'pp-2', version: '2.0', documentUrl: 'http://x/p.pdf', summary: 's', effectiveDate: 'd' };

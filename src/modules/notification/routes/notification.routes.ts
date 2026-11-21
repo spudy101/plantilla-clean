@@ -1,13 +1,13 @@
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { CreateNotificationBody, GlobalNotificationListQuery, NotificationFeedQuery, PersonalNotificationListQuery } from '../requests/notification.request';
 const router = express.Router();
 import NotificationController from '../controllers/notification.controller';
 import iamModule from '../../iam';
 const { AuthMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import { idempotent } from '../../../shared/http/idempotency/idempotency.middleware';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import { idempotent } from '../../../shared/presentation/http/idempotency/idempotency.middleware';
 
 /**
  * GET /count/stream debe ir ANTES de GET /count para que Express no lo confunda.

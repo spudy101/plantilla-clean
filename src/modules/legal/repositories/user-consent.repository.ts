@@ -2,9 +2,9 @@
 //
 // Consentimientos otorgados (RF-ADM-04). origin_session_id / origin_correlation_id los completa la
 // extensión de Prisma al crear (shared/database/prisma-extensions.ts), desde el contexto de la request.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import type { Prisma, UserConsent } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import type { Prisma, UserConsent } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 // Mismos campos que los include de Sequelize
 const CONSENT_TYPE_SELECT = {

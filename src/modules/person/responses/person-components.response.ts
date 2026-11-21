@@ -1,9 +1,9 @@
-import EncryptionUtil from '../../../shared/security/encryption.util';
-import MaskingUtil from '../../../shared/security/masking.util';
-import type { DbDate, Maybe } from '../../../shared/types/db-rows';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import piiMaskingDoc from '../../../shared/validation/pii-masking.doc';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
+import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import type { DbDate, Maybe } from '../../../shared/infrastructure/database/db-rows';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import piiMaskingDoc from '../../../shared/presentation/validation/pii-masking.doc';
 
 /** Objeto de salida con campos opcionales que se agregan según las opciones de build. */
 type Dto = Record<string, unknown>;

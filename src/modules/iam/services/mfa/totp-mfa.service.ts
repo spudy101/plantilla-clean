@@ -3,15 +3,15 @@
 // Segundo factor TOTP (RFC 6238): configuración, activación, verificación y baja.
 // Extraído de MFAService (SOLID: S).
 
-import type { RequestAuditContext } from '../../../../shared/types/audit-context';
-import unitOfWork from '../../../../shared/database/unit-of-work';
+import type { RequestAuditContext } from '../../../../shared/application/audit-context';
+import unitOfWork from '../../../../shared/infrastructure/database/unit-of-work';
 import userRepository from '../../repositories/user.repository';
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
-import TotpUtil from '../../../../shared/security/totp.util';
-import EncryptionUtil from '../../../../shared/security/encryption.util';
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import TotpUtil from '../../../../shared/infrastructure/security/totp.util';
+import EncryptionUtil from '../../../../shared/infrastructure/security/encryption.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import mfaDtoModule from '../../responses/mfa.response';
 const { TOTPSetupResponseDTO, TOTPActivationResponseDTO, TOTPVerificationResponseDTO } = mfaDtoModule;

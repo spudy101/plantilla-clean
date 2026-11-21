@@ -3,8 +3,8 @@
 jest.mock('../repositories/provider-fallback-event.repository', () => ({ openFallback: jest.fn(), closeFallback: jest.fn() }));
 jest.mock('../../audit', () => ({ audit: { record: jest.fn() } }));
 jest.mock('../../notification', () => ({ smsDeliveryAttemptRepository: { countFailedBetween: jest.fn() } }));
-jest.mock('../../../shared/observability/operation', () => ({ runOperation: (_opts: unknown, fn: () => unknown) => fn() }));
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/operation', () => ({ runOperation: (_opts: unknown, fn: () => unknown) => fn() }));
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
 

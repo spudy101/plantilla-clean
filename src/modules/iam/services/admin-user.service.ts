@@ -16,7 +16,7 @@
 // La API pública no cambia: controllers y el bootstrap de doble aprobación siguen igual.
 // ============================================================
 
-import type { AdminAuditContext } from '../../../shared/types/audit-context';
+import type { AdminAuditContext } from '../../../shared/application/audit-context';
 import userRepository from '../repositories/user.repository';
 import roleRepository from '../repositories/role.repository';
 import personModule from '../../person';
@@ -26,7 +26,7 @@ const { documentTypeRepository } = catalogsModule;
 import userSessionRepository from '../repositories/user-session.repository';
 import auditModule from '../../audit';
 const { userChangeLogRepository } = auditModule;
-import unitOfWork from '../../../shared/database/unit-of-work';
+import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
 import notificationModule from '../../notification';
 const { notifier } = notificationModule;
 import approvalsModule from '../../approvals';

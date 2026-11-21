@@ -6,13 +6,13 @@
 // disparó se revierta, el groupBy por sesión y el bloqueo de login por hash del documento.
 
 import { randomUUID } from 'node:crypto';
-import prisma from '../../src/shared/database/prisma';
-import unitOfWork from '../../src/shared/database/unit-of-work';
+import prisma from '../../src/shared/infrastructure/database/prisma';
+import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
 import auditLogRepository from '../../src/modules/audit/repositories/audit-log.repository';
 import auditAlertRepository from '../../src/modules/audit/repositories/audit-alert.repository';
 import userLoginAttemptRepository from '../../src/modules/audit/repositories/user-login-attempt.repository';
 import audit from '../../src/modules/audit/audit.service';
-import requestContext from '../../src/shared/observability/request-context.util';
+import requestContext from '../../src/shared/infrastructure/observability/request-context.util';
 import { page } from '../helpers/page';
 
 const TAG = `audit-it-${randomUUID().slice(0, 8)}`;

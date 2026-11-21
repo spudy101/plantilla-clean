@@ -3,7 +3,7 @@
 // Eliminación de usuarios internos: re-autenticación del admin, doble aprobación y ofuscación
 // irreversible. Extraído de AdminUserService (SOLID: S).
 
-import type { AdminAuditContext } from '../../../../shared/types/audit-context';
+import type { AdminAuditContext } from '../../../../shared/application/audit-context';
 import userRepository from '../../repositories/user.repository';
 import personModule from '../../../person';
 const { ProfileHelper } = personModule;
@@ -11,11 +11,11 @@ import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
 import approvalsModule from '../../../approvals';
 const { DualApprovalService } = approvalsModule;
-import unitOfWork from '../../../../shared/database/unit-of-work';
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import unitOfWork from '../../../../shared/infrastructure/database/unit-of-work';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 import internalUserGuardsModule from './internal-user-guards';
 const { InternalUserGuards } = internalUserGuardsModule;

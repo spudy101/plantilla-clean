@@ -1,24 +1,24 @@
-import type { Prisma } from '../../../../shared/database/generated/prisma/client';
+import type { Prisma } from '../../../../shared/infrastructure/database/generated/prisma/client';
 // modules/shared-endpoints/kyc/iam/services/mfa/sms-mfa.service.ts
 //
 // Segundo factor por SMS: solicitud de código de activación, confirmación y baja.
 // Extraído de MFAService (SOLID: S).
 
-import type { RequestAuditContext } from '../../../../shared/types/audit-context';
+import type { RequestAuditContext } from '../../../../shared/application/audit-context';
 import crypto from 'node:crypto';
-import unitOfWork from '../../../../shared/database/unit-of-work';
+import unitOfWork from '../../../../shared/infrastructure/database/unit-of-work';
 import userRepository from '../../repositories/user.repository';
 import notificationModule from '../../../notification';
 const { verificationCodeRepository, notifier, SmsService } = notificationModule;
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { MOCKS } = constantsModule;
 import mfaDtoModule from '../../responses/mfa.response';
 const { SMSMFAActivationResponseDTO, SMSActivationRequestResponseDTO } = mfaDtoModule;
 import MfaAccount from './mfa-account';
-import errorMessageModule from '../../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 import auditModule from '../../../audit';

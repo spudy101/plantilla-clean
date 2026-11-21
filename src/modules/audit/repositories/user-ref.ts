@@ -3,7 +3,7 @@
 // Usuario que se adjunta a las filas de auditoría (quién ejecutó, quién reconoció…). audit_logs y
 // audit_alerts no declaran relación con users en el schema (user_id es trazabilidad: puede quedar huérfano),
 // así que los repositorios los resuelven con una sola consulta por lote.
-import type { Prisma } from '../../../shared/database/generated/prisma/client';
+import type { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 export const USER_REF_SELECT = {
   userId: true,

@@ -1,4 +1,4 @@
-import type { User } from '../../../../shared/database/generated/prisma/client';
+import type { User } from '../../../../shared/infrastructure/database/generated/prisma/client';
 import personModule from '../../../person';
 const { personGuards: personGuardsModule } = personModule;
 const { requirePerson } = personGuardsModule;
@@ -11,10 +11,10 @@ import userRepository from '../../repositories/user.repository';
 import roleRepository from '../../repositories/role.repository';
 import userSessionRepository from '../../repositories/user-session.repository';
 import TokenBlacklistUtil from '../../utils/token-blacklist.util';
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { INTERNAL_ROLE_NAMES, SUPERADMIN_ROLE_NAMES } = constantsModule;
 
 class InternalUserGuards {

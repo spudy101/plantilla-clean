@@ -1,4 +1,4 @@
-import { z } from '../../../shared/validation/z';
+import { z } from '../../../shared/presentation/validation/z';
 import { BiometricCredentialSchema } from './auth-components.response';
 
 import componentsAuthModule from './auth-components.response';

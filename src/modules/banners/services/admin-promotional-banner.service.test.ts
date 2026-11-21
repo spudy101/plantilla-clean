@@ -7,18 +7,18 @@
 
 jest.mock('uuid', () => ({ v4: jest.fn(() => 'uuid-generado') }));
 
-jest.mock('../../../shared/infra/s3.util', () => ({
+jest.mock('../../../shared/infrastructure/storage/s3.util', () => ({
   uploadPublicDocument: jest.fn().mockResolvedValue('https://cdn.test/promotional/banners/uuid-generado.jpg'),
   deletePublicFile: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
-jest.mock('../../settings/repositories/system-global-config.repository', () => ({ findActive: jest.fn(), update: jest.fn() }));
+jest.mock('../../settings/infrastructure/persistence/legacy-system-global-config.repository', () => ({ findActive: jest.fn(), update: jest.fn() }));
 
 jest.mock('../responses/admin-promotional-banner.response', () => ({
   toAdminBannerList: jest.fn(banners => ({ banners })),
@@ -28,13 +28,13 @@ jest.mock('../responses/admin-promotional-banner.response', () => ({
 import { mocked, fixture, Loose } from 'tests/helpers/mock';
 import uuidModule from 'uuid';
 const { v4: uuidv4 } = mocked(uuidModule);
-import S3UtilModule from '../../../shared/infra/s3.util';
+import S3UtilModule from '../../../shared/infrastructure/storage/s3.util';
 const S3Util = mocked(S3UtilModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../../audit/audit.service';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;
-import systemGlobalConfigRepositoryModule from '../../settings/repositories/system-global-config.repository';
+import systemGlobalConfigRepositoryModule from '../../settings/infrastructure/persistence/legacy-system-global-config.repository';
 const systemGlobalConfigRepository = mocked(systemGlobalConfigRepositoryModule);
 import * as bannerResponses from '../responses/admin-promotional-banner.response';
 const { toAdminBannerList, toBannerImage } = mocked(bannerResponses);

@@ -4,7 +4,7 @@
 // La categoría solo se asigna a los tipos que no tienen una: después se edita desde el admin
 // (PATCH /notification-types/:id con notificationCategoryId) y el seed no la vuelve a tocar.
 // Única excepción a "no modificar lo existente": los templates de los tipos, que son del seed.
-import constantsModule from '../../src/shared/constants';
+import constantsModule from '../../src/shared/infrastructure/config';
 import { buildLayout, NOTIFICATION_CATEGORIES } from './data/notification-categories';
 import { adminApprovalTypes } from './notification-types/admin-approvals';
 import { adminAuditTypes } from './notification-types/admin-audit';

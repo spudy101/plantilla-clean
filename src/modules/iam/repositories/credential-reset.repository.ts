@@ -2,8 +2,8 @@
 //
 // Tokens de reset de contraseña / MFA. Flujo NO autenticado: origin_session_id queda null; la extensión
 // de Prisma completa el correlationId del request.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { Prisma, CredentialReset } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { Prisma, CredentialReset } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const WITH_USER = {
   user: {

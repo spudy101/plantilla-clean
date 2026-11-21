@@ -3,10 +3,10 @@
 // `audit_logs` es append-only: la garantía dura es el trigger de BD (BEFORE UPDATE OR DELETE); este
 // repositorio no expone update ni delete. Las escrituras van con el cliente por defecto aunque haya una
 // unidad de trabajo activa: la auditoría queda aunque el flujo que la disparó se revierta.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { AuditLog, AuditLogOutcome } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { AuditLog, AuditLogOutcome } from '../../../shared/infrastructure/database/generated/prisma/client';
 import { loadUserRefs } from './user-ref';
 import type { UserRef } from './user-ref';
 

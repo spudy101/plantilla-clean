@@ -1,9 +1,9 @@
 // modules/schemas/records/audit/repositories/audit-alert.repository.ts
 //
 // Alertas de auditoría para el superadmin. Las crea audit.record() junto con el registro que las dispara.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import type { AuditAlert, Prisma } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import type { AuditAlert, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 import { loadUserRefs } from './user-ref';
 import type { UserRef } from './user-ref';
 

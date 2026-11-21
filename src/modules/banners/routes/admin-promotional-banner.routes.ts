@@ -2,13 +2,13 @@ import express from 'express';
 const router = express.Router();
 import PromotionalBannerController from '../controllers/admin-promotional-banner.controller';
 import { ReplaceBannersBody, BannerImageFiles } from '../requests/admin-promotional-banner.request';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import iamModule from '../../iam';
 const { AuthMiddleware, RbacMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import UploadMiddleware from '../../../shared/http/upload.middleware';
-import rbacModule from '../../../shared/constants/rbac';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import UploadMiddleware from '../../../shared/presentation/http/upload.middleware';
+import rbacModule from '../../../shared/domain/constants/rbac';
 const { RBAC_MODULES, RBAC_ACTIONS } = rbacModule;
 
 

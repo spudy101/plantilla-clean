@@ -17,8 +17,8 @@ jest.mock('../repositories/user-push-token.repository', () => ({ findActiveByUse
 jest.mock('./email-notification.service', () => ({ enviarNotificacion: jest.fn() }));
 jest.mock('./push-notification.service', () => ({ enviarPushIndividual: jest.fn() }));
 jest.mock('./sms.service', () => ({ resolveE164: jest.fn().mockResolvedValue('+56911112222'), enviarSms: jest.fn() }));
-jest.mock('../../../shared/security/encryption.util', () => ({ safeDecrypt: jest.fn((v: string) => v) }));
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({ safeDecrypt: jest.fn((v: string) => v) }));
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));

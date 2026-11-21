@@ -1,12 +1,12 @@
 // modules/admin/rbac/controllers/admin-rbac.controller.ts
 
 import AdminRbacService from '../services/admin-rbac.service';
-import ApiResponse from '../../../shared/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import ApiResponse from '../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
-import routeParamUtilModule from '../../../shared/http/route-param.util';
+import routeParamUtilModule from '../../../shared/presentation/http/route-param.util';
 const { routeParam } = routeParamUtilModule;
-import authUserUtilModule from '../../../shared/http/auth-user.util';
+import authUserUtilModule from '../../../shared/presentation/http/auth-user.util';
 const { requireAuthUser } = authUserUtilModule;
 
 class AdminRbacController {

@@ -1,10 +1,10 @@
 // modules/schemas/kyc/maintainers/repositories/gender.repository.ts
 //
 // Primer repositorio sobre Prisma (fase 0 de docs/prisma-migration.md): catálogo de géneros.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { Gender } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { Gender } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const SEARCH_FIELDS = ['name'] as const;
 

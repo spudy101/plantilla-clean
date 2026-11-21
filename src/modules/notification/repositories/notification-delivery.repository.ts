@@ -5,15 +5,15 @@
 // next_attempt_at hacia adelante (reserva): si el proceso muere a mitad del envío, la fila vuelve a
 // estar vencida al terminar la reserva y otro ciclo la retoma. FOR UPDATE SKIP LOCKED hace que dos
 // instancias nunca tomen la misma fila.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 import type {
   NotificationChannel,
   NotificationDelivery,
   NotificationDeliveryStatus
-} from '../../../shared/database/generated/prisma/client';
-import constantsModule from '../../../shared/constants';
+} from '../../../shared/infrastructure/database/generated/prisma/client';
+import constantsModule from '../../../shared/infrastructure/config';
 const { database } = constantsModule;
 
 /** Lo que el despachador necesita de una entrega tomada. */

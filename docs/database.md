@@ -9,7 +9,7 @@
 
 Una misma instancia Postgres puede alojar **varios esquemas** (p. ej. el template en `plantilla` y un
 proyecto real en otro). El esquema activo lo fija `DB_SCHEMA` en `.env`: el CLI de Prisma lo recibe como
-`?schema=` en la URL que arma `src/shared/database/database-url.ts`, y la app como opción de `PrismaPg`.
+`?schema=` en la URL que arma `src/shared/infrastructure/database/database-url.ts`, y la app como opción de `PrismaPg`.
 
 Las migraciones (`prisma/migrations/*/migration.sql`) **no nombran el esquema**: corren en el que elige
 la URL, y el historial (`_prisma_migrations`) vive dentro de ese esquema. Apuntar `DB_SCHEMA` a otro
@@ -84,7 +84,7 @@ actualiza en la base.
   corre `npm run db:seed`.
 - Cambiar un dato ya sembrado (salvo los templates) en bases existentes → migración con el `UPDATE`.
 
-Usa el cliente de la app (`src/shared/database/prisma.ts`): necesita el `.env` completo y escribe la PII en
+Usa el cliente de la app (`src/shared/infrastructure/database/prisma.ts`): necesita el `.env` completo y escribe la PII en
 claro (la extensión de PII la cifra y calcula los hashes, como en cualquier repositorio).
 
 ---

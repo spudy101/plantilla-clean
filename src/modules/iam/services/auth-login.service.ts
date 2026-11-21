@@ -1,6 +1,6 @@
 import type { UserWith } from '../repositories/user.repository';
-import { interopDefault } from '../../../shared/utils/interop.util';
-import type { RequestAuditContext } from '../../../shared/types/audit-context';
+import { interopDefault } from '../../../shared/kernel/interop.util';
+import type { RequestAuditContext } from '../../../shared/application/audit-context';
 import userRepository from '../repositories/user.repository';
 import auditModule from '../../audit';
 const { userLoginAttemptRepository, audit } = auditModule;
@@ -10,15 +10,15 @@ import userSessionRepository from '../repositories/user-session.repository';
 import trustedDeviceRepository from '../repositories/auth-trusted-device.repository';
 import legalModule from '../../legal';
 const { privacyPolicyRepository, consentRecorder } = legalModule;
-import JwtUtil from '../../../shared/security/jwt.util';
-import TotpUtil from '../../../shared/security/totp.util';
-import EncryptionUtil from '../../../shared/security/encryption.util';
+import JwtUtil from '../../../shared/infrastructure/security/jwt.util';
+import TotpUtil from '../../../shared/infrastructure/security/totp.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
 import TokenBlacklistUtil from '../utils/token-blacklist.util';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import LoginRateLimiter from '../utils/login-rate-limiter.util';
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const {
   LOGIN_RATE_LIMIT,
   CLIENT_ACCESS_ROLES,
@@ -34,7 +34,7 @@ import LoginDeviceService from './auth-login/login-device.service';
 import SmsLoginChallengeService from './auth-login/sms-login-challenge.service';
 import LoginPolicyGateService from './auth-login/login-policy-gate.service';
 import SessionIssuerService from './auth-login/session-issuer.service';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 // ============================================================

@@ -12,11 +12,11 @@
 // Al leerlo, el hook lo descifra automáticamente — el service recibe
 // el valor en texto plano sin hacer nada especial.
 
-import { interopDefault } from '../../../shared/utils/interop.util';
+import { interopDefault } from '../../../shared/kernel/interop.util';
 import type { Request } from 'express';
-import EncryptionUtil from '../../../shared/security/encryption.util';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 
 

@@ -2,10 +2,10 @@
 //
 // Capacidades de administración de PrivacyPolicy: paginación, búsqueda, detalle y publicación de
 // versiones. El repositorio público (privacy-policy.repository) solo lee.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { PrivacyPolicy } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { PrivacyPolicy } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const LIST = { tiebreaker: 'privacyPolicyId', searchFields: ['version', 'summary'] };
 

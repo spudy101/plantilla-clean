@@ -1,8 +1,8 @@
 // modules/schemas/notification/repositories/email-bounce-suppression.repository.ts
 //
 // Suppression list de correo (por email_hash): rebotes duros por dirección y bloqueo al llegar al umbral.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { EmailBounceSuppression } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { EmailBounceSuppression } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 class EmailBounceSuppressionRepository extends PrismaRepository {
   async isSuppressed(emailHash: string): Promise<boolean> {

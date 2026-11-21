@@ -1,5 +1,5 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 import type { RolePermissionOverrideWithGrantor } from '../repositories/role-permission-override.repository';
 
 // Construye el árbol de grupos para el front a partir del array plano de RBAC_MODULE_GROUPS.

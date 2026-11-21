@@ -1,6 +1,6 @@
 import type { UserWith } from '../repositories/user.repository';
-import type { UserBiometricCredential } from '../../../shared/database/generated/prisma/client';
-import type { RequestAuditContext } from '../../../shared/types/audit-context';
+import type { UserBiometricCredential } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { RequestAuditContext } from '../../../shared/application/audit-context';
 import crypto from 'node:crypto';
 
 import userRepository from '../repositories/user.repository';
@@ -18,14 +18,14 @@ import userSessionRepository from '../repositories/user-session.repository';
 import SessionControlService from './auth-login/session-control.service';
 import SessionIssuerService from './auth-login/session-issuer.service';
 import LoginPolicyGateService from './auth-login/login-policy-gate.service';
-import es256SignatureUtilModule from '../../../shared/security/es256-signature.util';
+import es256SignatureUtilModule from '../../../shared/infrastructure/security/es256-signature.util';
 const { verifyEs256Signature } = es256SignatureUtilModule;
 import notificationModule from '../../notification';
 const { notifier } = notificationModule;
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 import authBiometricDtoModule from '../responses/auth-biometric.response';
 const {

@@ -1,7 +1,7 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import type { ProviderFallbackEvent } from '../../../shared/database/generated/prisma/client';
-import type CircuitBreaker from '../../../shared/infra/circuit-breaker.util';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import type { ProviderFallbackEvent } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type CircuitBreaker from '../../../shared/infrastructure/providers/circuit-breaker.util';
 // Salidas del monitoreo de proveedores externos (solo lectura): semáforo del circuit breaker e
 // historial de caídas. Las métricas por llamada están en CloudWatch, no acá.
 

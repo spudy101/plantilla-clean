@@ -15,9 +15,9 @@
  *   phonePrefix.country    (Country)
  *   avatar.theme           (AvatarTheme)
  */
-import type { DbDate, Maybe } from '../../../shared/types/db-rows';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import type { DbDate, Maybe } from '../../../shared/infrastructure/database/db-rows';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 
 /** Campos comunes de las tablas de catálogo (filas de Prisma). */
 interface CatalogRow {

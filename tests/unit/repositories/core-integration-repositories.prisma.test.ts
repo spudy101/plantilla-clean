@@ -10,9 +10,9 @@ const mockDb = {
   providerFallbackEvent: { findFirst: jest.fn(), update: jest.fn() }
 };
 
-jest.mock('../../../src/shared/database/prisma', () => mockDb);
+jest.mock('../../../src/shared/infrastructure/database/prisma', () => mockDb);
 
-import { Prisma } from '../../../src/shared/database/generated/prisma/client';
+import { Prisma } from '../../../src/shared/infrastructure/database/generated/prisma/client';
 import approvalRequestRepository from '../../../src/modules/approvals/repositories/approval-request.repository';
 import providerFallbackEventRepository from '../../../src/modules/integration/repositories/provider-fallback-event.repository';
 

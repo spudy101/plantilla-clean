@@ -1,4 +1,9 @@
-# Base Project — API REST (plantilla base)
+# Base Project — API REST (plantilla Clean Architecture)
+
+> **Versión Clean Architecture** de la plantilla base: misma API y funcionalidades, organizada en
+> `domain → application → infrastructure / presentation` con un composition root en `src/main/`.
+> Guía: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). Migración en curso: `shared/` y `settings`
+> ya están en Clean; el resto de los módulos se migra uno por uno.
 
 > Plantilla base de API REST en Node.js para arrancar proyectos nuevos con el núcleo transversal ya
 > resuelto y endurecido: **autenticación propia (JWT RS256 + sesiones), MFA, RBAC, doble aprobación
@@ -118,8 +123,10 @@ Todo lo transversal que un proyecto necesita el día 1, ya construido y probado:
 es dueño de todo lo suyo (rutas, lógica, datos, workers, documentación) y expone una API pública en su
 `index.ts`. `shared/` es infraestructura técnica que no conoce el negocio.
 
-La guía completa, con las reglas y la tabla "¿dónde va esto?", está en
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). **Léela antes de agregar código.**
+**Clean Architecture:** dentro de cada módulo migrado, el dominio y los casos de uso no conocen Prisma ni
+Express; dependen de puertos (interfaces) que implementa la infraestructura, y `src/main/container.ts` conecta
+todo. Guía y receta de migración: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). Los módulos aún
+sin migrar siguen [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). **Léelas antes de agregar código.**
 
 ### Flujo por capas (dentro de un request)
 
@@ -149,10 +156,8 @@ Detalle del pipeline: [`docs/request-flow.md`](docs/request-flow.md) · auditor�
 ```
 .
 ├── src/
-│   ├── server.ts               # arranque: infraestructura, workers, listen, apagado ordenado
-│   ├── app.ts                  # Express: middlewares globales + rutas /admin y /client
-│   ├── config/                 # Swagger
-│   ├── modules/                # un módulo por dominio, cada uno con su index.ts (API pública)
+│   ├── main/                   # composition root: container (DI), adapters, app, server, swagger
+│   ├── modules/                # un módulo por dominio; migrados: domain/ application/ infrastructure/ presentation/
 │   │   ├── iam/                # usuarios, roles, RBAC, sesiones, login, MFA, biometría
 │   │   ├── person/             # persona, contactos, ubicación, referencias, perfil
 │   │   ├── catalogs/           # países, ciudades, géneros, tipos de documento, avatares
@@ -160,10 +165,10 @@ Detalle del pipeline: [`docs/request-flow.md`](docs/request-flow.md) · auditor�
 │   │   ├── audit/              # auditoría, alertas, operaciones, bitácora de cambios
 │   │   ├── legal/              # consentimientos, políticas de privacidad
 │   │   ├── approvals/          # doble aprobación (maker-checker)
-│   │   ├── settings/           # configuración global
+│   │   ├── settings/           # configuración global  ✅ Clean (molde para migrar el resto)
 │   │   ├── banners/            # banners promocionales
 │   │   └── integration/        # monitoreo de proveedores externos
-│   └── shared/                 # database · http · security · infra · observability · constants · types · utils
+│   └── shared/                 # kernel · domain · application (puertos) · infrastructure · presentation
 │
 ├── prisma/                     # schema.prisma, migrations/, seed.ts + seeds/
 ├── scripts/                    # db-migrate, db-reset, generate-keys
@@ -285,7 +290,7 @@ npm run format      # prettier --write .
 
 ## 🔀 Flujo de un request
 
-Middlewares globales (orden crítico, en `src/app.ts`): operación (id + contexto + traza en `operations`) →
+Middlewares globales (orden crítico, en `src/main/app.ts`): operación (id + contexto + traza en `operations`) →
 `helmet` → `cors` → headers de seguridad → `cookieParser` → `express.json` (10 MB) → captura de JSON
 inválido → `compression`.
 

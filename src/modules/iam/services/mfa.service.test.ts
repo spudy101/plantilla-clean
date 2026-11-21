@@ -7,7 +7,7 @@
 // transacciones Sequelize se mockean (commit/rollback espiables) y las notificaciones diferidas en
 // setImmediate se vacían con flushMacrotasks. `crypto`/OTP se hacen deterministas vía MOCKS.
 
-jest.mock('../../../shared/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
 
 jest.mock('../repositories/user.repository', () => ({
   findById: jest.fn(),
@@ -30,13 +30,13 @@ jest.mock('../../person/utils/kyc-shared.util', () => ({
   logChange: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/security/totp.util', () => ({
+jest.mock('../../../shared/infrastructure/security/totp.util', () => ({
   generateSecret: jest.fn().mockReturnValue('SECRET123'),
   keyuri: jest.fn().mockReturnValue('otpauth://totp/x'),
   verify: jest.fn()
 }));
 
-jest.mock('../../../shared/security/encryption.util', () => ({
+jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({
   encrypt: jest.fn().mockReturnValue('enc(secret)'),
   decrypt: jest.fn().mockReturnValue('SECRET123')
 }));
@@ -50,14 +50,14 @@ jest.mock('../../notification/services/sms.service', () => ({
   enviarSmsOtp: jest.fn().mockResolvedValue({ success: true })
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
 // MOCKS.EXTERNAL_PROVIDERS mutable: en true el OTP es fijo '123456'.
-jest.mock('../../../shared/constants', () => ({ MOCKS: { EXTERNAL_PROVIDERS: false } }));
+jest.mock('../../../shared/infrastructure/config', () => ({ MOCKS: { EXTERNAL_PROVIDERS: false } }));
 
 // DTOs a passthrough para no acoplar a su forma.
 jest.mock('../responses/mfa.response', () => ({
@@ -73,7 +73,7 @@ jest.mock('../responses/mfa.response', () => ({
 
 import { managedTransaction } from 'tests/helpers/transaction';
 import { mocked, Loose } from 'tests/helpers/mock';
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import userRepoModule from '../repositories/user.repository';
 const userRepo = mocked(userRepoModule);
@@ -81,13 +81,13 @@ import verificationCodeRepoModule from '../../notification/repositories/verifica
 const verificationCodeRepo = mocked(verificationCodeRepoModule);
 import KycSharedUtilModule from '../../person/utils/kyc-shared.util';
 const KycSharedUtil = mocked(KycSharedUtilModule);
-import TotpUtilModule from '../../../shared/security/totp.util';
+import TotpUtilModule from '../../../shared/infrastructure/security/totp.util';
 const TotpUtil = mocked(TotpUtilModule);
 import NotificationUtilModule from '../../notification/notify';
 const notifier = mocked(NotificationUtilModule);
 import SmsServiceModule from '../../notification/services/sms.service';
 const SmsService = mocked(SmsServiceModule);
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const constants = mocked(constantsModule);
 import auditServiceModule from '../../audit/audit.service';
 const logAudit = mocked(auditServiceModule).record;

@@ -1,4 +1,4 @@
-import type SnsSignature from '../../../shared/security/sns-signature.util';
+import type SnsSignature from '../../../shared/infrastructure/security/sns-signature.util';
 // Ingesta REAL del feed asíncrono de bounces de SES vía SNS. SES publica los rebotes
 // (Configuration Set → topic SNS); SNS hace POST a este webhook. Se verifica la firma del mensaje SNS
 // (obligatoria: un POST forjado suprimiría el correo de una víctima), se confirma la suscripción al
@@ -6,12 +6,12 @@ import type SnsSignature from '../../../shared/security/sns-signature.util';
 // transitorios (soft) y las quejas (complaint) se ignoran acá.
 
 import emailSuppressionService from './email-suppression.service';
-import snsSignatureUtilModule from '../../../shared/security/sns-signature.util';
+import snsSignatureUtilModule from '../../../shared/infrastructure/security/sns-signature.util';
 const { verifySnsSignature, confirmSnsSubscription } = snsSignatureUtilModule;
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 import auditModule from '../../audit';
 const { audit } = auditModule;

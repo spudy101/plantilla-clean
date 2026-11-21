@@ -1,11 +1,11 @@
 import type { StoredBanner } from '../responses/admin-promotional-banner.response';
 import type { BannerInput } from '../requests/admin-promotional-banner.request';
 import { v4 as uuidv4 } from 'uuid';
-import type { Prisma } from '../../../shared/database/generated/prisma/client';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import type { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import S3Util from '../../../shared/infra/s3.util';
+import S3Util from '../../../shared/infrastructure/storage/s3.util';
 import settingsModule from '../../settings';
 const { systemGlobalConfigRepository } = settingsModule;
 import { toAdminBannerList, toBannerImage } from '../responses/admin-promotional-banner.response';

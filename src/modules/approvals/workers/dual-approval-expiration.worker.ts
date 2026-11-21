@@ -1,9 +1,9 @@
 import cron from 'node-cron';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import { runOperation } from '../../../shared/observability/operation';
+import { runOperation } from '../../../shared/infrastructure/observability/operation';
 import approvalRequestRepository from '../repositories/approval-request.repository';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 import auditModule from '../../audit';

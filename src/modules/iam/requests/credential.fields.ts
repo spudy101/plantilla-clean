@@ -1,7 +1,7 @@
 // Campos de credenciales (contraseña, códigos MFA, reset) con los mismos mensajes y pistas que tenía
 // BaseValidator. Los usan los requests de iam y de person (a través del index de iam).
-import { z, withHint } from '../../../shared/validation/z';
-import constantsModule from '../../../shared/constants';
+import { z, withHint } from '../../../shared/presentation/validation/z';
+import constantsModule from '../../../shared/infrastructure/config';
 const { REGEX } = constantsModule;
 
 const POLICY_HINT = 'Incluí mayúsculas, minúsculas, números y un carácter especial';

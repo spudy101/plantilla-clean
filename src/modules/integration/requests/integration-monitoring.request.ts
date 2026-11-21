@@ -1,6 +1,6 @@
 // Entrada del monitoreo de proveedores (solo lectura): filtros del historial de caídas.
-import { z, withHint } from '../../../shared/validation/z';
-import { optionalBool, optionalIsoDate, pageQuery } from '../../../shared/validation/fields';
+import { z, withHint } from '../../../shared/presentation/validation/z';
+import { optionalBool, optionalIsoDate, pageQuery } from '../../../shared/presentation/validation/fields';
 
 export const FallbackQuery = z.object({
   ...pageQuery(['startedAt', 'endedAt'], { sortBy: 'startedAt' }),

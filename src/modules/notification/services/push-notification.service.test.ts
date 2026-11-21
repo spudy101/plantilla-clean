@@ -18,8 +18,8 @@ jest.mock('@aws-sdk/client-sns', () => ({
 }));
 
 // callProvider se mockea; CircuitOpenError es un AppError 503 como el real. providerFailure (provider-errors) es el real.
-jest.mock('../../../shared/infra/provider-call.util', () => {
-  const AppError = jest.requireActual('../../../shared/http/app-error.util').default;
+jest.mock('../../../shared/infrastructure/providers/provider-call.util', () => {
+  const AppError = jest.requireActual('../../../shared/presentation/http/app-error.util').default;
   class CircuitOpenError extends AppError {
     constructor(product: string, retryInMs: number) {
       super(`Servicio externo no disponible temporalmente (${product})`, 503, 'CIRCUIT_OPEN', null, true);
@@ -29,20 +29,20 @@ jest.mock('../../../shared/infra/provider-call.util', () => {
   return { callProvider: jest.fn(), CircuitOpenError };
 });
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
 }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   aws: { region: 'us-east-1', accessKeyId: 'ak', secretAccessKey: 'sk' },
   notifications: { sns: { platformArnIos: 'arn:aws:sns:ios', platformArnAndroid: 'arn:aws:sns:android' } }
 }));
 
 import { mocked } from 'tests/helpers/mock';
-import * as providerCallModule from '../../../shared/infra/provider-call.util';
+import * as providerCallModule from '../../../shared/infrastructure/providers/provider-call.util';
 const callProvider = mocked(providerCallModule.callProvider);
 const { CircuitOpenError } = providerCallModule;
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = mocked(loggerUtilModule);
 import push from './push-notification.service';
 

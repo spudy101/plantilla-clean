@@ -6,7 +6,7 @@
 // paginación, DTOs y logger se mockean para aislar la lógica. AppError es el real (verificado con
 // .rejects / statusCode).
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));

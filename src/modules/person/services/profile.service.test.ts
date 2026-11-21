@@ -7,7 +7,7 @@
 // ramas de error (rollback + repropagacion). Se usa el
 // AppError real para assertar statusCode. Las notificaciones fire-and-forget se vacian con `flush`.
 
-jest.mock('../../../shared/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
 
 jest.mock('../../iam/repositories/user.repository', () => ({ findByUserId: jest.fn() }));
 jest.mock('../repositories/person.repository', () => ({ findById: jest.fn() }));
@@ -40,7 +40,7 @@ jest.mock('../helpers/profile.helper', () => ({
   deleteAccountLogic: jest.fn()
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
@@ -69,7 +69,7 @@ jest.mock('../responses/person-components.response', () => ({
 
 import { managedTransaction } from 'tests/helpers/transaction';
 import { mocked, Loose, fixture } from 'tests/helpers/mock';
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import userRepositoryModule from '../../iam/repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);

@@ -21,9 +21,9 @@ jest.mock('../../legal/repositories/privacy-policy.repository', () => ({ findAct
 jest.mock('../../iam/repositories/role.repository', () => ({ findAllPaginated: jest.fn() }));
 jest.mock('../../notification/repositories/notification-type.repository', () => ({ findAllPaginated: jest.fn() }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({ logAudit: jest.fn() }));
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({ logAudit: jest.fn() }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
-jest.mock('../../../shared/infra/redis.util', () => ({ get: jest.fn(), set: jest.fn() }));
+jest.mock('../../../shared/infrastructure/cache/redis.util', () => ({ get: jest.fn(), set: jest.fn() }));
 
 // DTOs a passthrough: devuelven { rows, metadata } para verificar qué recibió cada uno.
 jest.mock('../responses/maintainers.response', () => ({
@@ -51,9 +51,9 @@ import privacyPolicyRepositoryModule from '../../legal/repositories/privacy-poli
 const privacyPolicyRepository = mocked(privacyPolicyRepositoryModule);
 import auditServiceModule from '../../audit/audit.service';
 const logAudit = mocked(auditServiceModule).record;
-import redisClientModule from '../../../shared/infra/redis.util';
+import redisClientModule from '../../../shared/infrastructure/cache/redis.util';
 const redisClient = mocked(redisClientModule);
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import service from './maintainers.service';
 import { GenderListQuery, PhonePrefixListQuery } from '../requests/maintainers.request';
 

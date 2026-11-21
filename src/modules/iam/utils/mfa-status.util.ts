@@ -7,7 +7,7 @@
 // Fuente de verdad: totp_enabled || sms_mfa_enabled en la tabla `users`.
 
 // Lazy require: el repositorio vive en modules/ (evita ciclos de carga al arrancar). SOLID: D.
-import { interopDefault } from '../../../shared/utils/interop.util';
+import { interopDefault } from '../../../shared/kernel/interop.util';
 interface MfaFlags {
   totpEnabled?: boolean | null;
   smsMfaEnabled?: boolean | null;

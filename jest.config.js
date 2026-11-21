@@ -39,9 +39,7 @@ module.exports = {
     '!src/**/*.test.ts',
     '!src/**/generated/**',
     '!src/**/docs/**',
-    '!src/config/**',
-    '!src/app.ts',
-    '!src/server.ts'
+    '!src/main/**'
   ],
 
   coverageDirectory: 'coverage',

@@ -1,9 +1,9 @@
 // Bandeja in-app del usuario (notificaciones personales). El envío por canal externo vive en
 // notification-delivery.repository.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { Notification } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { Notification } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const WITH_TYPE = { notificationType: true } satisfies Prisma.NotificationInclude;
 const WITH_TYPE_AND_CATEGORY = { notificationType: { include: { category: true } } } satisfies Prisma.NotificationInclude;

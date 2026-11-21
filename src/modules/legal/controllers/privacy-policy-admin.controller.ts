@@ -1,15 +1,15 @@
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import type { Request } from 'express';
 // modules/admin/privacy-policy/controllers/privacy-policy-admin.controller.ts
 
 import PrivacyPolicyAdminService from '../services/privacy-policy-admin.service';
-import ApiResponse from '../../../shared/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import ApiResponse from '../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
-import routeParamUtilModule from '../../../shared/http/route-param.util';
+import routeParamUtilModule from '../../../shared/presentation/http/route-param.util';
 const { routeParam } = routeParamUtilModule;
-import authUserUtilModule from '../../../shared/http/auth-user.util';
-import { validQuery } from '../../../shared/validation/validate';
+import authUserUtilModule from '../../../shared/presentation/http/auth-user.util';
+import { validQuery } from '../../../shared/presentation/validation/validate';
 import { PrivacyPolicyListQuery } from '../requests/legal.request';
 const { requireAuthUser } = authUserUtilModule;
 

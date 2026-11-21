@@ -1,6 +1,6 @@
-import type { PageMetadata } from '../../../shared/http/pagination';
-import type { UserTrustedDevice } from '../../../shared/database/generated/prisma/client';
-import { z } from '../../../shared/validation/z';
+import type { PageMetadata } from '../../../shared/application/pagination';
+import type { UserTrustedDevice } from '../../../shared/infrastructure/database/generated/prisma/client';
+import { z } from '../../../shared/presentation/validation/z';
 import { AuditLogSchema } from './audit-components.response';
 import iamModule from '../../iam';
 const { authComponentsDto: componentsAuthModule } = iamModule;

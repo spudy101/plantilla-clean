@@ -1,4 +1,4 @@
-import type { Person, PersonContact } from '../../../shared/database/generated/prisma/client';
+import type { Person, PersonContact } from '../../../shared/infrastructure/database/generated/prisma/client';
 import type * as Types from './profile.types';
 import iamModule from '../../iam';
 const { userRepository } = iamModule;
@@ -12,8 +12,8 @@ const { avatarRepository, genderRepository, documentTypeRepository, departmentRe
 import notificationModule from '../../notification';
 const { verificationCodeRepository } = notificationModule;
 import KycSharedUtil from '../utils/kyc-shared.util';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 
 /**

@@ -1,8 +1,8 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { jsonBody, toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { jsonBody, toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import { ConfirmResetBody, RegisterBody, RegisterHeaders, RequestResetBody } from '../requests/iam.request';
 import { RegisterSchema } from '../responses/auth-register.response';
-import piiMaskingDocModule from '../../../shared/validation/pii-masking.doc';
+import piiMaskingDocModule from '../../../shared/presentation/validation/pii-masking.doc';
 const { UNMASKED_ROUTE_DESC } = piiMaskingDocModule;
 
 /**

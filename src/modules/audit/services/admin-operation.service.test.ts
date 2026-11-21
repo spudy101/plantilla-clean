@@ -1,6 +1,6 @@
 // AdminOperationService — listado de operaciones y línea de tiempo (operación + hijas + auditoría +
 // llamadas externas unidas por correlationId). Repositorios inyectados como dobles.
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
 }));
@@ -8,7 +8,7 @@ jest.mock('../audit.service', () => ({ record: jest.fn() }));
 
 import adminOperationServiceModule from './admin-operation.service';
 const { AdminOperationService } = adminOperationServiceModule;
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import { OperationListQuery } from '../requests/audit.request';
 
 const OP_ID = '11111111-1111-4111-8111-111111111111';

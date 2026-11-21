@@ -11,8 +11,8 @@ const router = express.Router();
 import EmailBounceWebhookController from '../controllers/email-bounce-webhook.controller';
 import iamModule from '../../iam';
 const { AuthMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import { markOperationSource } from '../../../shared/observability/operation';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import { markOperationSource } from '../../../shared/infrastructure/observability/operation';
 
 const WEBHOOK_BODY_LIMIT = '256kb';
 

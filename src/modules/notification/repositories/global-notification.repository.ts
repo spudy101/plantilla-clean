@@ -1,7 +1,7 @@
 // Notificaciones globales (para todos los clientes): una fila que todos ven in-app y el avance de su
 // envío masivo por push/email (estado, cursor por user_id, reserva y contadores).
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { GlobalNotification, Prisma } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { GlobalNotification, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const WITH_TYPE = { notificationType: true } satisfies Prisma.GlobalNotificationInclude;
 const WITH_TYPE_AND_CATEGORY = { notificationType: { include: { category: true } } } satisfies Prisma.GlobalNotificationInclude;

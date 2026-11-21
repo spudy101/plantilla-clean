@@ -8,18 +8,18 @@ import {
 } from '@aws-sdk/client-sns';
 /** Lo único que se usa del cliente SNS (un doble de test solo necesita send). */
 type SnsSender = Pick<InstanceType<typeof SNSClient>, 'send'>;
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import AppError from '../../../shared/http/app-error.util';
-import constantsModule from '../../../shared/constants';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import constantsModule from '../../../shared/infrastructure/config';
 const { notifications, aws } = constantsModule;
-import { callProvider, AWS_CLIENT_OPTIONS } from '../../../shared/infra/provider-call.util';
-import { providerFailure } from '../../../shared/infra/provider-errors';
-import awsProviderMetaUtilModule from '../../../shared/infra/aws-provider-meta.util';
+import { callProvider, AWS_CLIENT_OPTIONS } from '../../../shared/infrastructure/providers/provider-call.util';
+import { providerFailure } from '../../../shared/infrastructure/providers/provider-errors';
+import awsProviderMetaUtilModule from '../../../shared/infrastructure/providers/aws-provider-meta.util';
 const { awsErrorCode } = awsProviderMetaUtilModule;
-import awsErrorCodesModule from '../../../shared/constants/aws-error-codes';
+import awsErrorCodesModule from '../../../shared/infrastructure/providers/aws-error-codes';
 const { isEndpointDisabled } = awsErrorCodesModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 

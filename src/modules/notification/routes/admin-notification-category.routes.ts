@@ -1,13 +1,13 @@
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { CategoryListQuery, CategoryIdParams, CreateCategoryBody, UpdateCategoryBody } from '../requests/notification.request';
 const router = express.Router();
 import NotificationCategoryController from '../controllers/admin-notification-category.controller';
 import iamModule from '../../iam';
 const { AuthMiddleware, RbacMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import rbacModule from '../../../shared/constants/rbac';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import rbacModule from '../../../shared/domain/constants/rbac';
 const { RBAC_MODULES, RBAC_ACTIONS } = rbacModule;
 
 

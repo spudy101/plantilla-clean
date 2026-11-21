@@ -1,9 +1,9 @@
 // modules/schemas/integration/repositories/provider-fallback-event.repository.ts
 //
 // Ventanas de caída de un proveedor (circuito abierto → cerrado) para el monitoreo de integraciones.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import type { Prisma, ProviderFallbackEvent } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import type { Prisma, ProviderFallbackEvent } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 // Tolerancia al emparejar el cierre con su apertura (relojes de distintos procesos)
 const MATCH_WINDOW_MS = 5000;

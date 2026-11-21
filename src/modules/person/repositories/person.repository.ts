@@ -1,9 +1,9 @@
 // modules/schemas/kyc/person/repositories/person.repository.ts
 //
 // Personas. national_id va cifrado (piiExtension): se lee y escribe en claro y se busca por su hash.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { Person, Prisma } from '../../../shared/database/generated/prisma/client';
-import { hashValue } from '../../../shared/database/pii-fields';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { Person, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import { hashValue } from '../../../shared/infrastructure/database/pii-fields';
 
 class PersonRepository extends PrismaRepository {
   async findById(personId: string): Promise<Person | null> {

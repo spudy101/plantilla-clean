@@ -1,5 +1,5 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { jsonBody, toOpenApi } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { jsonBody, toOpenApi } from '../../../shared/presentation/validation/openapi';
 import { SendVerificationBody, VerifyCodeBody } from '../requests/notification.request';
 import { SendVerificationSchema, VerifyCodeSchema } from '../responses/send-verification.response';
 

@@ -18,18 +18,18 @@ jest.mock('../../catalogs/repositories/phone-prefix.repository', () => ({
   findById: jest.fn()
 }));
 
-jest.mock('../../../shared/infra/provider-call.util', () => ({
+jest.mock('../../../shared/infrastructure/providers/provider-call.util', () => ({
   callProvider: jest.fn(),
   CircuitOpenError: class CircuitOpenError extends Error {}
 }));
-jest.mock('../../../shared/security/encryption.util', () => ({ generateHash: jest.fn().mockReturnValue('phone-hash') }));
+jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({ generateHash: jest.fn().mockReturnValue('phone-hash') }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
 }));
 
 // MOCKS.EXTERNAL_PROVIDERS es mutable: se alterna por test.
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   MOCKS: { EXTERNAL_PROVIDERS: false },
   aws: { region: 'us-east-1', accessKeyId: 'ak', secretAccessKey: 'sk' }
 }));
@@ -39,10 +39,10 @@ import attemptRepoModule from '../repositories/sms-delivery-attempt.repository';
 const attemptRepo = mocked(attemptRepoModule);
 import phonePrefixRepoModule from '../../catalogs/repositories/phone-prefix.repository';
 const phonePrefixRepo = mocked(phonePrefixRepoModule);
-import * as providerCallModule from '../../../shared/infra/provider-call.util';
+import * as providerCallModule from '../../../shared/infrastructure/providers/provider-call.util';
 const callProvider = mocked(providerCallModule.callProvider);
 const { CircuitOpenError } = providerCallModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const constants = mocked(constantsModule);
 import sms from './sms.service';
 

@@ -1,9 +1,9 @@
 // modules/schemas/kyc/iam/repositories/biometric.repository.ts
 //
 // Credenciales biométricas (WebAuthn) y sus challenges de un solo uso.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { BiometricChallenge, Prisma, UserBiometricCredential } from '../../../shared/database/generated/prisma/client';
-import AppError from '../../../shared/http/app-error.util';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { BiometricChallenge, Prisma, UserBiometricCredential } from '../../../shared/infrastructure/database/generated/prisma/client';
+import AppError from '../../../shared/presentation/http/app-error.util';
 
 // TTL del challenge biométrico
 const BIOMETRIC_CHALLENGE_TTL_MINUTES = 5;

@@ -108,7 +108,7 @@ Preferencia por usuario: tabla `user_notification_preferences`, **una fila por u
 
 ```ts
 import NotificationCreationService from '../../../schemas/notification/services/notification-creation.service';
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config/';
 const { notifications } = constantsModule;
 
 setImmediate(() => {
@@ -224,7 +224,7 @@ de `notification_deliveries`:
   - enviado → `sent`;
   - sin destinatario → `skipped` (no se reintenta);
   - error temporal → sigue `pending`, con espera creciente: **1 min → 5 min → 30 min → 2 h → 6 h**;
-  - **rebote definitivo** (`isHardBounce`, catálogo en `src/shared/constants/aws-error-codes.ts`: email
+  - **rebote definitivo** (`isHardBounce`, catálogo en `src/shared/infrastructure/providers/aws-error-codes.ts`: email
     `MessageRejected`/`InvalidParameterValue`/`AccountSendingPausedException`, push
     `EndpointDisabled`/`InvalidParameter`) o **6.º intento fallido** → `failed`, y se audita **una vez**
     (`EMAIL_/PUSH_/SMS_DELIVERY_FAILED`, con `reason: hard_bounce | attempts_exhausted`).
@@ -292,7 +292,7 @@ masivo** por push/email a todos los clientes activos (`CLIENT_ROLE_NAMES`), seg�
   `SES_RATE_LIMIT_PER_MINUTE` (200): ajustarlos a la cuota real de la cuenta de AWS. Cada tanda suma su
   tamaño con un `INCRBY` atómico de Redis (compartido entre instancias); si se pasa, espera al minuto
   siguiente. Sin Redis cuenta en el proceso.
-- **SSE (contador de no leídas):** `notification-emitter.util.ts` transporta `count-updated` (Redis Pub/Sub, fallback EventEmitter local; se inicializa en `src/server.ts`); el stream es `GET /notification/notifications/count/stream` (`notification.controller.ts`). El punto único de refresco es `notification-count.util.ts` (`emitCountUpdate(userId)`), invocado vía `setImmediate` en cada flujo que altera el contador: crear notificación individual (`notification-creation.service.ts`), marcar leídas al listar personal/global/mixto (`notification.service.ts`), además del emit propio de `getUnreadCount`. La **notificación global** (1 fila para todos) no hace fan-out por usuario: publica un broadcast `{ global: true }` y cada conexión SSE abierta recalcula su propio count (`computeUnreadCount`: dos `COUNT`, sin re-emitir ni auditar) tras una espera al azar de hasta 5 s, para que miles de conexiones no consulten la base en el mismo instante. **Auth por cookie** (`access_token`, canal web): el front abre el stream con `fetch` + `credentials:'include'` (no `EventSource` nativo, que no puede mandar la cookie cross-site). **Heartbeat:** el stream emite un comentario SSE `: ping` cada 25 s (`SSE_HEARTBEAT_MS`) para que el idle timeout del reverse proxy (ALB/nginx, ~60 s) no cierre la conexión en periodos sin eventos y congele el contador; se limpia en `req.on('close')` junto con el listener.
+- **SSE (contador de no leídas):** `notification-emitter.util.ts` transporta `count-updated` (Redis Pub/Sub, fallback EventEmitter local; se inicializa en `src/main/server.ts`); el stream es `GET /notification/notifications/count/stream` (`notification.controller.ts`). El punto único de refresco es `notification-count.util.ts` (`emitCountUpdate(userId)`), invocado vía `setImmediate` en cada flujo que altera el contador: crear notificación individual (`notification-creation.service.ts`), marcar leídas al listar personal/global/mixto (`notification.service.ts`), además del emit propio de `getUnreadCount`. La **notificación global** (1 fila para todos) no hace fan-out por usuario: publica un broadcast `{ global: true }` y cada conexión SSE abierta recalcula su propio count (`computeUnreadCount`: dos `COUNT`, sin re-emitir ni auditar) tras una espera al azar de hasta 5 s, para que miles de conexiones no consulten la base en el mismo instante. **Auth por cookie** (`access_token`, canal web): el front abre el stream con `fetch` + `credentials:'include'` (no `EventSource` nativo, que no puede mandar la cookie cross-site). **Heartbeat:** el stream emite un comentario SSE `: ping` cada 25 s (`SSE_HEARTBEAT_MS`) para que el idle timeout del reverse proxy (ALB/nginx, ~60 s) no cierre la conexión en periodos sin eventos y congele el contador; se limpia en `req.on('close')` junto con el listener.
 
 ## Criticidad (`is_critical`)
 

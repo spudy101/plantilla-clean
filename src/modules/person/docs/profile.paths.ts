@@ -1,5 +1,5 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { jsonBody, toOpenApi } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { jsonBody, toOpenApi } from '../../../shared/presentation/validation/openapi';
 import {
   DeleteAccountBody,
   UpdateEmailBody,
@@ -9,7 +9,7 @@ import {
   UpdateProfileBody
 } from '../requests/person.request';
 import { EmailUpdatedSchema, NamesUpdatedSchema, PhoneUpdatedSchema } from '../responses/profile.response';
-import piiMaskingDocModule from '../../../shared/validation/pii-masking.doc';
+import piiMaskingDocModule from '../../../shared/presentation/validation/pii-masking.doc';
 const { MASKED_EMAIL_DESC } = piiMaskingDocModule;
 
 /**

@@ -78,7 +78,7 @@ jest.mock('../../legal/repositories/consent-type.repository', () => ({
 }));
 
 // ── Utils cripto / tokens ────────────────────────────────────────────────────
-jest.mock('../../../shared/security/jwt.util', () => ({
+jest.mock('../../../shared/infrastructure/security/jwt.util', () => ({
   generateMfaChallengeToken: jest.fn().mockResolvedValue('challenge-token'),
   verifyMfaChallengeToken: jest.fn(),
   verifyRefreshToken: jest.fn(),
@@ -86,11 +86,11 @@ jest.mock('../../../shared/security/jwt.util', () => ({
   generateRefreshToken: jest.fn().mockResolvedValue('refresh-token')
 }));
 
-jest.mock('../../../shared/security/totp.util', () => ({
+jest.mock('../../../shared/infrastructure/security/totp.util', () => ({
   verify: jest.fn()
 }));
 
-jest.mock('../../../shared/security/encryption.util', () => ({
+jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({
   decrypt: jest.fn().mockReturnValue('totp-secret')
 }));
 
@@ -102,7 +102,7 @@ jest.mock('../utils/refresh-token-store.util', () => ({
   saveRotation: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/security/device-fingerprint.util', () => ({
+jest.mock('../../../shared/infrastructure/security/device-fingerprint.util', () => ({
   enrichDevice: jest.fn().mockReturnValue({
     browser: 'Chrome',
     os: 'Windows',
@@ -130,7 +130,7 @@ jest.mock('../utils/token-blacklist.util', () => ({
   clearUserInvalidation: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/infra/redis.util', () => ({
+jest.mock('../../../shared/infrastructure/cache/redis.util', () => ({
   isAvailable: jest.fn().mockReturnValue(true)
 }));
 
@@ -151,14 +151,14 @@ jest.mock('../../notification/services/sms.service', () => ({
 }));
 
 // ── Logger ───────────────────────────────────────────────────────────────────
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
 // ── Constantes (el módulo real valida .env y hace process.exit) ──────────────
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   LOGIN_RATE_LIMIT: { ACCOUNT_MAX_ATTEMPTS: 5 },
   SECURITY: {
     ABSOLUTE_SESSION_LIFETIME_HOURS: 8,
@@ -207,9 +207,9 @@ import trustedDeviceRepositoryModule from '../repositories/auth-trusted-device.r
 const trustedDeviceRepository = mocked(trustedDeviceRepositoryModule);
 import privacyPolicyRepositoryModule from '../../legal/repositories/privacy-policy.repository';
 const privacyPolicyRepository = mocked(privacyPolicyRepositoryModule);
-import JwtUtilModule from '../../../shared/security/jwt.util';
+import JwtUtilModule from '../../../shared/infrastructure/security/jwt.util';
 const JwtUtil = mocked(JwtUtilModule);
-import TotpUtilModule from '../../../shared/security/totp.util';
+import TotpUtilModule from '../../../shared/infrastructure/security/totp.util';
 const TotpUtil = mocked(TotpUtilModule);
 import RefreshTokenStoreModule from '../utils/refresh-token-store.util';
 const RefreshTokenStore = mocked(RefreshTokenStoreModule);
@@ -217,7 +217,7 @@ import DeviceBlocklistUtilModule from '../utils/device-blocklist.util';
 const DeviceBlocklistUtil = mocked(DeviceBlocklistUtilModule);
 import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
-import redisClientModule from '../../../shared/infra/redis.util';
+import redisClientModule from '../../../shared/infrastructure/cache/redis.util';
 const redisClient = mocked(redisClientModule);
 import NotificationUtilModule from '../../notification/notify';
 const notifier = mocked(NotificationUtilModule);

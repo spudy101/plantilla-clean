@@ -8,10 +8,10 @@
 
 ```ts
 import MyService from '../services/my.service';
-import ApiResponse from '../../../shared/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import ApiResponse from '../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
-import routeParamUtilModule from '../../../shared/http/route-param.util';
+import routeParamUtilModule from '../../../shared/presentation/http/route-param.util';
 const { routeParam } = routeParamUtilModule;
 import authUserUtilModule from '../../iam/utils/auth-user.util';
 const { requireAuthUser } = authUserUtilModule;
@@ -46,13 +46,13 @@ export default new MyController();
 ## Service (con paginación)
 
 ```ts
-import type { AdminAuditContext } from '../../../shared/types/audit-context';
-import AppError from '../../../shared/http/app-error.util';
-import { pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import type { AdminAuditContext } from '../../../shared/application/audit-context';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import { pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { MyListQuery } from '../requests/my.request';
 import auditModule from '../../audit';
 const { audit } = auditModule;
-import unitOfWork from '../../../shared/database/unit-of-work';
+import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
 import myRepository from '../repositories/my.repository';
 import myResponse from '../responses/my.response';
 const { MyListResponseDTO, MyDetailResponseDTO } = myResponse;
@@ -121,7 +121,7 @@ export default Object.assign(new MyService(), { MyService });
 > `searchPaginated`…). Los tipos de las filas sí: `import type { User } from '…/generated/prisma/client'`.
 > ✅ Si el service usa pocos métodos de un repositorio, declara el puerto con `Pick<XRepositoryPort, 'a' | 'b'>`
 > (`src/modules/repository-ports.ts`).
-> ✅ Listados: el contrato completo está en `src/shared/http/pagination.ts`. La query llega **ya validada y
+> ✅ Listados: el contrato completo está en `src/shared/application/pagination.ts`. La query llega **ya validada y
 > tipada** (`MyListQuery`): el service no vuelve a interpretar strings. La metadata sale **siempre** de
 > `pageMetadata` / `pageOf`: `{ pagination, sort, filters? }`, con el orden y los filtros aplicados.
 > ✅ El service retorna directamente el resultado del DTO (que tiene `{ data, metadata }`).
@@ -133,10 +133,10 @@ export default Object.assign(new MyService(), { MyService });
 
 ```ts
 // responses/my.response.ts
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import type { PageMetadata } from '../../../shared/http/pagination';
-import type { MyEntity } from '../../../shared/database/generated/prisma/client';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import type { PageMetadata } from '../../../shared/application/pagination';
+import type { MyEntity } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 function MyItemDTO(row: MyEntity) {
   return { myEntityId: row.myEntityId, name: row.name, createdAt: row.createdAt }; // campo a campo
@@ -157,15 +157,15 @@ it('ítem', () => expect(MyItemSchema.safeParse(dto.MyItemDTO(fixture)).error?.i
 > ✅ Siempre `Array.isArray(rows) ? rows.map(...) : []`: nunca asumir que rows es array.
 >
 > ✅ **PII:** todo campo PII sale por `EncryptionUtil.safeDecrypt` + `MaskingUtil.maskXxx`, y los JSON
-> propios por `MaskingUtil.redactPayload`. Campo nuevo → declararlo en `src/shared/constants/pii-fields.ts`.
+> propios por `MaskingUtil.redactPayload`. Campo nuevo → declararlo en `src/shared/domain/constants/pii-fields.ts`.
 > Ver `docs/pii-masking.md` y `docs/dtos.md`.
 
 ## Repository
 
 ```ts
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import type { MyEntity, Prisma } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import type { MyEntity, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const SEARCH_FIELDS = ['name', 'description'] as const;
 
@@ -202,26 +202,26 @@ export default new MyRepository();
 > ✅ Filtros, `include` y `select` viven aquí, detrás de métodos con nombre de negocio:
 > `findByNames(names, { exclude })`, `findPaginatedWithDeviceAndUser(where, pagination)`. El service no
 > arma `where` de Prisma.
-> ✅ PII: se lee y escribe en claro (la extensión de `src/shared/database/prisma.ts` cifra y hashea); para buscar
-> por un campo cifrado se filtra por su hash (`hashValue()` de `src/shared/database/pii-fields`).
+> ✅ PII: se lee y escribe en claro (la extensión de `src/shared/infrastructure/database/prisma.ts` cifra y hashea); para buscar
+> por un campo cifrado se filtra por su hash (`hashValue()` de `src/shared/infrastructure/database/pii-fields`).
 > ✅ Escrituras que deben quedar aunque el flujo se revierta (bitácoras) → `this.independentDb()`.
 > ✅ `paginationArgs(page, pk)` aplica el `sortBy` tal cual (ya lo validó el esquema del request) y desempata
 > por la clave primaria: sin desempate, filas con el mismo valor pueden repetirse o faltar entre páginas.
-> ✅ Los enums de dominio (estados, catálogos cerrados) se leen de `src/shared/constants/domain-enums.ts`.
+> ✅ Los enums de dominio (estados, catálogos cerrados) se leen de `src/shared/infrastructure/database/domain-enums.ts`.
 
 ## Routes (admin)
 
 ```ts
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { MyListQuery } from '../requests/my.request';
 const router = express.Router();
 import MyController from '../controllers/my.controller';
 import iamModule from '../../iam';
 const { AuthMiddleware, RbacMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import rbacModule from '../../../shared/constants/rbac';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import rbacModule from '../../../shared/domain/constants/rbac';
 const { RBAC_MODULES, RBAC_ACTIONS } = rbacModule;
 
 router.get(
@@ -246,8 +246,8 @@ export default router;
 
 ```ts
 // requests/my.request.ts
-import { z } from '../../../shared/validation/z';
-import { input, optionalBool, optionalInList, pageQuery, searchQuery, text, uuid } from '../../../shared/validation/fields';
+import { z } from '../../../shared/presentation/validation/z';
+import { input, optionalBool, optionalInList, pageQuery, searchQuery, text, uuid } from '../../../shared/presentation/validation/fields';
 
 // Listado: por qué campos se ordena (pocos, con índice) y su orden por defecto; un sortBy fuera de la lista
 // es un 422. Los filtros, tipados acá (el service no los vuelve a interpretar). z.object: lo no declarado

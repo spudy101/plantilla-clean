@@ -6,7 +6,7 @@
 // lanza 404 si no existe y audita el antes/después; remove() lanza 404 si no existe y hace baja
 // lógica (isActive:false). Los errores de negocio se verifican con .rejects (AppError real).
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));

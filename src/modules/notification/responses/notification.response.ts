@@ -1,8 +1,8 @@
-import { z } from '../../../shared/validation/z';
+import { z } from '../../../shared/presentation/validation/z';
 import { GlobalNotificationSchema, NotificationSchema } from './notification-components.response';
 import type * as Feed from '../notification-feed.types';
 import componentsNotificationDtoModule from './notification-components.response';
-import { pageMetadata } from '../../../shared/http/pagination';
+import { pageMetadata } from '../../../shared/application/pagination';
 const { NotificationComponent, GlobalNotificationComponent } = componentsNotificationDtoModule;
 
 function _buildMixedItem(item: Feed.FeedItem, readIds: string[]) {

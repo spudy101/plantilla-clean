@@ -12,9 +12,9 @@
 // El "estado doble aprobación" de cualquier módulo vive en `approval_requests` — no se duplican
 // columnas ni máquina de estados por tabla.
 
-import { interopDefault } from '../../../shared/utils/interop.util';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import { interopDefault } from '../../../shared/kernel/interop.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import businessHoursUtilModule from '../utils/business-hours.util';
 const { addBusinessHours } = businessHoursUtilModule;
@@ -24,24 +24,24 @@ const { userRepository } = iamModule;
 import notificationModule from '../../notification';
 const { notifier: notifications } = notificationModule;
 import DualApprovalNotifierService from './dual-approval/dual-approval-notifier.service';
-import domainEnumsModule from '../../../shared/constants/domain-enums';
+import domainEnumsModule from '../../../shared/infrastructure/database/domain-enums';
 const { APPROVAL_REQUEST_STATUS } = domainEnumsModule;
-import dualApprovalModule from '../../../shared/constants/dual-approval';
-import type DualApprovalConstants from '../../../shared/constants/dual-approval';
+import dualApprovalModule from '../../../shared/domain/constants/dual-approval';
+import type DualApprovalConstants from '../../../shared/domain/constants/dual-approval';
 import type settingsModule from '../../settings';
 type SystemGlobalConfigRepositoryPort = (typeof settingsModule)['systemGlobalConfigRepository'];
 const { WILDCARD_ROLES, CONDITION, DEFAULT_TTL_HOURS, DUAL_APPROVAL_OPS } = dualApprovalModule;
-import rbacModule from '../../../shared/constants/rbac';
+import rbacModule from '../../../shared/domain/constants/rbac';
 const { SUPERADMIN_ROLE_NAMES } = rbacModule;
 import componentsApprovalDtoModule from '../responses/approval-components.response';
 const { ApprovalRequestComponent, PendingApprovalComponent } = componentsApprovalDtoModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
-import type { AdminAuditContext } from '../../../shared/types/audit-context';
-import type { ApprovalRequest, Prisma } from '../../../shared/database/generated/prisma/client';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
+import type { AdminAuditContext } from '../../../shared/application/audit-context';
+import type { ApprovalRequest, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const { errorMessage } = errorMessageModule;
 import auditModule from '../../audit';
-import { pageOf, pageRequest } from '../../../shared/http/pagination';
+import { pageOf, pageRequest } from '../../../shared/application/pagination';
 import type { ApprovalListQuery } from '../requests/approval-request.request';
 const { audit } = auditModule;
 

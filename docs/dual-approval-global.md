@@ -13,20 +13,20 @@ El maker-checker **no se puede apagar**. No hay env var ni flag de configuració
 registro se gatea según su `condition` (`ALWAYS`, o `THRESHOLD` sobre un campo del payload), y una
 operación que califica **siempre** responde `202` y crea su `approval_request`.
 
-> ❌ Nunca "comentar" `src/shared/constants/dual-approval.ts` para desactivar: el middleware y el bootstrap
+> ❌ Nunca "comentar" `src/shared/domain/constants/dual-approval.ts` para desactivar: el middleware y el bootstrap
 > lo requieren al arrancar y el server no levantaría.
 
 ## Las 3 piezas
 
 | Pieza                                                                     | Archivo                                                                                                                                                                                        |
 | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Registro declarativo (`DUAL_APPROVAL_OPS`, `WILDCARD_ROLES`, `CONDITION`) | `src/shared/constants/dual-approval.ts`                                                                                                                                                            |
+| Registro declarativo (`DUAL_APPROVAL_OPS`, `WILDCARD_ROLES`, `CONDITION`) | `src/shared/domain/constants/dual-approval.ts`                                                                                                                                                            |
 | Tabla + capa de datos + core + worker + bootstrap                         | `src/modules/approvals/` (`models/approval-request.model.ts`, `repositories/approval-request.repository.ts`, `services/dual-approval.service.ts`, `workers/dual-approval-expiration.worker.ts`, `dual-approval.bootstrap.ts`) |
 | Endpoints admin                                                           | `src/modules/approvals/routes/approval-request.routes.ts` (+ controller)                                                                                                                          |
 
 Componentes shared: `src/modules/approvals/middlewares/dual-approval.middleware.ts`,
 `src/modules/approvals/responses/approval-components.response.ts` (`ApprovalRequestComponent`, `PendingApprovalComponent`).
-El schema Swagger `PendingApproval` vive en `src/config/swagger/schemas/core.schema.ts` (compartido admin+client).
+El schema Swagger `PendingApproval` vive en `src/main/swagger/schemas/core.schema.ts` (compartido admin+client).
 
 ## API del core · `DualApprovalService`
 
@@ -74,7 +74,7 @@ ejecuta una sola vez). Audita `DUAL_APPROVAL_REQUESTED` + `DUAL_APPROVAL_AUTO_AP
 El handler y el controller "normal" delegan en **el mismo método de service** → la lógica no se
 duplica; solo hay dos puntos de entrada (ejecución directa vs. tras aprobación). El handler debe ser
 **idempotente** (puede reintentarse). Se registran en `dual-approval.bootstrap.ts`, invocado una vez al
-arranque desde `src/server.ts` antes de arrancar los workers.
+arranque desde `src/main/server.ts` antes de arrancar los workers.
 
 ## Operaciones gateadas (3)
 
@@ -120,7 +120,7 @@ always`, todas sobre la entidad `User`/`users`, con `approverRoles: ['ADMIN']` y
 
 ## Agregar una operación nueva
 
-1. Entrada en `DUAL_APPROVAL_OPS` (`src/shared/constants/dual-approval.ts`): `label`, `approverRoles`,
+1. Entrada en `DUAL_APPROVAL_OPS` (`src/shared/domain/constants/dual-approval.ts`): `label`, `approverRoles`,
    `notificationType`, `entityType`, `entityTable`, `condition` (`always`/`threshold`), `ttlHours`
    (y `thresholdField`/`thresholdConfigKey`/`thresholdDefault` si es condicional).
 2. Handler en `dual-approval.bootstrap.ts`: `DualApproval.register('OP_KEY', onApprove, onReject?)`

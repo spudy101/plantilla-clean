@@ -7,7 +7,7 @@
 
 const mockStore = new Map();
 
-jest.mock('../../../shared/infra/redis.util', () => ({
+jest.mock('../../../shared/infrastructure/cache/redis.util', () => ({
   isAvailable: () => true,
   set: jest.fn((key, value) => {
     mockStore.set(key, typeof value === 'string' ? value : JSON.stringify(value));
@@ -25,11 +25,11 @@ jest.mock('../../../shared/infra/redis.util', () => ({
     }
   })
 }));
-jest.mock('../../../shared/observability/logger.util', () => ({ logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({ logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() } }));
 
 import { mocked } from 'tests/helpers/mock';
 import RefreshTokenStore from './refresh-token-store.util';
-import redisClientModule from '../../../shared/infra/redis.util';
+import redisClientModule from '../../../shared/infrastructure/cache/redis.util';
 const redisClient = mocked(redisClientModule);
 
 const TOKENS = { accessToken: 'a-1', refreshToken: 'r-1', expiresIn: 900 };

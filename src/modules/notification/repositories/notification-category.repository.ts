@@ -1,9 +1,9 @@
 // Categorías de notificación: fuente de verdad de los canales (push/email/sms), de la criticidad
 // (crítica = se envía siempre, sin mirar preferencias ni horario de silencio) y del layout del email.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { NotificationCategory } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { NotificationCategory } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 export type NotificationCategoryRow = NotificationCategory;
 /** Datos de alta/edición. */

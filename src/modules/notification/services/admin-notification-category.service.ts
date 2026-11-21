@@ -1,11 +1,11 @@
 import type { NotificationCategoryInput } from '../repositories/notification-category.repository';
 import notificationCategoryRepository from '../repositories/notification-category.repository';
 import notificationTypeRepository from '../repositories/notification-type.repository';
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import adminNotificationCategoryDtoModule from '../responses/admin-notification-category.response';
 import auditModule from '../../audit';
 import type { NotificationCategoryDeleted } from '../responses/admin-notification-category.response';
-import { pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { CategoryListQuery } from '../requests/notification.request';
 const { audit } = auditModule;
 const {

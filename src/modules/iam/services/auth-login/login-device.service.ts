@@ -1,19 +1,19 @@
 import type { UserWith } from '../../repositories/user.repository';
-import type { UserTrustedDevice } from '../../../../shared/database/generated/prisma/client';
+import type { UserTrustedDevice } from '../../../../shared/infrastructure/database/generated/prisma/client';
 // modules/shared-endpoints/kyc/iam/services/auth-login/login-device.service.ts
 //
 // Resolución del dispositivo durante el login: primer dispositivo, dispositivo
 // conocido o nuevo pendiente de aprobación. Extraído de AuthLoginService (SOLID: S).
 
-import type { RequestAuditContext } from '../../../../shared/types/audit-context';
+import type { RequestAuditContext } from '../../../../shared/application/audit-context';
 import trustedDeviceRepository from '../../repositories/auth-trusted-device.repository';
-import DeviceFingerprintUtil from '../../../../shared/security/device-fingerprint.util';
+import DeviceFingerprintUtil from '../../../../shared/infrastructure/security/device-fingerprint.util';
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 import auditModule from '../../../audit';
 const { audit } = auditModule;

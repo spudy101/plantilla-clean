@@ -1,10 +1,10 @@
 // Bloques reutilizables del módulo de notificaciones (client y admin): nunca duplicarlos.
 // Cada constructor tiene su esquema Zod de salida al final del archivo (tipa y documenta la respuesta).
 
-import MaskingUtil from '../../../shared/security/masking.util';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import type { DbDate, Maybe } from '../../../shared/types/db-rows';
+import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import type { DbDate, Maybe } from '../../../shared/infrastructure/database/db-rows';
 
 interface NotificationCategoryRow {
   notificationCategoryId: string;

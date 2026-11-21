@@ -27,7 +27,7 @@ Toda respuesta de error tiene esta forma:
 | `errors` | Solo en errores de validación: un **array**, un ítem por campo (`field`, `message`, `hint`). |
 | `details` | **Objeto** con contexto: `correlationId` (para buscar la operación en los logs), `code` en los 401. |
 
-Por defecto `retryable` sale del status (`shared/http/retryable.ts`): **408, 429, 502, 503, 504** son
+Por defecto `retryable` sale del status (`shared/presentation/http/retryable.ts`): **408, 429, 502, 503, 504** son
 temporales; el resto, permanentes. Un error puede declararlo distinto: un 409 `REQUEST_IN_PROGRESS` es
 temporal; un 503 por configuración faltante no lo es.
 
@@ -73,7 +73,7 @@ CORS expone `Retry-After`, `RateLimit-*` e `Idempotent-Replayed`: sin eso el nav
   el rollback deshizo todo lo de la base. Lo que no se deshace es lo externo: si la unidad llamó a un
   proveedor (email, SMS, S3) **no se repite** y sale `409 TRANSACTION_CONFLICT`. Regla: lo externo va
   después del commit, fuera de `run()`.
-- **Base no disponible.** `shared/database/database-errors.ts` reconoce lo que no es culpa de la petición
+- **Base no disponible.** `shared/infrastructure/database/database-errors.ts` reconoce lo que no es culpa de la petición
   (códigos de Prisma, SQLSTATE de Postgres, errores de red de Node, timeout del pool) y se responde 503.
   El pool espera una conexión libre como mucho 5 s (`connectionTimeoutMillis`; antes esperaba para siempre).
 - **Proveedores externos.** `callProvider` reintenta los errores transitorios del proveedor y lo protege
@@ -85,11 +85,11 @@ CORS expone `Retry-After`, `RateLimit-*` e `Idempotent-Replayed`: sin eso el nav
   `AppError.tooManyRequests(msg, details, retryAfter)`, `AppError.requestInProgress(msg, retryAfter)`. Si un
   503 no es temporal para el cliente (p. ej. falta configuración), `err.retryable = false`.
 - **Un `catch` no envuelve en 500 lo que ya tiene respuesta**: `if (shouldPropagate(error)) throw error;`
-  (`shared/http/error-propagation.ts`) deja pasar cualquier `AppError` y los errores temporales de la base.
+  (`shared/presentation/http/error-propagation.ts`) deja pasar cualquier `AppError` y los errores temporales de la base.
   El helper anterior (`isOperationalError`) solo dejaba pasar los AppError 5xx: un 404 lanzado adentro del
   `try` salía como 500.
 - **Cuando falla una llamada a un proveedor**: `throw providerFailure(error, 'Error al subir el documento')`
-  (`shared/infra/provider-errors.ts`) responde 503 temporal si el proveedor estaba mal y 500 si no.
+  (`shared/infrastructure/providers/provider-errors.ts`) responde 503 temporal si el proveedor estaba mal y 500 si no.
 
 Todo esto está probado contra Postgres real en `tests/integration/database-errors.test.ts` (base
 inalcanzable, pool agotado, deadlock resuelto por el Unit of Work) y por HTTP en

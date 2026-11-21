@@ -13,14 +13,14 @@ const mockDb = {
   user: { findMany: jest.fn() }
 };
 
-jest.mock('../../../shared/database/prisma', () => mockDb);
+jest.mock('../../../shared/infrastructure/database/prisma', () => mockDb);
 
 import auditLogRepository from './audit-log.repository';
 import auditAlertRepository from './audit-alert.repository';
 import userLoginAttemptRepository from './user-login-attempt.repository';
-import txContext from '../../../shared/database/transaction-context';
-import EncryptionUtil from '../../../shared/security/encryption.util';
-import HashUtil from '../../../shared/security/hash.util';
+import txContext from '../../../shared/infrastructure/database/transaction-context';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
+import HashUtil from '../../../shared/infrastructure/security/hash.util';
 import { page } from 'tests/helpers/page';
 
 beforeEach(() => {

@@ -3,15 +3,15 @@
 // siguiente solo si se pasa del tope, y sin Redis cuenta en el proceso. `_sleep` y `Date.now()` se fijan
 // para no depender del reloj real.
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
 }));
-jest.mock('../../../shared/infra/redis.util', () => ({ incrBy: jest.fn() }));
+jest.mock('../../../shared/infrastructure/cache/redis.util', () => ({ incrBy: jest.fn() }));
 
 import { mocked } from 'tests/helpers/mock';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = mocked(loggerUtilModule);
-import redisUtilModule from '../../../shared/infra/redis.util';
+import redisUtilModule from '../../../shared/infrastructure/cache/redis.util';
 const redis = mocked(redisUtilModule);
 import rateLimitModule from './notification-rate-limit.service';
 

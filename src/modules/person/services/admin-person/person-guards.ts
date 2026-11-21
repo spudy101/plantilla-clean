@@ -1,9 +1,9 @@
-import rbacModule from '../../../../shared/constants/rbac';
+import rbacModule from '../../../../shared/domain/constants/rbac';
 const { CLIENT_ROLE_NAMES } = rbacModule;
 // modules/admin/kyc/person/services/admin-person/person-guards.ts
 //
 // Reglas de negocio compartidas por los servicios de administración de personas.
-import AppError from '../../../../shared/http/app-error.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
 
 /**
  * Bloquea toda operación de escritura sobre una cuenta eliminada (deleted_at != null).

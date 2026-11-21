@@ -1,8 +1,8 @@
 import MaintainersService from '../services/maintainers.service';
-import ApiResponse from '../../../shared/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import ApiResponse from '../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
-import { validQuery } from '../../../shared/validation/validate';
+import { validQuery } from '../../../shared/presentation/validation/validate';
 import {
   AvatarListQuery,
   AvatarThemeListQuery,

@@ -17,9 +17,9 @@ jest.mock('./notification-rate-limit.service', () => ({
   checkSNSRateLimit: jest.fn().mockResolvedValue(undefined),
   checkSESRateLimit: jest.fn().mockResolvedValue(undefined)
 }));
-jest.mock('../../../shared/infra/redis.util', () => ({ isAvailable: jest.fn(() => false) }));
-jest.mock('../../../shared/security/encryption.util', () => ({ safeDecrypt: jest.fn((v: string) => v) }));
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/cache/redis.util', () => ({ isAvailable: jest.fn(() => false) }));
+jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({ safeDecrypt: jest.fn((v: string) => v) }));
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));

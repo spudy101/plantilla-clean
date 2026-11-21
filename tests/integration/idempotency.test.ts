@@ -6,12 +6,12 @@ import { randomUUID } from 'node:crypto';
 import express from 'express';
 import type { NextFunction, Request, Response } from 'express';
 import request from 'supertest';
-import prisma from '../../src/shared/database/prisma';
-import AppError from '../../src/shared/http/app-error.util';
-import ApiResponse from '../../src/shared/http/app-response.util';
-import ErrorMiddleware from '../../src/shared/http/error.middleware';
-import { idempotent } from '../../src/shared/http/idempotency/idempotency.middleware';
-import idempotencyRepository from '../../src/shared/http/idempotency/idempotency.repository';
+import prisma from '../../src/shared/infrastructure/database/prisma';
+import AppError from '../../src/shared/presentation/http/app-error.util';
+import ApiResponse from '../../src/shared/presentation/http/app-response.util';
+import ErrorMiddleware from '../../src/shared/presentation/http/error.middleware';
+import { idempotent } from '../../src/shared/presentation/http/idempotency/idempotency.middleware';
+import idempotencyRepository from '../../src/shared/infrastructure/database/idempotency.repository';
 
 const USER = randomUUID();
 const OTHER_USER = randomUUID();

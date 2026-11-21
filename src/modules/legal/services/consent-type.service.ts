@@ -1,17 +1,17 @@
-import type { ConsentType } from '../../../shared/database/generated/prisma/client';
-import type { AdminAuditContext } from '../../../shared/types/audit-context';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import type { ConsentType } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { AdminAuditContext } from '../../../shared/application/audit-context';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import consentTypeRepository from '../repositories/consent-type.repository';
 import notificationModule from '../../notification';
 const { notifier } = notificationModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 import consentTypeDtoModule from '../responses/consent-type.response';
 const { ConsentTypeListDTO, ConsentTypeDTO } = consentTypeDtoModule;
 import auditModule from '../../audit';
-import { pageOf, pageRequest } from '../../../shared/http/pagination';
+import { pageOf, pageRequest } from '../../../shared/application/pagination';
 import type { ConsentTypeListQuery } from '../requests/legal.request';
 const { audit } = auditModule;
 

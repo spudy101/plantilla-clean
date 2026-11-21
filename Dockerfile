@@ -50,5 +50,5 @@ EXPOSE 4000
 #   1. Leer secrets desde AWS Secrets Manager
 #   2. Correr migraciones (npm run db:migrate — prisma migrate deploy, con baseline de bases Sequelize)
 #   3. Correr el seed si RUN_SEEDS=true (npm run db:seed — prisma db seed)
-#   4. Arrancar el servidor compilado (node dist/src/server.js)
+#   4. Arrancar el servidor compilado (node dist/src/main/server.js)
 ENTRYPOINT ["dumb-init", "--", "bash", "entrypoint.sh"]

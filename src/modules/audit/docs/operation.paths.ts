@@ -1,5 +1,5 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import { OperationIdParams, OperationListQuery } from '../requests/audit.request';
 import { OperationSchema, OperationTimelineSchema } from '../responses/admin-operation.response';
 

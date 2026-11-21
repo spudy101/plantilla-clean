@@ -12,16 +12,16 @@
 
 import crypto from 'node:crypto';
 import privacyPolicyAdminRepository from '../repositories/privacy-policy-admin.repository';
-import S3Util from '../../../shared/infra/s3.util';
-import redisClient from '../../../shared/infra/redis.util';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import S3Util from '../../../shared/infrastructure/storage/s3.util';
+import redisClient from '../../../shared/infrastructure/cache/redis.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import notificationModule from '../../notification';
 const { notifier } = notificationModule;
 import privacyPolicyAdminDtoModule from '../responses/privacy-policy-admin.response';
 import auditModule from '../../audit';
-import { pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { PrivacyPolicyListQuery } from '../requests/legal.request';
 const { audit } = auditModule;
 const {

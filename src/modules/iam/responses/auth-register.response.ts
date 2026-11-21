@@ -1,4 +1,4 @@
-import { z } from '../../../shared/validation/z';
+import { z } from '../../../shared/presentation/validation/z';
 import personModule from '../../person';
 const { personComponentsDto: componentsPersonModule } = personModule;
 const { UserComponent, PersonComponent, PersonContactComponent } = componentsPersonModule;

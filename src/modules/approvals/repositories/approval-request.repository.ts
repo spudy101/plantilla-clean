@@ -3,10 +3,10 @@
 // Solicitudes de doble aprobación (maker-checker). Con Prisma, requester y secondApprover se incluyen
 // en la misma consulta (en Sequelize, incluir User dos veces con su persona generaba SQL inválido y se
 // resolvían aparte).
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { ApprovalRequest, ApprovalRequestStatus } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { ApprovalRequest, ApprovalRequestStatus } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 // firstName y lastName viven en Person, no en User.
 const USER_REF = {

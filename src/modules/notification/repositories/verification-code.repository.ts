@@ -3,8 +3,8 @@
 // Códigos OTP (email, teléfono, firma de contrato). origin_session_id lo completa la extensión de
 // Prisma al crear: null en los OTP de onboarding y en el challenge SMS de login (rutas públicas,
 // pre-sesión); con valor al activar MFA y al firmar contrato, que sí son autenticados.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { VerificationCode, VerificationCodeType } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { VerificationCode, VerificationCodeType } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const RATE_LIMIT_SECONDS = 60;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;

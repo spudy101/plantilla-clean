@@ -1,6 +1,6 @@
 // Entrada del módulo person: administración de clientes (admin), perfil propio y referencias personales.
-import { z, withHint } from '../../../shared/validation/z';
-import { email, input, optionalBool, optionalUuid, pageQuery, searchQuery, uuid } from '../../../shared/validation/fields';
+import { z, withHint } from '../../../shared/presentation/validation/z';
+import { email, input, optionalBool, optionalUuid, pageQuery, searchQuery, uuid } from '../../../shared/presentation/validation/fields';
 import { currentPassword, firstName, lastName, nationalId, optionalBirthDate, optionalMiddleName, optionalSecondLastName, phone } from './person.fields';
 import iamModule from '../../iam';
 

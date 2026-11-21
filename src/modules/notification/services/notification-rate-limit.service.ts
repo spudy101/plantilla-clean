@@ -4,10 +4,10 @@
 // Redis, así varias instancias comparten el mismo tope sin pisarse (un get + set dejaría pasar de más). Si
 // el total pasa el tope, espera al minuto siguiente y vuelve a pedir lugar ahí. Sin Redis, el contador es
 // de este proceso (correcto con una sola instancia).
-import redisClient from '../../../shared/infra/redis.util';
-import constantsModule from '../../../shared/constants';
+import redisClient from '../../../shared/infrastructure/cache/redis.util';
+import constantsModule from '../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 
 const ONE_MINUTE_MS = 60 * 1000;

@@ -2,7 +2,7 @@ import userChangeLogRepository from '../repositories/change-log.repository';
 import adminChangeLogDtoModule from '../responses/admin-change-log.response';
 const { ListUserChangeLogsResponseDTO } = adminChangeLogDtoModule;
 import audit from '../audit.service';
-import { pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { ChangeLogListQuery } from '../requests/audit.request';
 
 type ChangeLogFilters = Parameters<(typeof userChangeLogRepository)['findAllPaginated']>[0];

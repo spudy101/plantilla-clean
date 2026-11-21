@@ -1,6 +1,6 @@
 // Campos de una persona (documento, nombres, nacimiento, teléfono, dirección) con los mismos mensajes y pistas
 // que tenía BaseValidator. Los usan los requests de este módulo y de iam (a través del index de person).
-import { z, withHint } from '../../../shared/validation/z';
+import { z, withHint } from '../../../shared/presentation/validation/z';
 
 const NAME_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
 const NAME_HINT = 'Usá entre 2 y 50 caracteres, solo letras y espacios';

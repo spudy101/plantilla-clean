@@ -17,7 +17,7 @@ const mockDb = {
   emailBounceSuppression: { upsert: jest.fn(), update: jest.fn() }
 };
 
-jest.mock('../../../shared/database/prisma', () => mockDb);
+jest.mock('../../../shared/infrastructure/database/prisma', () => mockDb);
 
 import userPushTokenRepository from './user-push-token.repository';
 import notificationRepository from './notification.repository';
@@ -26,7 +26,7 @@ import smsDeliveryAttemptRepository from './sms-delivery-attempt.repository';
 import verificationCodeRepository from './verification-code.repository';
 import userNotificationPreferenceRepository from './user-notification-preference.repository';
 import emailBounceSuppressionRepository from './email-bounce-suppression.repository';
-import { fromTime, toTime } from '../../../shared/database/prisma-time';
+import { fromTime, toTime } from '../../../shared/infrastructure/database/prisma-time';
 
 beforeEach(() => {
   jest.clearAllMocks();

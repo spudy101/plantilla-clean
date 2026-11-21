@@ -1,14 +1,14 @@
 import { SESClient, SendEmailCommand, SendRawEmailCommand } from '@aws-sdk/client-ses';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { notifications, aws } = constantsModule;
-import { callProvider, AWS_CLIENT_OPTIONS } from '../../../shared/infra/provider-call.util';
-import MaskingUtil from '../../../shared/security/masking.util';
+import { callProvider, AWS_CLIENT_OPTIONS } from '../../../shared/infrastructure/providers/provider-call.util';
+import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
 import emailSuppressionService from './email-suppression.service';
 import NotificationContentUtil from '../utils/notification-content.util';
 import type * as Types from '../notification.types';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 import auditModule from '../../audit';

@@ -1,8 +1,8 @@
 // modules/schemas/records/legal/repositories/consent-type.repository.ts
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { ConsentType } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { ConsentType } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const LIST = { tiebreaker: 'consentTypeId', searchFields: ['name', 'code', 'description'] };
 

@@ -1,7 +1,7 @@
 # Idempotencia
 
 Guía de la implementación del proyecto, pensada también para estudiar el patrón. Código:
-`src/shared/http/idempotency/` (middleware + repositorio), tabla `idempotency_keys`.
+`src/shared/presentation/http/idempotency/` (middleware + repositorio), tabla `idempotency_keys`.
 
 ## El problema
 
@@ -102,7 +102,7 @@ simultáneas (la segunda recibe 409 temporal) y además los reintentos posterior
 ## Usarlo en una ruta nueva
 
 ```ts
-import { idempotent } from '../../../shared/http/idempotency/idempotency.middleware';
+import { idempotent } from '../../../shared/presentation/http/idempotency/idempotency.middleware';
 
 router.post(
   '/payments',

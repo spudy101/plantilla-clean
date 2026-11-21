@@ -2,9 +2,9 @@
 //
 // Dispositivos de confianza del usuario. hmac_secret va cifrado (piiExtension): se genera acá y se lee
 // en claro.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { Prisma, UserTrustedDevice } from '../../../shared/database/generated/prisma/client';
-import AppError from '../../../shared/http/app-error.util';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { Prisma, UserTrustedDevice } from '../../../shared/infrastructure/database/generated/prisma/client';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import HmacService from '../services/hmac.service';
 
 /** Última sesión del dispositivo (activa o cerrada), para mostrar su estado y último acceso. */

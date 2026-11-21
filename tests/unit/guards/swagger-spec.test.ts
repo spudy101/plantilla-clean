@@ -4,8 +4,8 @@
 // existe en components.schemas. Cubre lo que se genera desde Zod (requests/ y responses/) y lo escrito a mano.
 import express from 'express';
 import request from 'supertest';
-import swaggerAdminDocs from '../../../src/config/swagger.admin';
-import swaggerClientDocs from '../../../src/config/swagger.client';
+import swaggerAdminDocs from '../../../src/main/swagger/swagger.admin';
+import swaggerClientDocs from '../../../src/main/swagger/swagger.client';
 
 type Spec = { paths: Record<string, unknown>; components: { schemas: Record<string, unknown> } };
 

@@ -3,12 +3,12 @@
 // Avisa a los streams SSE abiertos que cambió el contador de no leídas de un usuario (o de todos, en una
 // global). Con Redis, el evento viaja por Pub/Sub y llega a todas las instancias; sin Redis, queda en la
 // instancia local (EventEmitter). Solo transporta 'count-updated'.
-import { interopDefault } from '../../../shared/utils/interop.util';
+import { interopDefault } from '../../../shared/kernel/interop.util';
 import EventEmitter from 'node:events';
 import type { Redis } from 'ioredis';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 
@@ -27,7 +27,7 @@ class NotificationEmitter extends EventEmitter {
       return;
     }
     try {
-      const redisClient = interopDefault(require('../../../shared/infra/redis.util') as typeof import('../../../shared/infra/redis.util'));
+      const redisClient = interopDefault(require('../../../shared/infrastructure/cache/redis.util') as typeof import('../../../shared/infrastructure/cache/redis.util'));
       const client = redisClient.isAvailable() ? redisClient.getClient() : null;
       if (client) {
         this.publisherClient = client;

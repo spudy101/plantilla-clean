@@ -3,7 +3,7 @@
 //
 // Cada export se carga al usarse (getter): los módulos se usan entre sí y un index que cargara todo
 // de una vez crearía ciclos de carga. Uso: import personModule from '…/person'; const { X } = personModule;
-import { interopDefault } from '../../shared/utils/interop.util';
+import { interopDefault } from '../../shared/kernel/interop.util';
 
 export default {
   get personComponentsDto() {

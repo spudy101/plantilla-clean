@@ -2,12 +2,12 @@
 // historial de caídas (provider_fallback_events). Las métricas de cada llamada (% de éxito, latencia,
 // fallos) van a CloudWatch: callProvider las emite en cada llamada (EMF).
 
-import CircuitBreaker from '../../../shared/infra/circuit-breaker.util';
-import { PROVIDER_PRODUCTS } from '../../../shared/infra/provider-call.util';
+import CircuitBreaker from '../../../shared/infrastructure/providers/circuit-breaker.util';
+import { PROVIDER_PRODUCTS } from '../../../shared/infrastructure/providers/provider-call.util';
 import providerFallbackRepository from '../repositories/provider-fallback-event.repository';
 import integrationMonitoringDtoModule from '../responses/integration-monitoring.response';
 import auditModule from '../../audit';
-import { pageOf, pageRequest } from '../../../shared/http/pagination';
+import { pageOf, pageRequest } from '../../../shared/application/pagination';
 import type { FallbackQuery } from '../requests/integration-monitoring.request';
 const { audit } = auditModule;
 const { ProvidersHealthDTO, FallbackEventDTO } = integrationMonitoringDtoModule;

@@ -8,10 +8,10 @@ import cron from 'node-cron';
 import notificationDeliveryService from '../services/notification-delivery.service';
 import notificationBatchService from '../services/notification-batch.service';
 import notificationCleanupService from '../services/notification-cleanup.service';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import { runOperation } from '../../../shared/observability/operation';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import { runOperation } from '../../../shared/infrastructure/observability/operation';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 const { errorMessage } = errorMessageModule;
 
 class NotificationWorker {

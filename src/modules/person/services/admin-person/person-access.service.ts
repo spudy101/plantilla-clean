@@ -3,17 +3,17 @@
 // Control de acceso de una cuenta: activar/desactivar y cambio de rol.
 // Extraído de PersonService (SOLID: S).
 
-import type { AdminAuditContext } from '../../../../shared/types/audit-context';
-import unitOfWork from '../../../../shared/database/unit-of-work';
+import type { AdminAuditContext } from '../../../../shared/application/audit-context';
+import unitOfWork from '../../../../shared/infrastructure/database/unit-of-work';
 import iamModule from '../../../iam';
 const { userRepository, roleRepository } = iamModule;
 import KycSharedUtil from '../../utils/kyc-shared.util';
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 
 import adminPersonDtoModule from '../../responses/admin-person.response';

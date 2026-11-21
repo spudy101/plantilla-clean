@@ -1,17 +1,17 @@
 import type { Request, Response } from 'express';
 import NotificationService from '../services/notification.service';
 import NotificationEmitter from '../utils/notification-emitter.util';
-import ApiResponse from '../../../shared/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import ApiResponse from '../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import notificationDtoModule from '../responses/notification.response';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
-import authUserUtilModule from '../../../shared/http/auth-user.util';
-import { validQuery } from '../../../shared/validation/validate';
+import authUserUtilModule from '../../../shared/presentation/http/auth-user.util';
+import { validQuery } from '../../../shared/presentation/validation/validate';
 import { GlobalNotificationListQuery, NotificationFeedQuery, PersonalNotificationListQuery } from '../requests/notification.request';
 const { requireAuthUser } = authUserUtilModule;
 

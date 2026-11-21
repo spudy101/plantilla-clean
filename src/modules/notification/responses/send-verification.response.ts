@@ -1,5 +1,5 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 import iamModule from '../../iam';
 const { authComponentsDto: componentsAuthModule } = iamModule;
 const { VerificationCodeComponent } = componentsAuthModule;

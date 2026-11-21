@@ -153,4 +153,4 @@ vite.config.ts.timestamp-*
 /PLAN*.md
 
 # Cliente de Prisma generado (npm run prisma:generate)
-src/shared/database/generated/
+src/shared/infrastructure/database/generated/

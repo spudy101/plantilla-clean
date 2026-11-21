@@ -1,8 +1,8 @@
 // config/swagger/modules/admin/kyc/iam/admin-user.paths.ts
 
-import commonResponses from '../../../config/swagger/responses/common.responses';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
 import { InternalUserDeletedSchema, InternalUserSessionsClosedSchema } from '../responses/admin-user.response';
-import { jsonBody, toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import { jsonBody, toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import {
   ChangeInternalRoleBody,
   ChangeStatusBody,

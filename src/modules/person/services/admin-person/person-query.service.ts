@@ -6,14 +6,14 @@
 import iamModule from '../../../iam';
 const { userRepository, roleRepository } = iamModule;
 type UserRepositoryPort = (typeof iamModule)['userRepository'];
-import AppError from '../../../../shared/http/app-error.util';
-import constantsModule from '../../../../shared/constants';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { CLIENT_ROLE_NAMES } = constantsModule;
 
 import adminPersonDtoModule from '../../responses/admin-person.response';
 const { UserDTO, UserListItemDTO, RoleOptionDTO } = adminPersonDtoModule;
 import auditModule from '../../../audit';
-import { pageOf, pageRequest } from '../../../../shared/http/pagination';
+import { pageOf, pageRequest } from '../../../../shared/application/pagination';
 import type { DeletedPersonListQuery, PersonListQuery } from '../../requests/person.request';
 const { audit } = auditModule;
 

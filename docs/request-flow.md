@@ -8,7 +8,7 @@
 
 ```
 Request
- → [middlewares globales src/app.ts]
+ → [middlewares globales src/main/app.ts]
  → [middlewares de ruta]  Auth → RBAC → RateLimit → RequestLock → validate(esquemas Zod)
  → Controller → Service → Repository → Model → DB
  → ApiResponse  (o AppError → ErrorMiddleware.handleError)
@@ -23,7 +23,7 @@ Request
 | Request    | esquema Zod en `requests/`: valida, tipa y documenta la entrada.                    |
 | DTO        | arma la respuesta en camelCase, campo a campo (nunca spread de una fila).            |
 
-## Middlewares globales (`src/app.ts`) — ORDEN CRÍTICO
+## Middlewares globales (`src/main/app.ts`) — ORDEN CRÍTICO
 
 ```ts
 app.set('trust proxy', 1);
@@ -83,7 +83,7 @@ service necesita esos datos explícitos (para persistir o notificar).
 
 ## Errores — `AppError` + handler global
 
-`src/shared/http/app-error.util.ts` — lanzar SIEMPRE `AppError` (nunca `throw 'string'`), sin try/catch en
+`src/shared/presentation/http/app-error.util.ts` — lanzar SIEMPRE `AppError` (nunca `throw 'string'`), sin try/catch en
 controllers/validators (el `asyncHandler` reenvía al handler global).
 
 | Factory                                                | HTTP | code                 |
@@ -101,7 +101,7 @@ controllers/validators (el `asyncHandler` reenvía al handler global).
 El 2º arg `details` suele llevar `{ code: 'CODIGO_NEGOCIO' }` para que el front discrimine (ej.
 `{ code: 'MFA_REQUIRED' }`, `{ code: 'DUAL_APPROVAL_SAME_AS_MAKER' }`).
 
-`src/shared/http/error.middleware.ts`:
+`src/shared/presentation/http/error.middleware.ts`:
 
 - `asyncHandler(fn)` envuelve el handler async y reenvía rechazos a `handleError`.
 - `handleError`: loguea, guarda el error en la operación (`operations.error_code`/`error_message`) y responde. Solo
@@ -109,7 +109,7 @@ El 2º arg `details` suele llevar `{ code: 'CODIGO_NEGOCIO' }` para que el front
 
 ## Respuestas — `ApiResponse`
 
-`src/shared/http/app-response.util.ts`. Éxitos: `success(res, msg, data, statusCode=200, metadata)`,
+`src/shared/presentation/http/app-response.util.ts`. Éxitos: `success(res, msg, data, statusCode=200, metadata)`,
 `created` (201), `accepted` (202, doble aprobación), `noContent` (204). Errores:
 `badRequest/unauthorized/forbidden/notFound/conflict/tooManyRequests/validationError/error`.
 

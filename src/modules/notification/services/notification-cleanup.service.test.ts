@@ -21,7 +21,7 @@ jest.mock('../repositories/verification-code.repository', () => ({
   deleteOldVerified: jest.fn()
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));
@@ -34,7 +34,7 @@ import userPushTokenRepoModule from '../repositories/user-push-token.repository'
 const userPushTokenRepo = mocked(userPushTokenRepoModule);
 import verificationCodeRepoModule from '../repositories/verification-code.repository';
 const verificationCodeRepo = mocked(verificationCodeRepoModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = mocked(loggerUtilModule);
 import cleanup from './notification-cleanup.service';
 

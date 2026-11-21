@@ -1,8 +1,8 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import piiMaskingDoc from '../../../shared/validation/pii-masking.doc';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import piiMaskingDoc from '../../../shared/presentation/validation/pii-masking.doc';
 import { PersonSchema, UserSchema } from './person-components.response';
-import type { User } from '../../../shared/database/generated/prisma/client';
+import type { User } from '../../../shared/infrastructure/database/generated/prisma/client';
 import iamModule from '../../iam';
 const { adminUserDto: adminUserDtoModule } = iamModule;
 import type { UserProfileRow } from '../../iam';
@@ -10,9 +10,9 @@ const { RoleOptionDTO } = adminUserDtoModule;
 
 import componentsPersonModule from './person-components.response';
 const { UserComponent, PersonComponent, PersonContactComponent, PersonLocationComponent } = componentsPersonModule;
-import EncryptionUtil from '../../../shared/security/encryption.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
 const safeDecrypt = (value: unknown) => EncryptionUtil.safeDecrypt(value);
-import MaskingUtil from '../../../shared/security/masking.util';
+import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
 
 import catalogsModule from '../../catalogs';
 const { catalogComponentsDto: componentsCatalogDtoModule } = catalogsModule;

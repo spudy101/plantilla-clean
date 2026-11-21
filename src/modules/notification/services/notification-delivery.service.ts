@@ -11,7 +11,7 @@
 //
 // Entrega al menos una vez: si el proceso muere entre que AWS acepta el envío y se marca `sent`, ese
 // envío se repite al vencer la reserva (SES/SNS no aceptan una clave de idempotencia).
-import type { NotificationChannel } from '../../../shared/database/generated/prisma/client';
+import type { NotificationChannel } from '../../../shared/infrastructure/database/generated/prisma/client';
 import type * as Types from '../notification.types';
 import notificationRepo from '../repositories/notification.repository';
 import type { NotificationWithTypeAndCategory } from '../repositories/notification.repository';
@@ -24,16 +24,16 @@ import emailService from './email-notification.service';
 import pushService from './push-notification.service';
 import smsService from './sms.service';
 import quietHours from '../utils/quiet-hours.util';
-import EncryptionUtil from '../../../shared/security/encryption.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 const { errorMessage } = errorMessageModule;
-import concurrencyUtilModule from '../../../shared/utils/concurrency.util';
+import concurrencyUtilModule from '../../../shared/kernel/concurrency.util';
 const { forEachWithConcurrency } = concurrencyUtilModule;
-import awsProviderMetaUtilModule from '../../../shared/infra/aws-provider-meta.util';
+import awsProviderMetaUtilModule from '../../../shared/infrastructure/providers/aws-provider-meta.util';
 const { awsErrorCode } = awsProviderMetaUtilModule;
-import awsErrorCodesModule from '../../../shared/constants/aws-error-codes';
+import awsErrorCodesModule from '../../../shared/infrastructure/providers/aws-error-codes';
 const { isHardBounce, isEndpointDisabled } = awsErrorCodesModule;
 import auditModule from '../../audit';
 const { audit } = auditModule;

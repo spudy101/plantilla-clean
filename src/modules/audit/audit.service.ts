@@ -16,13 +16,13 @@
 //   y el intento tiene que quedar.
 // - Si la acción tiene `alert: true` en el catálogo, crea también su alerta para el Superadmin.
 // - S3 no se escribe aquí: el worker de archivado exporta los registros por lotes diarios.
-import requestContext from '../../shared/observability/request-context.util';
-import txContext from '../../shared/database/transaction-context';
-import loggerUtilModule from '../../shared/observability/logger.util';
+import requestContext from '../../shared/infrastructure/observability/request-context.util';
+import txContext from '../../shared/infrastructure/database/transaction-context';
+import loggerUtilModule from '../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import errorMessageModule from '../../shared/utils/error-message.util';
+import errorMessageModule from '../../shared/kernel/error-message.util';
 const { errorMessage } = errorMessageModule;
-import type { AuditLogOutcome, AuditLogRisk, Prisma } from '../../shared/database/generated/prisma/client';
+import type { AuditLogOutcome, AuditLogRisk, Prisma } from '../../shared/infrastructure/database/generated/prisma/client';
 import auditLogRepository from './repositories/audit-log.repository';
 import auditAlertRepository from './repositories/audit-alert.repository';
 import catalogModule, { type AuditActionDef, type AuditActionKey } from './catalog';

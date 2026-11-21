@@ -1,5 +1,5 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { multipartBody, toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { multipartBody, toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import { CreatePrivacyPolicyBody, PrivacyPolicyIdParams, PrivacyPolicyListQuery } from '../requests/legal.request';
 import { PrivacyPolicyDetailSchema, PrivacyPolicyItemSchema } from '../responses/privacy-policy-admin.response';
 

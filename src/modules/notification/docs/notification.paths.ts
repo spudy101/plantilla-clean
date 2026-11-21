@@ -1,8 +1,8 @@
 // config/swagger/modules/shared-endpoints/notification/notification.paths.ts
 
-import commonResponses from '../../../config/swagger/responses/common.responses';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
 import { NotificationCreatedSchema } from '../responses/notification.response';
-import { jsonBody, toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import { jsonBody, toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import { CreateNotificationBody, GlobalNotificationListQuery, NotificationFeedQuery, PersonalNotificationListQuery } from '../requests/notification.request';
 import { NotificationMixedItemSchema, UnreadCountSchema } from '../responses/notification.response';
 

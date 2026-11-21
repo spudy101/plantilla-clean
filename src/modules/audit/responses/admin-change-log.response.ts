@@ -1,4 +1,4 @@
-import type { PageMetadata } from '../../../shared/http/pagination';
+import type { PageMetadata } from '../../../shared/application/pagination';
 import iamModule from '../../iam';
 const { authComponentsDto: componentsAuthModule } = iamModule;
 const { UserChangeLogComponent } = componentsAuthModule;

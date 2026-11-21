@@ -7,11 +7,11 @@ jest.mock('../repositories/provider-fallback-event.repository', () => ({
   findAllPaginated: jest.fn()
 }));
 
-jest.mock('../../../shared/infra/circuit-breaker.util', () => ({
+jest.mock('../../../shared/infrastructure/providers/circuit-breaker.util', () => ({
   getStatus: jest.fn()
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
@@ -19,11 +19,11 @@ jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 import { mocked } from 'tests/helpers/mock';
 import fallbackRepoModule from '../repositories/provider-fallback-event.repository';
 const fallbackRepo = mocked(fallbackRepoModule);
-import CircuitBreakerModule from '../../../shared/infra/circuit-breaker.util';
+import CircuitBreakerModule from '../../../shared/infrastructure/providers/circuit-breaker.util';
 const CircuitBreaker = mocked(CircuitBreakerModule);
 import auditServiceModule from '../../audit/audit.service';
 const logAudit = mocked(auditServiceModule).record;
-import { PROVIDER_PRODUCTS } from '../../../shared/infra/provider-call.util';
+import { PROVIDER_PRODUCTS } from '../../../shared/infrastructure/providers/provider-call.util';
 import service from './integration-monitoring.service';
 import { FallbackQuery } from '../requests/integration-monitoring.request';
 

@@ -16,7 +16,7 @@ jest.mock('exceljs', () => {
   return { stream: { xlsx: { WorkbookWriter: jest.fn(() => workbook) } } };
 });
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
@@ -38,7 +38,7 @@ jest.mock('../responses/admin-audit-log.response', () => ({
 import { mocked, Loose, fixture } from 'tests/helpers/mock';
 import ExcelJSModule from 'exceljs';
 const ExcelJS = mocked(ExcelJSModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../audit.service';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;

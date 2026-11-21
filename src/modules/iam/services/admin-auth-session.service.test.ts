@@ -29,13 +29,13 @@ jest.mock('../../notification/notify', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo.test/logo.png' } }
 }));
 
@@ -56,7 +56,7 @@ import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
 import NotificationCreationServiceModule from '../../notification/notify';
 const notifier = mocked(NotificationCreationServiceModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../../audit/audit.service';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;

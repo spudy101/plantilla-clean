@@ -1,12 +1,12 @@
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { UpdateProfileBody, UpdateEmailBody, UpdatePhoneBody, UpdatePasswordBody, UpdateNamesBody, DeleteAccountBody } from '../requests/person.request';
 const router = express.Router();
 import ProfileController from '../controllers/profile.controller';
 import iamModule from '../../iam';
 const { AuthMiddleware } = iamModule;
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
 
 /**
  * TODAS LAS RUTAS REQUIEREN AUTENTICACIÓN

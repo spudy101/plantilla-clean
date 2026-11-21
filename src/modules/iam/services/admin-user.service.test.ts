@@ -60,9 +60,9 @@ jest.mock('../utils/token-blacklist.util', () => ({
   invalidateUserSessions: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
 
-jest.mock('../../../shared/http/app-error.util', () => ({
+jest.mock('../../../shared/presentation/http/app-error.util', () => ({
   notFound: (msg: Loose) => Object.assign(new Error(msg), { statusCode: 404 }),
   badRequest: (msg: Loose) => Object.assign(new Error(msg), { statusCode: 400 }),
   forbidden: (msg: Loose) => Object.assign(new Error(msg), { statusCode: 403 }),
@@ -70,13 +70,13 @@ jest.mock('../../../shared/http/app-error.util', () => ({
   internal: (msg: Loose) => Object.assign(new Error(msg), { statusCode: 500 })
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   INTERNAL_ROLE_NAMES: ['auditor', 'admin', 'super_admin'],
   SUPERADMIN_ROLE_NAMES: ['super_admin'],
   RBAC_ROLES: { AUDITOR: 'auditor' },
@@ -127,7 +127,7 @@ import KycSharedUtilModule from '../../person/utils/kyc-shared.util';
 const KycSharedUtil = mocked(KycSharedUtilModule);
 import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import auditServiceModule from '../../audit/audit.service';
 const logAudit = mocked(auditServiceModule).record;

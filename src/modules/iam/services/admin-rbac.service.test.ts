@@ -14,19 +14,19 @@ jest.mock('./rbac.service', () => ({
   invalidateCache: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/http/app-error.util', () => ({
+jest.mock('../../../shared/presentation/http/app-error.util', () => ({
   notFound: (msg: Loose) => Object.assign(new Error(msg), { statusCode: 404 }),
   badRequest: (msg: Loose) => Object.assign(new Error(msg), { statusCode: 400 }),
   conflict: (msg: Loose) => Object.assign(new Error(msg), { statusCode: 409 })
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   RBAC_ROLES: { SUPER_ADMIN: 'super_admin', ADMIN: 'admin', AUDITOR: 'auditor' },
   notifications: { ses: { logoUrl: 'https://logo.test/x.png' } }
 }));

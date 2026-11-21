@@ -8,7 +8,7 @@ import trustedDeviceRepository from '../../repositories/auth-trusted-device.repo
 import TokenBlacklistUtil from '../../utils/token-blacklist.util';
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import auditModule from '../../../audit';
 const { audit } = auditModule;

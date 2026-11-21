@@ -13,14 +13,14 @@
 //   - La firma cubre timestamp + método + path → protección contra replay más fuerte
 //   - Comparación en tiempo constante (timingSafeEqual) → sin timing attacks
 
-import { interopDefault } from '../../../shared/utils/interop.util';
+import { interopDefault } from '../../../shared/kernel/interop.util';
 import type { NextFunction, Request, Response } from 'express';
-import type { AuthenticatedUser } from '../../../shared/types/express';
+import type { AuthenticatedUser } from '../../../shared/presentation/types/express';
 import crypto from 'node:crypto';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const {
   server,
   encryption,
@@ -33,10 +33,10 @@ const {
 import HmacService from '../services/hmac.service';
 import DeviceBlocklistUtil from '../utils/device-blocklist.util';
 import TokenBlacklistUtil from '../utils/token-blacklist.util';
-import JwtUtil from '../../../shared/security/jwt.util';
-import redisClient from '../../../shared/infra/redis.util';
-import requestContext from '../../../shared/observability/request-context.util';
-import domainEnumsModule from '../../../shared/constants/domain-enums';
+import JwtUtil from '../../../shared/infrastructure/security/jwt.util';
+import redisClient from '../../../shared/infrastructure/cache/redis.util';
+import requestContext from '../../../shared/infrastructure/observability/request-context.util';
+import domainEnumsModule from '../../../shared/infrastructure/database/domain-enums';
 const { USER_SESSION_STATUS } = domainEnumsModule;
 
 // Lazy require: el repositorio vive en modules/ y cargarlo al arrancar crearía un ciclo
@@ -44,7 +44,7 @@ const { USER_SESSION_STATUS } = domainEnumsModule;
 const sessionRepository = () => interopDefault(require('../repositories/user-session.repository') as typeof import('../repositories/user-session.repository'));
 import mfaStatusUtilModule from '../utils/mfa-status.util';
 const { isMfaActive } = mfaStatusUtilModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 

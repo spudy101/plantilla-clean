@@ -1,6 +1,6 @@
 // Entrada del módulo legal: consentimientos (admin y usuario), tipos de consentimiento y políticas de privacidad.
-import { z, withHint } from '../../../shared/validation/z';
-import { fileField, input, optionalBool, optionalIsoDate, optionalUuid, pageQuery, searchQuery, uuid } from '../../../shared/validation/fields';
+import { z, withHint } from '../../../shared/presentation/validation/z';
+import { fileField, input, optionalBool, optionalIsoDate, optionalUuid, pageQuery, searchQuery, uuid } from '../../../shared/presentation/validation/fields';
 
 const upperCode = (label: string, hint: string) =>
   withHint(

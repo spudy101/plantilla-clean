@@ -19,14 +19,14 @@ jest.mock('../../notification/notify', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
 }));
 jest.mock('../audit.service', () => ({ record: jest.fn() }));
 
 // Paginación reducida a valores deterministas para no depender de su parsing interno.
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo.test/x.png' } }
 }));
 

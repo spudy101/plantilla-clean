@@ -1,11 +1,11 @@
 // Consulta admin de las entregas de notificaciones (soporte: "¿le llegó el correo a este usuario?").
 // Solo lectura: los reintentos son automáticos (notification-delivery.service).
 import deliveryRepo from '../repositories/notification-delivery.repository';
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import adminNotificationDeliveryDtoModule from '../responses/admin-notification-delivery.response';
 const { NotificationDeliveryListDTO, NotificationDeliveryDetailDTO } = adminNotificationDeliveryDtoModule;
 import auditModule from '../../audit';
-import { pageOf, pageRequest } from '../../../shared/http/pagination';
+import { pageOf, pageRequest } from '../../../shared/application/pagination';
 import type { DeliveryListQuery } from '../requests/notification.request';
 
 type DeliveryFilters = NonNullable<Parameters<(typeof deliveryRepo)['findAllForAdmin']>[0]>;

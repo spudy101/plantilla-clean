@@ -2,7 +2,7 @@
 //
 // Configuración inicial del sistema: la configuración global activa (si no hay ninguna) y la versión
 // 1.0 de la política de privacidad (si no existe esa versión).
-import constantsModule from '../../src/shared/constants';
+import constantsModule from '../../src/shared/infrastructure/config';
 import { report, type SeedClient } from './seed-client';
 
 const { notifications } = constantsModule;

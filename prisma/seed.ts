@@ -6,7 +6,7 @@
 //
 // Usa el cliente de la app (shared/database/prisma.ts), así que necesita el mismo entorno que la app
 // (.env completo: claves de cifrado incluidas, para la PII de los usuarios internos).
-import prisma from '../src/shared/database/prisma';
+import prisma from '../src/shared/infrastructure/database/prisma';
 import { seedCatalogs } from './seeds/catalogs.seed';
 import { seedGeography } from './seeds/geography.seed';
 import { seedInternalUsers } from './seeds/internal-users.seed';

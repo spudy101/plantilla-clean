@@ -2,8 +2,8 @@
 //
 // Lectura pública de la política de privacidad (registro, login, mantenedores). La publicación de
 // versiones vive en privacy-policy-admin.repository.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PrivacyPolicy } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PrivacyPolicy } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 class PrivacyPolicyRepository extends PrismaRepository {
   /**

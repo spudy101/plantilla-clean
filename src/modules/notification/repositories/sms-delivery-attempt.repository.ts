@@ -1,8 +1,8 @@
 // modules/schemas/notification/repositories/sms-delivery-attempt.repository.ts
 //
 // Bitácora de envíos SMS (por phone_hash, sin el número en claro).
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { SmsDeliveryAttempt } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { SmsDeliveryAttempt } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 class SmsDeliveryAttemptRepository extends PrismaRepository {
   async createAttempt({

@@ -13,15 +13,15 @@ import globalNotificationRepo from '../repositories/global-notification.reposito
 import type { GlobalNotificationWithType } from '../repositories/global-notification.repository';
 import userNotificationPreferenceRepo from '../repositories/user-notification-preference.repository';
 import userPushTokenRepo from '../repositories/user-push-token.repository';
-import EncryptionUtil from '../../../shared/security/encryption.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
 import emailService from './email-notification.service';
 import pushService from './push-notification.service';
 import rateLimitService from './notification-rate-limit.service';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { CLIENT_ROLE_NAMES } = constantsModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 const { errorMessage } = errorMessageModule;
 
 const MINUTE_MS = 60 * 1000;

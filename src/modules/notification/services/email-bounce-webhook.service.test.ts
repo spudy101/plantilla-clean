@@ -10,25 +10,25 @@ jest.mock('./email-suppression.service', () => ({
   registerHardBounce: jest.fn()
 }));
 
-jest.mock('../../../shared/security/sns-signature.util', () => ({
+jest.mock('../../../shared/infrastructure/security/sns-signature.util', () => ({
   verifySnsSignature: jest.fn(),
   confirmSnsSubscription: jest.fn()
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { sns: { bounceTopicArn: 'arn:aws:sns:us-east-1:1:bounces' } }
 }));
 
 import { mocked, fixture } from 'tests/helpers/mock';
 import emailSuppressionServiceModule from './email-suppression.service';
 const emailSuppressionService = mocked(emailSuppressionServiceModule);
-import snsSignatureUtilModule from '../../../shared/security/sns-signature.util';
+import snsSignatureUtilModule from '../../../shared/infrastructure/security/sns-signature.util';
 const { verifySnsSignature, confirmSnsSubscription } = mocked(snsSignatureUtilModule);
 import auditServiceModule from '../../audit/audit.service';
 const logAudit = mocked(auditServiceModule).record;

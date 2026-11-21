@@ -1,4 +1,4 @@
-import type { RequestAuditContext } from '../../../shared/types/audit-context';
+import type { RequestAuditContext } from '../../../shared/application/audit-context';
 import { v4 as uuidv4 } from 'uuid';
 import userRepository from '../repositories/user.repository';
 import personModule from '../../person';
@@ -12,20 +12,20 @@ import legalModule from '../../legal';
 const { privacyPolicyRepository, consentRecorder } = legalModule;
 import roleRepository from '../repositories/role.repository';
 import userSessionRepository from '../repositories/user-session.repository';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import unitOfWork from '../../../shared/database/unit-of-work';
+import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
 import CredentialResetService from './auth-register/credential-reset.service';
 import SessionIssuerService from './auth-login/session-issuer.service';
 import authRegisterDtoModule from '../responses/auth-register.response';
 const { RegisterResponseDTO } = authRegisterDtoModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { RBAC_ROLES, notifications } = constantsModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
-import { shouldPropagate } from '../../../shared/http/error-propagation';
+import { shouldPropagate } from '../../../shared/presentation/http/error-propagation';
 import auditModule from '../../audit';
 const { audit } = auditModule;
 

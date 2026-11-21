@@ -1,20 +1,20 @@
-import { interopDefault } from '../../../shared/utils/interop.util';
+import { interopDefault } from '../../../shared/kernel/interop.util';
 import type { NotificationTypeWithCategory } from '../repositories/notification-type.repository';
-import type { Prisma } from '../../../shared/database/generated/prisma/client';
+import type { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 import notificationRepo from '../repositories/notification.repository';
 import globalNotificationRepo from '../repositories/global-notification.repository';
 import notificationTypeRepo from '../repositories/notification-type.repository';
 import userNotificationPreferenceRepo from '../repositories/user-notification-preference.repository';
 import NotificationCountUtil from '../utils/notification-count.util';
 import notificationDeliveryService from './notification-delivery.service';
-import unitOfWork from '../../../shared/database/unit-of-work';
-import txContext from '../../../shared/database/transaction-context';
+import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
+import txContext from '../../../shared/infrastructure/database/transaction-context';
 import NotificationContentUtil from '../utils/notification-content.util';
-import EncryptionUtil from '../../../shared/security/encryption.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import AppError from '../../../shared/http/app-error.util';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 import type { NotificationCreated } from '../responses/notification.response';
 
 const { errorMessage } = errorMessageModule;

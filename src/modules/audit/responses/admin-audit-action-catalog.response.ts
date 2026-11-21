@@ -1,5 +1,5 @@
 // DTOs del catálogo de acciones de auditoría — todas las keys en camelCase.
-import { z } from '../../../shared/validation/z';
+import { z } from '../../../shared/presentation/validation/z';
 import catalog from '../catalog/audit-catalog';
 
 type Counted<K extends string> = Record<K, string> & { actionsCount: number };

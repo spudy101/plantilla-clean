@@ -1,6 +1,6 @@
 // Salida del mantenedor admin de banners. El esquema describe (y documenta) la respuesta; la función arma
 // esa respuesta campo a campo desde lo guardado: lista blanca, nunca el JSONB crudo.
-import { z } from '../../../shared/validation/z';
+import { z } from '../../../shared/presentation/validation/z';
 
 /** Banner tal como se guarda en system_global_configs.promotional_banners (JSONB, snake_case). */
 export interface StoredBanner {

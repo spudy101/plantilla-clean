@@ -10,9 +10,9 @@
 // _markPageAsRead cuando la escritura falla. Los side-effects agendados con setImmediate se observan
 // drenando la cola de macrotareas.
 
-jest.mock('../../../shared/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
@@ -50,9 +50,9 @@ jest.mock('../utils/notification-count.util', () => ({
 
 import { managedTransaction } from 'tests/helpers/transaction';
 import { mocked } from 'tests/helpers/mock';
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../../audit/audit.service';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;

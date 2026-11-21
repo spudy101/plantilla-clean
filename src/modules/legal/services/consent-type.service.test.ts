@@ -28,13 +28,13 @@ jest.mock('../responses/consent-type.response', () => ({
   ConsentTypeDTO: jest.fn(r => ({ detail: r.code }))
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo' } }
 }));
 
@@ -43,7 +43,7 @@ import consentTypeRepositoryModule from '../repositories/consent-type.repository
 const consentTypeRepository = mocked(consentTypeRepositoryModule);
 import NotificationUtilModule from '../../notification/notify';
 const notifier = mocked(NotificationUtilModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../../audit/audit.service';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;

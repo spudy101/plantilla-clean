@@ -6,12 +6,12 @@
 // legado guardado en claro se sigue leyendo.
 
 import { randomUUID } from 'node:crypto';
-import prisma from '../../src/shared/database/prisma';
-import { hashValue, sealValue } from '../../src/shared/database/pii-fields';
-import requestContext from '../../src/shared/observability/request-context.util';
-import constants from '../../src/shared/constants';
-import unitOfWork from '../../src/shared/database/unit-of-work';
-import txContext from '../../src/shared/database/transaction-context';
+import prisma from '../../src/shared/infrastructure/database/prisma';
+import { hashValue, sealValue } from '../../src/shared/infrastructure/database/pii-fields';
+import requestContext from '../../src/shared/infrastructure/observability/request-context.util';
+import constants from '../../src/shared/infrastructure/config';
+import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
+import txContext from '../../src/shared/infrastructure/database/transaction-context';
 
 const SCHEMA = constants.database.schema;
 

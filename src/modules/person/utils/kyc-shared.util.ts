@@ -1,4 +1,4 @@
-import { interopDefault } from '../../../shared/utils/interop.util';
+import { interopDefault } from '../../../shared/kernel/interop.util';
 import auditModule from '../../audit';
 const { audit } = auditModule;
 import type { ChangeInput } from '../../audit';
@@ -107,7 +107,7 @@ class KycSharedUtil {
   }
 
   static validateNationalIdByRole(nationalId: string, role: { name: string }) {
-    const AppError = interopDefault(require('../../../shared/http/app-error.util') as typeof import('../../../shared/http/app-error.util'));
+    const AppError = interopDefault(require('../../../shared/presentation/http/app-error.util') as typeof import('../../../shared/presentation/http/app-error.util'));
 
     const isAdmin = role.name.toLowerCase() === 'admin';
 

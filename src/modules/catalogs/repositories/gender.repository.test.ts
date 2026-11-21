@@ -3,12 +3,12 @@
 // GenderRepository sobre Prisma (fase 0 de docs/prisma-migration.md): se mockea el cliente único y se
 // verifica que el repositorio arma las consultas con los nombres de campo de Prisma (camelCase).
 
-jest.mock('../../../shared/database/prisma', () => ({
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({
   gender: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn() }
 }));
 
 import { mocked } from 'tests/helpers/mock';
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import genderRepository from './gender.repository';
 import { page } from 'tests/helpers/page';

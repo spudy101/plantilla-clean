@@ -1,8 +1,8 @@
 // modules/schemas/kyc/iam/repositories/role.repository.ts
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { Role } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { Role } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const SEARCH_FIELDS = ['name', 'description'];
 

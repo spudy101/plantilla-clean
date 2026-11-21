@@ -3,7 +3,7 @@
 // CredentialResetService (extraído de AuthRegisterService). Se prueba SIN jest.mock de
 // repositorios: las dependencias se inyectan por constructor (SOLID: D).
 
-jest.mock('../../../../shared/observability/logger.util', () => ({ logger: { info: jest.fn(), warn: jest.fn() }, logAudit: jest.fn() }));
+jest.mock('../../../../shared/infrastructure/observability/logger.util', () => ({ logger: { info: jest.fn(), warn: jest.fn() }, logAudit: jest.fn() }));
 jest.mock('../../../audit/audit.service', () => ({ record: jest.fn() }));
 jest.mock('../../utils/token-blacklist.util', () => ({ invalidateUserSessions: jest.fn().mockResolvedValue(undefined) }));
 

@@ -6,7 +6,7 @@
 // lecturas de globales con skipDuplicates y los contadores que se incrementan en la base.
 
 import { randomUUID } from 'node:crypto';
-import prisma from '../../src/shared/database/prisma';
+import prisma from '../../src/shared/infrastructure/database/prisma';
 import notificationRepository from '../../src/modules/notification/repositories/notification.repository';
 import deliveryRepository from '../../src/modules/notification/repositories/notification-delivery.repository';
 import notificationTypeRepository from '../../src/modules/notification/repositories/notification-type.repository';

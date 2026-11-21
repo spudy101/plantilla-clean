@@ -1,16 +1,16 @@
-// API pública del módulo settings: lo ÚNICO que otros módulos (y src/app.ts) pueden importar.
-// Lo que no está acá es interno del módulo (docs/ARCHITECTURE.md, regla 2).
+// API pública del módulo settings para los módulos que todavía no están en Clean Architecture.
 //
-// Cada export se carga al usarse (getter): los módulos se usan entre sí y un index que cargara todo
-// de una vez crearía ciclos de carga. Uso: import settingsModule from '…/settings'; const { X } = settingsModule;
-import { interopDefault } from '../../shared/utils/interop.util';
+// En Clean, settings no se usa importando este index: src/main/container.ts arma el módulo
+// (createSettingsModule en settings.module.ts) y reparte sus casos de uso a quien los necesite.
+// Lo que queda acá es TRANSITORIO y se borra a medida que se migran banners, approvals y audit
+// (ver infrastructure/persistence/legacy-system-global-config.repository.ts).
+import { interopDefault } from '../../shared/kernel/interop.util';
 
 export default {
+  /** @deprecated Acceso crudo a la fila de system_global_config para módulos sin migrar. */
   get systemGlobalConfigRepository() {
-    return interopDefault(require('./repositories/system-global-config.repository') as typeof import('./repositories/system-global-config.repository'));
-  },
-
-  get adminSystemGlobalConfigRoutes() {
-    return interopDefault(require('./routes/system-global-config.routes') as typeof import('./routes/system-global-config.routes'));
+    return interopDefault(
+      require('./infrastructure/persistence/legacy-system-global-config.repository') as typeof import('./infrastructure/persistence/legacy-system-global-config.repository')
+    );
   }
 };

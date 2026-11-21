@@ -3,12 +3,12 @@ import notificationCategoryRepository from '../repositories/notification-categor
 import iamModule from '../../iam';
 const { userRepository } = iamModule;
 import NotificationUtil from './notification-creation.service';
-import AppError from '../../../shared/http/app-error.util';
-import constantsModule from '../../../shared/constants';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import constantsModule from '../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 import adminNotificationTypeDtoModule from '../responses/admin-notification-type.response';
 import auditModule from '../../audit';
-import { pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { TypeListQuery } from '../requests/notification.request';
 const { audit } = auditModule;
 const {

@@ -1,7 +1,7 @@
 # RBAC — control de acceso basado en roles — guía de onboarding
 
 > Cableado en rutas: ver `docs/request-flow.md`.
-> Matriz y constantes: `src/shared/constants/rbac.ts`. Resolución: `src/modules/iam/services/rbac.service.ts`.
+> Matriz y constantes: `src/shared/domain/constants/rbac.ts`. Resolución: `src/modules/iam/services/rbac.service.ts`.
 > Middleware: `src/modules/iam/middlewares/rbac.middleware.ts`.
 
 > **Binding módulo ↔ routes ↔ roles (autoritativo desde el back):** `docs/rbac/modulos/` — un `.md` por

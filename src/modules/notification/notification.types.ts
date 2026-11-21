@@ -1,6 +1,6 @@
 // Formas compartidas entre los services de notificación (creación, envío, email, lotes). Solo tipos.
 // Los services exportan instancias (`export =`), así que los tipos que cruzan archivos viven aquí.
-import type { NotificationChannel, NotificationType } from '../../shared/database/generated/prisma/client';
+import type { NotificationChannel, NotificationType } from '../../shared/infrastructure/database/generated/prisma/client';
 import type { NotificationCategoryRow } from './repositories/notification-category.repository';
 
 export type ChannelKey = NotificationChannel;

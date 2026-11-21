@@ -1,5 +1,5 @@
 // Entrada del módulo iam: login, registro, MFA, biometría, dispositivos, sesiones, RBAC y usuarios internos.
-import { z, withHint } from '../../../shared/validation/z';
+import { z, withHint } from '../../../shared/presentation/validation/z';
 import {
   email,
   flexibleBool,
@@ -11,7 +11,7 @@ import {
   pageQuery,
   searchQuery,
   uuid
-} from '../../../shared/validation/fields';
+} from '../../../shared/presentation/validation/fields';
 import {
   clientTypeHeader,
   newPassword,
@@ -21,7 +21,7 @@ import {
   resetType,
   totpCode
 } from './credential.fields';
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 import personModule from '../../person';
 const { RBAC_ROLES, RBAC_MODULES, RBAC_ACTIONS } = constantsModule;
 const { personFields } = personModule;

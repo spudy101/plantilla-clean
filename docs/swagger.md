@@ -41,7 +41,7 @@ responses: {
 ## Anatomía de un `*.paths.ts`
 
 Los schemas, parámetros y bodies **no se escriben a mano**: salen de los esquemas Zod de `requests/` (entrada)
-y `responses/` (salida) del módulo, con los helpers de `shared/validation/openapi.ts`:
+y `responses/` (salida) del módulo, con los helpers de `shared/presentation/validation/openapi.ts`:
 
 - `toOpenApi(Schema)` → schema de un request; `toOpenApi(Schema, 'output')` → schema de una respuesta.
 - `toParameters(Schema, 'query' | 'path' | 'header')` → la lista de `parameters` de la operación.
@@ -49,8 +49,8 @@ y `responses/` (salida) del módulo, con los helpers de `shared/validation/opena
 - `multipartBody(CamposSchema, { archivo: 'descripción' })` → `requestBody` multipart con archivos.
 
 ```ts
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { jsonBody, toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import commonResponses from '../../../../../shared/presentation/openapi/common.responses';
+import { jsonBody, toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import { MiRecursoIdParams, MiRecursoListQuery, UpdateMiRecursoBody } from '../requests/mi-recurso.request';
 import { MiRecursoSchema } from '../responses/mi-recurso.response';
 
@@ -89,7 +89,7 @@ de validación (`withHint`) sale como `x-hint`.
 
 ## Registrar un módulo nuevo en el ensamblador
 
-En `src/config/swagger.admin.ts` (o `swagger.client.ts`):
+En `src/main/swagger.admin.ts` (o `swagger.client.ts`):
 
 1. `import miRecursoPaths from '../modules/{dominio}/docs/mi-recurso.paths';`
 2. Agregar `...miRecursoPaths.paths` al objeto `allPaths`.
@@ -119,7 +119,7 @@ Al agregar uno nuevo, seguir el patrón del módulo hermano más cercano.
 4. **Status codes**: documentar 200/201/202, 400, 401, 403, 404, 409, 422, 500 cuando apliquen, con el código
    que de verdad devuelve el service (`AppError.badRequest` es 400, no 409).
 5. **PII enmascarada**: en el esquema de **salida**, los campos con documento, correo, teléfono, TIN o cuenta llevan
-   la `description` de `shared/validation/pii-masking.doc.ts` y un `example` enmascarado. ⚠️ **Nunca en los
+   la `description` de `shared/presentation/validation/pii-masking.doc.ts` y un `example` enmascarado. ⚠️ **Nunca en los
    requests**: la entrada va completa. Ver `docs/pii-masking.md`.
 
 ## Validar el spec sin levantar el server

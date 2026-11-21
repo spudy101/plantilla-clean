@@ -1,4 +1,4 @@
-import type { User } from '../../../shared/database/generated/prisma/client';
+import type { User } from '../../../shared/infrastructure/database/generated/prisma/client';
 // modules/shared-endpoints/kyc/iam/services/mfa.service.ts
 //
 // ============================================================
@@ -13,12 +13,12 @@ import type { User } from '../../../shared/database/generated/prisma/client';
 // La API pública no cambia: controllers y tests siguen igual.
 // ============================================================
 
-import type { RequestAuditContext } from '../../../shared/types/audit-context';
-import unitOfWork from '../../../shared/database/unit-of-work';
+import type { RequestAuditContext } from '../../../shared/application/audit-context';
+import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
 import userRepository from '../repositories/user.repository';
 import notificationModule from '../../notification';
 const { verificationCodeRepository, notifier, SmsService } = notificationModule;
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import mfaDtoModule from '../responses/mfa.response';
 const { PasswordValidationResponseDTO, MFAStatusResponseDTO, PreferredMethodResponseDTO } = mfaDtoModule;
 import MfaAccount from './mfa/mfa-account';

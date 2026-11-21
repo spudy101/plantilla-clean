@@ -1,5 +1,5 @@
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import {
   AvatarListQuery,
   AvatarThemeListQuery,
@@ -13,8 +13,8 @@ import {
 } from '../requests/maintainers.request';
 const router = express.Router();
 import MaintainersController from '../controllers/maintainers.controller';
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
 
 /**
  * TODAS LAS RUTAS SON PÚBLICAS — no requieren autenticación

@@ -1,7 +1,7 @@
 // Entrada de los catálogos (solo lectura): paginación, orden y filtros de cada listado.
 // Cada catálogo declara por qué campos se ordena (pageQuery) y qué filtros acepta: lo demás se descarta.
-import { z } from '../../../shared/validation/z';
-import { optionalBool, optionalUuid, pageQuery, searchQuery } from '../../../shared/validation/fields';
+import { z } from '../../../shared/presentation/validation/z';
+import { optionalBool, optionalUuid, pageQuery, searchQuery } from '../../../shared/presentation/validation/fields';
 
 const filters = { ...searchQuery, isActive: optionalBool('isActive') };
 const byName = pageQuery(['createdAt', 'name'], { sortBy: 'createdAt' });

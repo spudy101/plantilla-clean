@@ -1,6 +1,6 @@
 import AuthRegisterService from '../services/auth-register.service';
-import ApiResponse from '../../../shared/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import ApiResponse from '../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
 
 import authCookiesUtilModule from '../utils/auth-cookies.util';

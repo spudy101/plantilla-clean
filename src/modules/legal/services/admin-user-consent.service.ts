@@ -1,9 +1,9 @@
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import userConsentRepository from '../repositories/user-consent.repository';
 import adminUserConsentDtoModule from '../responses/admin-user-consent.response';
 const { UserConsentAuditItemDTO } = adminUserConsentDtoModule;
 import auditModule from '../../audit';
-import { appliedFilters, pageOf, pageRequest } from '../../../shared/http/pagination';
+import { appliedFilters, pageOf, pageRequest } from '../../../shared/application/pagination';
 import type { AdminUserConsentListQuery, ConsentHistoryQuery } from '../requests/legal.request';
 
 type ConsentFilters = NonNullable<Parameters<(typeof userConsentRepository)['findAllPaginatedForAdmin']>[0]>;

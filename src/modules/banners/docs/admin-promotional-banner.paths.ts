@@ -1,5 +1,5 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { toOpenApi } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { toOpenApi } from '../../../shared/presentation/validation/openapi';
 import { ReplaceBannersBody } from '../requests/admin-promotional-banner.request';
 import { AdminBanner, AdminBannerList, BannerImage } from '../responses/admin-promotional-banner.response';
 

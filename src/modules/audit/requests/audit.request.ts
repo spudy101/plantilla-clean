@@ -1,6 +1,6 @@
 // Entrada del módulo de auditoría: consultas de logs, alertas, catálogo de acciones, bitácora de cambios,
 // sesiones, operaciones y actividad del usuario. Los valores de los filtros se validan contra el catálogo.
-import { z, withHint } from '../../../shared/validation/z';
+import { z, withHint } from '../../../shared/presentation/validation/z';
 import {
   input,
   optionalBool,
@@ -12,7 +12,7 @@ import {
   pagingQuery,
   searchQuery,
   uuid
-} from '../../../shared/validation/fields';
+} from '../../../shared/presentation/validation/fields';
 import catalogModule from '../catalog';
 const { AUDIT_ACTIONS, AUDIT_CATEGORIES, AUDIT_RISKS, AUDIT_MODULES, AUDIT_OUTCOMES, AUDIT_SOURCES } = catalogModule;
 

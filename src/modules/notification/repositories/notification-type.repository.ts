@@ -1,8 +1,8 @@
 // modules/schemas/notification/repositories/notification-type.repository.ts
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { NotificationType } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { NotificationType } from '../../../shared/infrastructure/database/generated/prisma/client';
 import type { NotificationCategoryRow } from './notification-category.repository';
 
 /** Tipo con su categoría (canales, criticidad y layout de email viven en la categoría). */

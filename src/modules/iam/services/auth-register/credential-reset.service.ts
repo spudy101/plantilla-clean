@@ -1,4 +1,4 @@
-import type { CredentialReset } from '../../../../shared/database/generated/prisma/client';
+import type { CredentialReset } from '../../../../shared/infrastructure/database/generated/prisma/client';
 import type { ResetTokenWithUser } from '../../repositories/credential-reset.repository';
 
 /** Titular del token: id, authUsername, nombre y email. */
@@ -17,11 +17,11 @@ import userSessionRepository from '../../repositories/user-session.repository';
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
 import TokenBlacklistUtil from '../../utils/token-blacklist.util';
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import unitOfWork from '../../../../shared/database/unit-of-work';
-import constantsModule from '../../../../shared/constants';
+import unitOfWork from '../../../../shared/infrastructure/database/unit-of-work';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { frontend, SECURITY, notifications } = constantsModule;
 import auditModule from '../../../audit';
 const { audit } = auditModule;

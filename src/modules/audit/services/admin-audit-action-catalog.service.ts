@@ -8,7 +8,7 @@ const {
 import adminAuditActionCatalogDtoModule from '../responses/admin-audit-action-catalog.response';
 const { CategoryDTO, RiskDTO, ModuleDTO, ActionListDTO } = adminAuditActionCatalogDtoModule;
 import audit from '../audit.service';
-import { appliedFilters, pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { appliedFilters, pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { AuditActionListQuery } from '../requests/audit.request';
 
 /** Acción del catálogo de auditoría (clave + definición). */

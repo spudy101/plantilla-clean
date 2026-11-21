@@ -1,7 +1,7 @@
-import MaskingUtil from '../../../shared/security/masking.util';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import type { DbDate, Maybe, UserRefRow } from '../../../shared/types/db-rows';
+import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import type { DbDate, Maybe, UserRefRow } from '../../../shared/infrastructure/database/db-rows';
 
 /** Fila de Prisma (verification_codes migró en la fase 5, grupo 3). */
 interface VerificationCodeRow {

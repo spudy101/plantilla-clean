@@ -2,8 +2,8 @@
 //
 // Ubicación de la persona (una por persona). origin_session_id lo completa la extensión de Prisma al
 // crear; una actualización no lo pisa.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PersonLocation, Prisma } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PersonLocation, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const WITH_PLACES = { country: true, city: true, department: true } satisfies Prisma.PersonLocationInclude;
 

@@ -1,4 +1,4 @@
-import type { PageMetadata } from '../../../shared/http/pagination';
+import type { PageMetadata } from '../../../shared/application/pagination';
 import componentsCatalogDtoModule from './catalog-components.response';
 const {
   CountryComponent,
@@ -11,9 +11,9 @@ const {
   RoleComponent
 } = componentsCatalogDtoModule;
 
-import type { DocumentType, PrivacyPolicy } from '../../../shared/database/generated/prisma/client';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import type { DocumentType, PrivacyPolicy } from '../../../shared/infrastructure/database/generated/prisma/client';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 import notificationModule from '../../notification';
 const { notificationComponentsDto: componentsNotificationDtoModule } = notificationModule;
 const { NotificationTypeComponent } = componentsNotificationDtoModule;

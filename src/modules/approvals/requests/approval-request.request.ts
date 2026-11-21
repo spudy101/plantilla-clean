@@ -1,7 +1,7 @@
 // Entrada de las solicitudes de doble aprobación: listado, detalle y resolución.
-import { z, withHint } from '../../../shared/validation/z';
-import { input, pageQuery, searchQuery, uuid } from '../../../shared/validation/fields';
-import dualApprovalModule from '../../../shared/constants/dual-approval';
+import { z, withHint } from '../../../shared/presentation/validation/z';
+import { input, pageQuery, searchQuery, uuid } from '../../../shared/presentation/validation/fields';
+import dualApprovalModule from '../../../shared/domain/constants/dual-approval';
 const { DUAL_APPROVAL_OPS } = dualApprovalModule;
 
 const OPERATION_KEYS = Object.keys(DUAL_APPROVAL_OPS);

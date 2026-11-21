@@ -1,9 +1,9 @@
 import notificationRepo from '../repositories/notification.repository';
 import userPushTokenRepo from '../repositories/user-push-token.repository';
 import verificationCodeRepo from '../repositories/verification-code.repository';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 

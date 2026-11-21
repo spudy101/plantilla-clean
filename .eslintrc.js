@@ -9,7 +9,7 @@
 // =============================================================================
 
 // ESLint se ejecuta sin haber cargado el .env, por lo que importar
-// shared/constants aquí dispararía el fail-fast de validación de variables.
+// shared/infrastructure/config aquí dispararía el fail-fast de validación de variables.
 // La única excepción permitida: leer NODE_ENV directo para configurar no-console.
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -323,7 +323,7 @@ module.exports = {
     // En desarrollo: warn (puedes dejarlo temporalmente, pero se avisa).
     // En producción: error (el CI falla — todo logging debe pasar por Winston).
     // La lectura de NODE_ENV aquí es la única excepción permitida a no-process-env
-    // porque ESLint no puede importar shared/constants.
+    // porque ESLint no puede importar shared/infrastructure/config.
     'no-console': isProduction ? 'error' : 'warn',
 
     // =========================================================================
@@ -399,7 +399,7 @@ module.exports = {
     // =========================================================================
 
     // Prohíbe acceder a process.env directamente en cualquier archivo de la app.
-    // Toda configuración debe llegar a través de shared/constants/ (config centralizado).
+    // Toda configuración debe llegar a través de shared/infrastructure/config/ (config centralizado).
     // Los overrides al final de este archivo otorgan la excepción donde corresponde.
     'no-process-env': 'error',
 
@@ -481,7 +481,7 @@ module.exports = {
     // -------------------------------------------------------------------------
     {
       // prisma.config.ts y database-url.ts: el CLI de Prisma lee DB_* sin pasar por la validación completa
-      files: ['**/shared/constants/**/*.{js,ts}', '**/shared/constants.js', '**/tests/**/*.{js,ts}', '**/shared/security/hash.util.{js,ts}', '**/*.test.ts', 'prisma.config.ts', '**/shared/database/database-url.ts'],
+      files: ['**/shared/infrastructure/config/**/*.{js,ts}', '**/tests/**/*.{js,ts}', '**/shared/infrastructure/security/hash.util.{js,ts}', '**/*.test.ts', 'prisma.config.ts', '**/shared/infrastructure/database/database-url.ts'],
       rules: {
         'no-process-env': 'off',
         'no-magic-numbers': 'off'
@@ -601,7 +601,7 @@ module.exports = {
     {
       // Esquemas de entrada (Zod): los límites (longitudes, rangos) son la especificación del campo, como en
       // la documentación OpenAPI; nombrar cada uno como constante no aporta.
-      files: ['**/requests/*.ts', '**/shared/validation/*.ts'],
+      files: ['**/requests/*.ts', '**/shared/presentation/validation/*.ts'],
       rules: {
         'no-magic-numbers': 'off',
         '@typescript-eslint/no-magic-numbers': 'off'

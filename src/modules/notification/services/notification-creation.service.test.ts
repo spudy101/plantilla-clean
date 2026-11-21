@@ -39,11 +39,11 @@ jest.mock('./notification-delivery.service', () => ({
 }));
 
 // La transacción se simula ejecutando el trabajo; activeUnit dice si quien llama ya está en una.
-jest.mock('../../../shared/database/unit-of-work', () => ({
+jest.mock('../../../shared/infrastructure/database/unit-of-work', () => ({
   run: jest.fn((work: () => unknown) => work())
 }));
 
-jest.mock('../../../shared/database/transaction-context', () => ({
+jest.mock('../../../shared/infrastructure/database/transaction-context', () => ({
   activeUnit: jest.fn(() => null)
 }));
 
@@ -57,11 +57,11 @@ jest.mock('./notification-batch.service', () => ({
   sendInBackground: jest.fn()
 }));
 
-jest.mock('../../../shared/security/encryption.util', () => ({
+jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({
   safeDecrypt: jest.fn(value => `dec(${value})`)
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
 }));
 
@@ -80,15 +80,15 @@ import NotificationContentUtilModule from '../utils/notification-content.util';
 const NotificationContentUtil = mocked(NotificationContentUtilModule);
 import deliveryServiceModule from './notification-delivery.service';
 const deliveryService = mocked(deliveryServiceModule);
-import unitOfWorkModule from '../../../shared/database/unit-of-work';
+import unitOfWorkModule from '../../../shared/infrastructure/database/unit-of-work';
 const unitOfWork = mocked(unitOfWorkModule);
-import txContextModule from '../../../shared/database/transaction-context';
+import txContextModule from '../../../shared/infrastructure/database/transaction-context';
 const txContext = mocked(txContextModule);
 import emailServiceModule from './email-notification.service';
 const emailService = mocked(emailServiceModule);
 import batchServiceModule from './notification-batch.service';
 const batchService = mocked(batchServiceModule);
-import EncryptionUtilModule from '../../../shared/security/encryption.util';
+import EncryptionUtilModule from '../../../shared/infrastructure/security/encryption.util';
 const EncryptionUtil = mocked(EncryptionUtilModule);
 import creationService from './notification-creation.service';
 

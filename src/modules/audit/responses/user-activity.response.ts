@@ -1,8 +1,8 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 import type auditLogRepository from '../repositories/audit-log.repository';
 import type changeLogRepository from '../repositories/change-log.repository';
-import type { PageMetadata } from '../../../shared/http/pagination';
+import type { PageMetadata } from '../../../shared/application/pagination';
 type AuditLogRepositoryPort = typeof auditLogRepository;
 type ChangeLogRepositoryPort = typeof changeLogRepository;
 // DTO del feed de actividad del propio usuario. Client-safe: NUNCA expone `details` de audit_logs

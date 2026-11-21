@@ -1,7 +1,7 @@
 // config/swagger/modules/admin/kyc/person/person.paths.ts
 
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { jsonBody, toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { jsonBody, toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import {
   AdminDeleteAccountBody,
   ChangeEmailBody,

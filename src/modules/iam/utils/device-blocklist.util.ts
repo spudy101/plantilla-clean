@@ -19,8 +19,8 @@
 //   → Un dispositivo bloqueado con Redis caído podrá operar hasta que
 //     su token expire naturalmente. Aceptable vs. cortar disponibilidad.
 
-import redisClient from '../../../shared/infra/redis.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import redisClient from '../../../shared/infrastructure/cache/redis.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 
 const KEY_PREFIX = 'device:blocked';

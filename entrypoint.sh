@@ -57,4 +57,4 @@ if [ "$RUN_SEEDS" = "true" ]; then
 fi
 
 echo "🚀 Iniciando servidor en puerto 4000..."
-exec node dist/src/server.js
+exec node dist/src/main/server.js

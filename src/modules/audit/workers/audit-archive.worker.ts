@@ -1,16 +1,16 @@
 import cron from 'node-cron';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import { runOperation } from '../../../shared/observability/operation';
+import { runOperation } from '../../../shared/infrastructure/observability/operation';
 import auditLogRepository from '../repositories/audit-log.repository';
-import operationRepository from '../../../shared/observability/operation.repository';
-import idempotencyRepository from '../../../shared/http/idempotency/idempotency.repository';
-import constantsModule from '../../../shared/constants';
+import operationRepository from '../../../shared/infrastructure/observability/operation.repository';
+import idempotencyRepository from '../../../shared/infrastructure/database/idempotency.repository';
+import constantsModule from '../../../shared/infrastructure/config';
 const { logging } = constantsModule;
 import settingsModule from '../../settings';
 const { systemGlobalConfigRepository } = settingsModule;
-import S3Util from '../../../shared/infra/s3.util';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import S3Util from '../../../shared/infrastructure/storage/s3.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 import audit from '../audit.service';

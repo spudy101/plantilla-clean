@@ -1,5 +1,5 @@
 import type { UserWith } from '../../repositories/user.repository';
-import type { PrivacyPolicy } from '../../../../shared/database/generated/prisma/client';
+import type { PrivacyPolicy } from '../../../../shared/infrastructure/database/generated/prisma/client';
 // modules/shared-endpoints/kyc/iam/services/auth-login/login-policy-gate.service.ts
 //
 // Compuerta de política de privacidad en el login. La comparten el login por contraseña y el
@@ -8,9 +8,9 @@ import type { PrivacyPolicy } from '../../../../shared/database/generated/prisma
 import userRepository from '../../repositories/user.repository';
 import legalModule from '../../../legal';
 const { privacyPolicyRepository, consentRecorder } = legalModule;
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { INTERNAL_ROLE_NAMES } = constantsModule;
 import authLoginDtoModule from '../../responses/auth-login.response';
 const { PolicyUpdateRequiredDTO } = authLoginDtoModule;

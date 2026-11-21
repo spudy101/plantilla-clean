@@ -4,7 +4,7 @@
 // dispositivos de confianza. Usamos EncryptionUtil REAL para firmar/verificar (roundtrip auténtico),
 // mockeamos shared/constants (para no arrancar validación de .env), el logger y el repository (sin BD).
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   encryption: {
     aesKey: '00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff',
     aesIv: '000102030405060708090a0b0c0d0e0f',
@@ -12,7 +12,7 @@ jest.mock('../../../shared/constants', () => ({
   }
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
 
@@ -23,7 +23,7 @@ jest.mock('../repositories/auth-trusted-device.repository', () => ({
 
 import { mocked, fixture } from 'tests/helpers/mock';
 import HmacService from './hmac.service';
-import EncryptionUtil from '../../../shared/security/encryption.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
 import trustedDeviceRepoModule from '../repositories/auth-trusted-device.repository';
 const trustedDeviceRepo = mocked(trustedDeviceRepoModule);
 

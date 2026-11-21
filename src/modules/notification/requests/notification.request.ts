@@ -1,6 +1,6 @@
 // Entrada del módulo de notificaciones: bandeja del usuario, preferencias, verificación de contacto y
 // administración (categorías, tipos, entregas).
-import { z, withHint } from '../../../shared/validation/z';
+import { z, withHint } from '../../../shared/presentation/validation/z';
 import {
   input,
   optionalBool,
@@ -11,7 +11,7 @@ import {
   pagingQuery,
   searchQuery,
   uuid
-} from '../../../shared/validation/fields';
+} from '../../../shared/presentation/validation/fields';
 
 const TIME_REGEX = /^\d{2}:\d{2}(:\d{2})?$/;
 

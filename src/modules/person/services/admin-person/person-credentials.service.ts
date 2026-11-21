@@ -1,4 +1,4 @@
-import type { Prisma } from '../../../../shared/database/generated/prisma/client';
+import type { Prisma } from '../../../../shared/infrastructure/database/generated/prisma/client';
 import iamModule from '../../../iam';
 const { userRepository } = iamModule;
 import type { UserAdminTargetRow } from '../../../iam';
@@ -7,16 +7,16 @@ import type { UserAdminTargetRow } from '../../../iam';
 // Credenciales e identidad de una cuenta: reset de contraseña, cambio de email,
 // cambio de documento y desactivación de MFA. Extraído de PersonService (SOLID: S).
 
-import type { AdminAuditContext } from '../../../../shared/types/audit-context';
-import unitOfWork from '../../../../shared/database/unit-of-work';
+import type { AdminAuditContext } from '../../../../shared/application/audit-context';
+import unitOfWork from '../../../../shared/infrastructure/database/unit-of-work';
 import KycSharedUtil from '../../utils/kyc-shared.util';
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import ProfileHelper from '../../helpers/profile.helper';
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 
 import adminPersonDtoModule from '../../responses/admin-person.response';

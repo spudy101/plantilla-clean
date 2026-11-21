@@ -1,8 +1,8 @@
 // modules/schemas/notification/repositories/user-push-token.repository.ts
 //
 // Tokens push por dispositivo. origin_session_id lo completa la extensión de Prisma al crear.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { UserPushToken } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { UserPushToken } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 class UserPushTokenRepository extends PrismaRepository {
   async findActiveByUser(userId: string): Promise<UserPushToken[]> {

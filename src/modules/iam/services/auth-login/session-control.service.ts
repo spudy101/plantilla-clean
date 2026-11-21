@@ -6,10 +6,10 @@
 import userSessionRepository from '../../repositories/user-session.repository';
 import RefreshTokenStore from '../../utils/refresh-token-store.util';
 import TokenBlacklistUtil from '../../utils/token-blacklist.util';
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { SECURITY } = constantsModule;
 import auditModule from '../../../audit';
 import type { OtherSessionsClosed, SessionClosed } from '../../responses/auth-login.response';

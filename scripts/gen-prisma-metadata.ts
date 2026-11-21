@@ -1,7 +1,7 @@
 // scripts/gen-prisma-metadata.ts — corre después de `prisma generate` (npm run prisma:generate).
 //
-// Escribe src/shared/database/generated/prisma-metadata.ts: por cada modelo del schema, sus campos escalares
-// y sus relaciones (campo → modelo destino). Lo usan las extensiones de Prisma (src/shared/database/
+// Escribe src/shared/infrastructure/database/generated/prisma-metadata.ts: por cada modelo del schema, sus campos escalares
+// y sus relaciones (campo → modelo destino). Lo usan las extensiones de Prisma (src/shared/infrastructure/database/
 // prisma-extensions.ts) para recorrer escrituras anidadas y resultados con `include` sabiendo qué
 // modelo es cada objeto: el cliente generado de Prisma 7 no expone su datamodel en runtime.
 //
@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const SCHEMA = path.resolve('prisma/schema.prisma');
-const OUT = path.resolve('src/shared/database/generated/prisma-metadata.ts');
+const OUT = path.resolve('src/shared/infrastructure/database/generated/prisma-metadata.ts');
 
 const src = fs.readFileSync(SCHEMA, 'utf8').replace(/\r\n/g, '\n');
 const blocks = [...src.matchAll(/^model (\w+) \{\n([\s\S]*?)^\}/gm)].map(m => ({ name: m[1]!, body: m[2]! }));

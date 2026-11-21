@@ -4,7 +4,7 @@
 // (código, inmutable) con los overrides en BD (runtime). Mockeamos Redis (caché) y el repositorio
 // de overrides para probar la lógica de resolución de forma determinística.
 
-jest.mock('../../../shared/infra/redis.util', () => ({
+jest.mock('../../../shared/infrastructure/cache/redis.util', () => ({
   get: jest.fn(),
   set: jest.fn(),
   del: jest.fn()
@@ -15,12 +15,12 @@ jest.mock('../repositories/role-permission-override.repository', () => ({
 }));
 
 import { mocked } from 'tests/helpers/mock';
-import redisClientModule from '../../../shared/infra/redis.util';
+import redisClientModule from '../../../shared/infrastructure/cache/redis.util';
 const redisClient = mocked(redisClientModule);
 import overrideRepositoryModule from '../repositories/role-permission-override.repository';
 const overrideRepository = mocked(overrideRepositoryModule);
 import rbacService from './rbac.service';
-import rbacModule from '../../../shared/constants/rbac';
+import rbacModule from '../../../shared/domain/constants/rbac';
 const { RBAC_ROLES, RBAC_MODULES, RBAC_ACTIONS } = rbacModule;
 
 describe('RbacService', () => {

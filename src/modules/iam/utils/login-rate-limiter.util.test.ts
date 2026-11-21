@@ -12,16 +12,16 @@ const mockClient = {
   del: jest.fn()
 };
 
-jest.mock('../../../shared/infra/redis.util', () => ({
+jest.mock('../../../shared/infrastructure/cache/redis.util', () => ({
   isAvailable: jest.fn(),
   getClient: jest.fn()
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
 }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   LOGIN_RATE_LIMIT: {
     IP_MAX_ATTEMPTS: 3,
     IP_WINDOW_SECS: 60,
@@ -33,7 +33,7 @@ jest.mock('../../../shared/constants', () => ({
 }));
 
 import { mocked } from 'tests/helpers/mock';
-import redisClientModule from '../../../shared/infra/redis.util';
+import redisClientModule from '../../../shared/infrastructure/cache/redis.util';
 const redisClient = mocked(redisClientModule);
 import LoginRateLimiter from './login-rate-limiter.util';
 

@@ -11,7 +11,7 @@ operación en curso.
 | Retención | Años (SFC: 5) | `OPERATIONS_RETENTION_DAYS` (90) | la del destino (CloudWatch) |
 | Dónde | `audit_logs` → S3 | `operations` | consola (JSON en producción) |
 
-## Operaciones (`src/shared/observability/operation.ts`)
+## Operaciones (`src/shared/infrastructure/observability/operation.ts`)
 
 Toda operación entra por un único punto:
 
@@ -98,7 +98,7 @@ través de `change-log.repository`. Los valores se enmascaran al responder (`pre
 ### Eventos de infraestructura
 
 `shared/` no importa módulos, pero algunos eventos suyos se auditan (worker caído, Redis, 401/403). Los
-publica con `auditInfraEvent(...)` (`src/shared/observability/audit-hook.ts`) y `src/app.ts` los conecta
+publica con `auditInfraEvent(...)` (`src/shared/infrastructure/observability/audit-hook.ts`) y `src/main/app.ts` los conecta
 al módulo de auditoría con `registerAuditSink`.
 
 ### Retención y archivado (`audit-archive.worker`)
@@ -110,7 +110,7 @@ al módulo de auditoría con `registerAuditSink`.
   corre si el Superadmin la habilitó (`audit_hot_purge_enabled`). `audit_logs` es append-only: un
   trigger rechaza UPDATE/DELETE salvo la purga autorizada.
 
-## Logs (`src/shared/observability/logger.util.ts`)
+## Logs (`src/shared/infrastructure/observability/logger.util.ts`)
 
 Winston. En producción, la consola va en JSON (CloudWatch Logs Insights filtra por `correlationId`); en
 el resto, legible y con colores. El `correlationId` de la operación en curso se agrega solo a cada línea.

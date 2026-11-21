@@ -1,4 +1,4 @@
-import { interopDefault } from '../../../shared/utils/interop.util';
+import { interopDefault } from '../../../shared/kernel/interop.util';
 import { Loose } from 'tests/helpers/mock';
 // tests/unit/modules/shared-endpoints/core/services/promotional-banner.service.test.ts
 //
@@ -8,8 +8,8 @@ import { Loose } from 'tests/helpers/mock';
 // arma DTO, audita y cachea; (2) cache hit → segunda llamada NO vuelve a BD; (3) config nula →
 // lista vacía sin reventar.
 
-jest.mock('../../settings/repositories/system-global-config.repository', () => ({ findActive: jest.fn() }));
-jest.mock('../../../shared/observability/logger.util', () => ({ logAudit: jest.fn() }));
+jest.mock('../../settings/infrastructure/persistence/legacy-system-global-config.repository', () => ({ findActive: jest.fn() }));
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({ logAudit: jest.fn() }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 jest.mock('../responses/promotional-banner.response', () => ({
   toPublicBannerList: jest.fn()
@@ -24,7 +24,7 @@ describe('PromotionalBannerPublicService', () => {
   beforeEach(() => {
     // Caché en memoria a nivel de módulo → reset para cada test.
     jest.resetModules();
-    systemGlobalConfigRepository = interopDefault(require('../../settings/repositories/system-global-config.repository') as typeof import('../../settings/repositories/system-global-config.repository'));
+    systemGlobalConfigRepository = interopDefault(require('../../settings/infrastructure/persistence/legacy-system-global-config.repository') as typeof import('../../settings/infrastructure/persistence/legacy-system-global-config.repository'));
     logAudit = interopDefault(require('../../audit/audit.service') as typeof import('../../audit/audit.service')).record;
     ({ toPublicBannerList } = (require('../responses/promotional-banner.response') as typeof import('../responses/promotional-banner.response')));
     service = interopDefault(require('./promotional-banner.service') as typeof import('./promotional-banner.service'));

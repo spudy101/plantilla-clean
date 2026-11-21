@@ -5,8 +5,8 @@
 // con `users` en Prisma (grupo 6), el registro graba los consentimientos en la misma unidad del alta.
 
 import { randomUUID } from 'node:crypto';
-import prisma from '../../src/shared/database/prisma';
-import unitOfWork from '../../src/shared/database/unit-of-work';
+import prisma from '../../src/shared/infrastructure/database/prisma';
+import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
 import userRepository from '../../src/modules/iam/repositories/user.repository';
 import userConsentRepository from '../../src/modules/legal/repositories/user-consent.repository';
 import privacyPolicyAdminRepository from '../../src/modules/legal/repositories/privacy-policy-admin.repository';

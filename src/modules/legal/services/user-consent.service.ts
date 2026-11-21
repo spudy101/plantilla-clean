@@ -1,8 +1,8 @@
-import type { RequestAuditContext } from '../../../shared/types/audit-context';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import type { RequestAuditContext } from '../../../shared/application/audit-context';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import unitOfWork from '../../../shared/database/unit-of-work';
+import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
 import consentTypeRepository from '../repositories/consent-type.repository';
 import userConsentRepository from '../repositories/user-consent.repository';
 import userConsentDtoModule from '../responses/user-consent.response';

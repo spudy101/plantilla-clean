@@ -1,8 +1,8 @@
 // modules/schemas/kyc/maintainers/repositories/city.repository.ts
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { Prisma } from '../../../shared/database/generated/prisma/client';
-import type { City } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { City } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 // Rango de diacríticos combinantes — para comparar nombres sin acentos ni mayúsculas
 const DIACRITICS = /[̀-ͯ]/g;

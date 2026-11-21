@@ -21,12 +21,12 @@
 // === RF-AUTH-01: Registro de Usuario (confirmación de correo y celular) ===
 
 import crypto from 'node:crypto';
-import redisClient from '../../../shared/infra/redis.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import redisClient from '../../../shared/infrastructure/cache/redis.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { LOGIN_RATE_LIMIT } = constantsModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 

@@ -3,9 +3,9 @@
 // Bitácora de cambios sobre una cuenta (email, contraseña, MFA, estado, rol…). No es una tabla propia: es
 // una vista sobre audit_logs (acción USER_FIELD_CHANGED; ver audit.recordChange). Devuelve filas con la
 // forma de siempre (logId, changeType, previousValue/newValue…) para que los DTOs no cambien.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import type { AuditLog, Prisma } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import type { AuditLog, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 import { loadUserRefs, type UserRef } from './user-ref';
 import type { ChangedByRole, ChangeType } from '../audit.service';
 

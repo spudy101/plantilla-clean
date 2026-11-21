@@ -1,9 +1,9 @@
 // Salida de la traza de operaciones (admin). Lista blanca: ni payloads de proveedores ni detalles
 // internos más allá de lo que sirve para reconstruir qué pasó.
-import type { PageMetadata } from '../../../shared/http/pagination';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import type { AuditLog, Operation } from '../../../shared/database/generated/prisma/client';
+import type { PageMetadata } from '../../../shared/application/pagination';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import type { AuditLog, Operation } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const operationItem = (o: Operation) => ({
   operationId: o.operationId,

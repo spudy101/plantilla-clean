@@ -7,7 +7,7 @@ import type SessionTraceDto from '../responses/admin-session-trace.response';
 // (índice inverso / cobertura / durabilidad), no la fuente. La hidratación es perezosa y por lote:
 // un findAll por tabla involucrada, agrupando los ids, reusando los DTOs admin que ya existen.
 
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 
 import auditLogRepository from '../repositories/audit-log.repository';
 import iamModule from '../../iam';
@@ -26,7 +26,7 @@ const { UserConsentComponent } = legalComponentsDto;
 import adminSessionTraceDtoModule from '../responses/admin-session-trace.response';
 const { SessionTraceListDTO, SessionTimelineDTO, SessionEntitiesDTO } = adminSessionTraceDtoModule;
 import audit from '../audit.service';
-import { appliedFilters, pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { appliedFilters, pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { SessionListQuery, SessionTimelineQuery } from '../requests/audit.request';
 
 // ============================================================

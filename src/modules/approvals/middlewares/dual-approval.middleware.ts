@@ -8,13 +8,13 @@
 // dentro del handler), usar el gate a nivel de servicio: DualApprovalService.gate('OP_KEY', {...}).
 
 import type { NextFunction, Request, Response } from 'express';
-import ApiResponse from '../../../shared/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import ApiResponse from '../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
 import DualApprovalService from '../services/dual-approval.service';
-import dualApprovalModule from '../../../shared/constants/dual-approval';
+import dualApprovalModule from '../../../shared/domain/constants/dual-approval';
 const { DUAL_APPROVAL_OPS } = dualApprovalModule;
-import authUserUtil from '../../../shared/http/auth-user.util';
+import authUserUtil from '../../../shared/presentation/http/auth-user.util';
 
 const { requireAuthUser } = authUserUtil;
 

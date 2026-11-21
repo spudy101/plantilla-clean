@@ -75,7 +75,7 @@ src/modules/approvals/services/
 └── dual-approval/
     └── dual-approval-notifier.service.ts ← avisos a aprobadores y al solicitante
 
-src/shared/security/es256-signature.util.ts      ← verificación ES256 (pura), extraída de auth-biometric
+src/shared/infrastructure/security/es256-signature.util.ts      ← verificación ES256 (pura), extraída de auth-biometric
 src/modules/person/helpers/profile.helper.ts ← clase ProfileHelper con constructor(deps)
 ```
 
@@ -139,7 +139,7 @@ Otro ejemplo que ya existía: el `ENTITY_REGISTRY` de `admin-session-trace.servi
 
 ## L — Liskov Substitution
 
-Todos los repositorios extienden `PrismaRepository` (`src/shared/database/prisma.repository.ts`), que
+Todos los repositorios extienden `PrismaRepository` (`src/shared/infrastructure/database/prisma.repository.ts`), que
 no trae operaciones genéricas: da el cliente (`db()`, el de la transacción activa si la hay) y los
 helpers de paginación y búsqueda. Cada repositorio declara **solo las operaciones que su tabla admite**,
 así ningún hijo hereda un método que no puede cumplir:
@@ -222,7 +222,7 @@ Ejemplos reales: `consent-recorder.service.test.ts`, `unit-of-work.test.ts` y el
 
 ### 2. Unit of Work
 
-Los services no abren transacciones del ORM. Usan el puerto `src/shared/database/unit-of-work.ts`, siempre
+Los services no abren transacciones del ORM. Usan el puerto `src/shared/infrastructure/database/unit-of-work.ts`, siempre
 en modo gestionado: lo que pasa dentro de `run()` se confirma junto o se revierte junto, y lo posterior al
 commit (auditoría, notificaciones) va **después**, fuera de la transacción:
 
@@ -243,11 +243,11 @@ tapaba el error original.
 ### 3. La capa de aplicación no conoce el ORM
 
 Services, helpers, validators, controllers, middlewares y utils **no** usan el cliente de Prisma
-(`src/shared/database/prisma`, `$queryRaw`, `$transaction`, delegates). Sí pueden importar **tipos** del cliente
+(`src/shared/infrastructure/database/prisma`, `$queryRaw`, `$transaction`, delegates). Sí pueden importar **tipos** del cliente
 generado (`import type { User } from '…/generated/prisma/client'`): son la forma de las filas.
 
 - **Consultas e `include`** → métodos con nombre de negocio en el repositorio (tabla de § I).
-- **Enums de dominio** → `src/shared/constants/domain-enums.ts` (`NOTIFICATION_PROCESSING_STATUS`,
+- **Enums de dominio** → `src/shared/infrastructure/database/domain-enums.ts` (`NOTIFICATION_PROCESSING_STATUS`,
   `APPROVAL_REQUEST_STATUS`, `USER_SESSION_STATUS`, `INTEGRATION_PRODUCTS`, `INTEGRATION_RESULTS`).
   Toma los valores de los `enum` del schema de Prisma, con chequeo de exhaustividad: una sola fuente de verdad.
 - **Código de `shared/`** que consulta la base (`auth.middleware`, `rbac.service`,
@@ -260,7 +260,7 @@ generado (`import type { User } from '…/generated/prisma/client'`): son la for
 
 | Dónde | Por qué |
 |---|---|
-| `src/shared/observability/logger.util.ts` | Escribe los logs a través de su repositorio, cargado de forma diferida (todo el sistema depende del logger). |
+| `src/shared/infrastructure/observability/logger.util.ts` | Escribe los logs a través de su repositorio, cargado de forma diferida (todo el sistema depende del logger). |
 | `audit-archive.worker.ts` | Purga lotes de `audit_logs` con `auditLogRepository.purgeCreatedBefore` (mantenimiento, no lógica de negocio). |
 | `shared/base/*`, `servers/*`, `*.bootstrap.ts` | Arranque y composición. |
 
@@ -272,7 +272,7 @@ generado (`import type { User } from '…/generated/prisma/client'`): son la for
 - [ ] Exporta la instancia **y** la clase.
 - [ ] No usa el cliente de Prisma: si necesitas un filtro o un `include`, agrega un método con nombre de
       negocio al repositorio (los tipos de las filas sí, con `import type`).
-- [ ] Enums (estados, catálogos) desde `src/shared/constants/domain-enums.ts`.
+- [ ] Enums (estados, catálogos) desde `src/shared/infrastructure/database/domain-enums.ts`.
 - [ ] Transacciones con `this.unitOfWork.run(async () => …)`: los repositorios toman la transacción solos.
 - [ ] El repositorio extiende `PrismaRepository` y expone solo las operaciones que su tabla admite.
 - [ ] Si el service crece y mezcla responsabilidades, se divide y el original queda como fachada.
@@ -294,7 +294,7 @@ Las plantillas de código actualizadas están en [`implementation-patterns.md`](
 | Algún archivo del proyecto importa `sequelize` | D |
 | Fuera de repositorios y `shared/database` se importa (como valor) el cliente de Prisma | D |
 | La capa de aplicación arma consultas de Prisma (`$queryRaw`, `$transaction`, `prisma.x.find…`) | I / D |
-| Los enums generados se leen fuera de `src/shared/constants/domain-enums.ts` | D |
+| Los enums generados se leen fuera de `src/shared/infrastructure/database/domain-enums.ts` | D |
 | Un service arma `include` con `model: X` | D |
 | Un repositorio no extiende `PrismaRepository` | L |
 | Un service exporta la instancia sin exportar también la clase | D |

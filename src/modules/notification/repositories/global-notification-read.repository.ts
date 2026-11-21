@@ -2,7 +2,7 @@
 //
 // Lecturas de notificaciones globales (PK compuesta: notificación + usuario). origin_session_id lo
 // completa la extensión de Prisma al crear; una segunda marca de lectura no lo pisa (skipDuplicates).
-import PrismaRepository from '../../../shared/database/prisma.repository';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
 
 class GlobalNotificationReadRepository extends PrismaRepository {
   /** Marca como leídas para el usuario las notificaciones indicadas; las ya leídas no cambian. */

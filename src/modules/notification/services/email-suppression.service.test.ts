@@ -14,15 +14,15 @@ jest.mock('../repositories/email-bounce-suppression.repository', () => ({
   lift: jest.fn()
 }));
 
-jest.mock('../../../shared/security/encryption.util', () => ({
+jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({
   generateHash: jest.fn().mockReturnValue('email-hash-de-prueba')
 }));
 
-jest.mock('../../../shared/security/masking.util', () => ({
+jest.mock('../../../shared/infrastructure/security/masking.util', () => ({
   maskEmail: jest.fn().mockReturnValue('u***@e***.com')
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));
@@ -31,11 +31,11 @@ jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 import { mocked } from 'tests/helpers/mock';
 import suppressionRepoModule from '../repositories/email-bounce-suppression.repository';
 const suppressionRepo = mocked(suppressionRepoModule);
-import EncryptionUtilModule from '../../../shared/security/encryption.util';
+import EncryptionUtilModule from '../../../shared/infrastructure/security/encryption.util';
 const EncryptionUtil = mocked(EncryptionUtilModule);
-import MaskingUtilModule from '../../../shared/security/masking.util';
+import MaskingUtilModule from '../../../shared/infrastructure/security/masking.util';
 const MaskingUtil = mocked(MaskingUtilModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../../audit/audit.service';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;

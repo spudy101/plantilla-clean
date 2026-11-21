@@ -4,7 +4,7 @@
 // logout y registro: antes cada controller tenía su copia ("mismos valores que auth-login") y
 // cualquier cambio de atributos había que replicarlo a mano.
 import type { CookieOptions, Response } from 'express';
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { jwt: jwtConfig } = constantsModule;
 
 const COOKIE_OPTIONS: CookieOptions = {

@@ -3,13 +3,13 @@
 // Regresiones de bugs que destapó el tipado de modules/schemas/notification (fase 4 de la
 // migración a TS). Repositorios y modelos se reemplazan por dobles.
 
-jest.mock('../../shared/observability/logger.util', () => ({
+jest.mock('../../shared/infrastructure/observability/logger.util', () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
 jest.mock('../audit/audit.service', () => ({ record: jest.fn() }));
 jest.mock('./utils/notification-count.util', () => ({ emitCountUpdate: jest.fn() }));
-jest.mock('../../shared/database/unit-of-work', () => ({ run: jest.fn((work: () => unknown) => work()) }));
+jest.mock('../../shared/infrastructure/database/unit-of-work', () => ({ run: jest.fn((work: () => unknown) => work()) }));
 
 const mockSend = jest.fn();
 jest.mock('@aws-sdk/client-sns', () => {

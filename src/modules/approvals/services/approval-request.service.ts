@@ -1,4 +1,4 @@
-import type { AdminAuditContext } from '../../../shared/types/audit-context';
+import type { AdminAuditContext } from '../../../shared/application/audit-context';
 // Service del módulo admin de doble aprobación. Delega en el core DualApprovalService
 // (capa de datos en schemas/core) y agrega la auditoría de los endpoints admin.
 

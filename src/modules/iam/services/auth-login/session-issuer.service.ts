@@ -7,11 +7,11 @@ import type { UserWith } from '../../repositories/user.repository';
 
 import crypto from 'node:crypto';
 import userSessionRepository from '../../repositories/user-session.repository';
-import JwtUtil from '../../../../shared/security/jwt.util';
+import JwtUtil from '../../../../shared/infrastructure/security/jwt.util';
 import RefreshTokenStore from '../../utils/refresh-token-store.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { jwt: jwtConfig } = constantsModule;
 
 class SessionIssuerService {

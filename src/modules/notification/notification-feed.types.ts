@@ -2,8 +2,8 @@
 //
 // Feed de notificaciones del usuario: personales + globales mezcladas y ordenadas por fecha.
 // Lo arma NotificationService y lo serializan los DTOs. Solo tipos.
-import type { GlobalNotification, Notification, NotificationType } from '../../shared/database/generated/prisma/client';
-import type { PageRequest } from '../../shared/http/pagination';
+import type { GlobalNotification, Notification, NotificationType } from '../../shared/infrastructure/database/generated/prisma/client';
+import type { PageRequest } from '../../shared/application/pagination';
 
 export type PaginationParams = PageRequest;
 

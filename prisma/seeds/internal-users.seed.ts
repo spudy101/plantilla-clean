@@ -9,8 +9,8 @@
 // los cifra y calcula sus hashes (shared/database/pii-fields.ts).
 import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import constantsModule from '../../src/shared/constants';
-import { hashValue } from '../../src/shared/database/pii-fields';
+import constantsModule from '../../src/shared/infrastructure/config';
+import { hashValue } from '../../src/shared/infrastructure/database/pii-fields';
 import { report, type SeedClient } from './seed-client';
 
 const { seeds, RBAC_ROLES } = constantsModule;

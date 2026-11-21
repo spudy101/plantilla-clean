@@ -1,7 +1,7 @@
-import type { PersonReference } from '../../../shared/database/generated/prisma/client';
+import type { PersonReference } from '../../../shared/infrastructure/database/generated/prisma/client';
 // modules/client/kyc/services/person-reference.service.ts
 
-import AppError from '../../../shared/http/app-error.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
 import personReferenceRepository from '../repositories/person-reference.repository';
 import personReferenceDtoModule from '../responses/person-reference.response';
 const { PersonReferenceDTO, PersonReferenceListDTO } = personReferenceDtoModule;

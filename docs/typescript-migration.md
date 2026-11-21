@@ -27,7 +27,7 @@
 `esModuleInterop`. `tsconfig.test.json` extiende el anterior y agrega lo que no entra al build (tests,
 `migrations/`, `seeders/`, `scripts/*.ts`), que corre con Jest o `tsx` desde las fuentes.
 
-> ⚠️ `node src/server.ts` no funciona (Node no ejecuta TypeScript del proyecto así). Usa
+> ⚠️ `node src/main/server.ts` no funciona (Node no ejecuta TypeScript del proyecto así). Usa
 > `npm run dev` (tsx) o `npm run build && npm start`.
 
 ## Reglas del código
@@ -57,7 +57,7 @@
    ```
 
 2. **Cargas diferidas** (para cortar un ciclo de imports o no cargar `shared/models` al importar un
-   puerto): `interopDefault(require('./x') as typeof import('./x'))` (`src/shared/utils/interop.util`).
+   puerto): `interopDefault(require('./x') as typeof import('./x'))` (`src/shared/kernel/interop.util`).
    Un `require('./x').default` a secas se rompe cuando `./x` está reemplazado por un `jest.mock` con
    factory (el objeto del mock no tiene `.default`); `interopDefault` hace lo mismo que `import x from`.
 3. Sin `any` salvo que esté justificado en un comentario. En tests, la laxitud vive en
@@ -65,7 +65,7 @@
    donde el código bajo prueba espera el tipo completo) y `Loose` (parámetros de implementaciones de
    mocks, resultados con la forma de un DTO mockeado). El módulo bajo prueba se importa sin envolver.
 4. **Migraciones y seeders**: `export default { up, down } satisfies Migration`
-   (`shared/types/migration.ts`), que tipa `queryInterface` y `Sequelize` por contexto.
+   (`shared/presentation/types/migration.ts`), que tipa `queryInterface` y `Sequelize` por contexto.
 5. `npm run typecheck && npm run lint && npm test` en verde antes de commitear. La guarda
    `tests/unit/guards/solid-architecture.test.ts` revisa imports, `export default Object.assign(new X(), { X })`
    y `constructor(deps: T = {})`.
@@ -97,12 +97,12 @@ parámetros y `catch` (ver su README para el flujo y las trampas conocidas).
 
 Tipos y helpers compartidos:
 
-- `src/shared/utils/error-message.util.ts`: `errorMessage(e)`, `errorName(e)`, `isOperationalError(e)` para los
+- `src/shared/kernel/error-message.util.ts`: `errorMessage(e)`, `errorName(e)`, `isOperationalError(e)` para los
   `catch` (con `strict` el error es `unknown`). Si una función recibe un parámetro llamado
   `errorMessage`, usar `errorMessageModule.errorMessage(…)` para no taparlo.
-- `src/shared/types/express.d.ts`: propiedades que los middlewares agregan a `req` (`user`, `correlationId`,
+- `src/shared/presentation/types/express.d.ts`: propiedades que los middlewares agregan a `req` (`user`, `correlationId`,
   `serverContext`, `externalService`, `lockKey`).
-- `src/shared/types/db-rows.ts`: formas mínimas de filas (`UserRefRow`, `DbDate`, `Maybe<T>`) para tipar lo
+- `src/shared/infrastructure/database/db-rows.ts`: formas mínimas de filas (`UserRefRow`, `DbDate`, `Maybe<T>`) para tipar lo
   que leen los DTOs sin depender de los modelos (estructurales: los modelos tipados de la fase 3 encajan).
 - `src/modules/iam/utils/auth-user.util.ts`: `requireAuthUser(req)` — el usuario autenticado tipado, o 401 si la
   ruta quedó sin AuthMiddleware (antes era un `TypeError` → 500).
@@ -126,11 +126,11 @@ Tipos y helpers compartidos:
   tipo de su default (`userRepository: typeof userRepository`) y genera `XService.Deps`. Composiciones
   (`deps.x ?? new X(...)`) quedan como `InstanceType<typeof X>`.
 - **Controllers**: `requireAuthUser(req)` / `requireAuthPerson(req)` (un `const user` por handler) y
-  `routeParam(req, 'id')` (`src/shared/http/route-param.util`): string garantizado o 400. Lo aplica
+  `routeParam(req, 'id')` (`src/shared/presentation/http/route-param.util`): string garantizado o 400. Lo aplica
   `req-user.js`. Cookies de sesión web: `src/modules/iam/utils/auth-cookies.util` (una sola definición).
-- **Contextos**: `src/shared/types/audit-context.ts` — `RequestAuditContext` (HTTP: ip, userAgent,
+- **Contextos**: `src/shared/application/audit-context.ts` — `RequestAuditContext` (HTTP: ip, userAgent,
   fingerprint…) y `AdminAuditContext` (quién hace la acción admin). `KeyValueCache`
-  (`src/shared/types/cache.ts`) para código que recibe Redis o la caché local indistintamente.
+  (`src/shared/application/ports/key-value-cache.port.ts`) para código que recibe Redis o la caché local indistintamente.
 - **Query string**: `PaginationHelper.stringParam(query, 'x')` (string no vacío o null) y
   `PaginationHelper.booleanParam(query, 'x')` (acepta el boolean que dejan los validators con
   `.toBoolean()` — Express 4 reescribe `req.query` — o `'true'`/`'false'`).
@@ -140,7 +140,7 @@ Tipos y helpers compartidos:
   `notification-feed.types`, `profile.types`): un módulo que exporta una instancia (`export default
   new X()`) no deja alcanzar los tipos de su namespace desde otro archivo.
 - **Tests**: `tests/helpers/mock.ts` (`mocked`, `fixture`, `Loose`; ver [Reglas](#reglas-del-código)).
-- **Migraciones**: `shared/types/migration.ts` (`Migration`, `SequelizeStatic`).
+- **Migraciones**: `shared/presentation/types/migration.ts` (`Migration`, `SequelizeStatic`).
 - Campos de clase opcionales que no siempre se asignan: `declare campo?: T`. Con target ES2023
   (`useDefineForClassFields`) un campo sin `declare` se crea como `undefined` en cada instancia.
 

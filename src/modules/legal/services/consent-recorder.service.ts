@@ -17,7 +17,7 @@
 import consentTypeRepository from '../repositories/consent-type.repository';
 import userConsentRepository from '../repositories/user-consent.repository';
 import privacyPolicyRepository from '../repositories/privacy-policy.repository';
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { CONSENT_TYPE_CODES } = constantsModule;
 
 class ConsentRecorderService {

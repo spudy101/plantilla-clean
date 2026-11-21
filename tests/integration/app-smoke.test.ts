@@ -14,7 +14,7 @@
 import request from 'supertest';
 
 // La app completa (admin + client); las rutas de negocio cuelgan de /admin y /client.
-import app from '../../src/app';
+import app from '../../src/main/app';
 
 describe('App smoke (client) · pipeline HTTP end-to-end', () => {
   it('GET /health responde 200 con el contrato de health check', async () => {

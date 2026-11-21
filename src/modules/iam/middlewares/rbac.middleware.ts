@@ -22,10 +22,10 @@
 
 import type { NextFunction, Request, Response } from 'express';
 import RbacService from '../services/rbac.service';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { MFA_REQUIRED_ROLES, MFA_NOT_ACTIVE_LOG_MSG } = constantsModule;
 import mfaStatusUtilModule from '../utils/mfa-status.util';
 const { isMfaActive } = mfaStatusUtilModule;

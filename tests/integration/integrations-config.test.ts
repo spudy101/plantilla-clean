@@ -6,9 +6,10 @@
 // SQL inválido), la UNIQUE parcial de pendientes y su traducción a 409 en el middleware de errores.
 
 import { randomUUID } from 'node:crypto';
-import prisma from '../../src/shared/database/prisma';
-import ErrorMiddleware from '../../src/shared/http/error.middleware';
-import systemGlobalConfigRepository from '../../src/modules/settings/repositories/system-global-config.repository';
+import prisma from '../../src/shared/infrastructure/database/prisma';
+import ErrorMiddleware from '../../src/shared/presentation/http/error.middleware';
+import { PrismaSystemGlobalConfigRepository } from '../../src/modules/settings/infrastructure/persistence/prisma-system-global-config.repository';
+import { IntegrationResilience } from '../../src/modules/settings/domain/integration-resilience';
 import approvalRequestRepository from '../../src/modules/approvals/repositories/approval-request.repository';
 import providerFallbackEventRepository from '../../src/modules/integration/repositories/provider-fallback-event.repository';
 import { page } from '../helpers/page';
@@ -40,19 +41,18 @@ describe('Integraciones y config · Prisma contra Postgres', () => {
     await prisma.$disconnect();
   });
 
-  it('configuración global: la versión se incrementa en la base y los JSON se guardan tal cual', async () => {
-    const existing = await systemGlobalConfigRepository.findActive();
-    const config = existing ?? (await systemGlobalConfigRepository.createActive());
+  it('configuración global: la versión se incrementa en la base y la resiliencia se guarda en snake_case', async () => {
+    const configs = new PrismaSystemGlobalConfigRepository();
+    const existing = await prisma.systemGlobalConfig.findFirst({ where: { isActive: true } });
+    const config = existing ?? (await prisma.systemGlobalConfig.create({ data: { isActive: true } }));
     try {
-      const updated = await systemGlobalConfigRepository.update(config.systemGlobalConfigId, {
-        configVersion: { increment: 1 },
-        integrationResilience: { timeout_ms: 1234, circuit_breaker: { failure_threshold: 9 } }
+      const updated = await configs.applyChanges(config.systemGlobalConfigId, {
+        integrationResilience: IntegrationResilience.of({ timeoutMs: 1234, circuitBreaker: { failureThreshold: 9 } })
       });
-      expect(updated?.configVersion).toBe(config.configVersion + 1);
-      expect((await systemGlobalConfigRepository.findActiveResilience())?.integrationResilience).toEqual({
-        timeout_ms: 1234,
-        circuit_breaker: { failure_threshold: 9 }
-      });
+      expect(updated?.version).toBe(config.configVersion + 1);
+      expect((await configs.findActive())?.integrationResilience.toProps()).toEqual({ timeoutMs: 1234, circuitBreaker: { failureThreshold: 9 } });
+      const stored = await prisma.systemGlobalConfig.findUniqueOrThrow({ where: { systemGlobalConfigId: config.systemGlobalConfigId } });
+      expect(stored.integrationResilience).toEqual({ timeout_ms: 1234, circuit_breaker: { failure_threshold: 9 } });
     } finally {
       await prisma.systemGlobalConfig.update({
         where: { systemGlobalConfigId: config.systemGlobalConfigId },

@@ -1,9 +1,9 @@
 // Componentes de salida del dominio legal (antes vivían en audit): tipo de consentimiento, referencia a la
 // política de privacidad y consentimiento de un usuario. Los usan legal, person (perfil) y audit (traza de
 // sesión) a través del index de legal. Cada componente tiene su esquema Zod de salida.
-import type { DbDate, Maybe } from '../../../shared/types/db-rows';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import type { DbDate, Maybe } from '../../../shared/infrastructure/database/db-rows';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 
 interface ConsentTypeRow {
   consentTypeId: string;

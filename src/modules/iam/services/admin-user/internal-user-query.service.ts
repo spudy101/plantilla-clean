@@ -13,7 +13,7 @@ import auditModule from '../../../audit';
 const { userChangeLogRepository, audit } = auditModule;
 import approvalsModule from '../../../approvals';
 const { DualApprovalService } = approvalsModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { INTERNAL_ROLE_NAMES, SUPERADMIN_ROLE_NAMES } = constantsModule;
 import adminUserDtoModule from '../../responses/admin-user.response';
 const {
@@ -24,7 +24,7 @@ const {
   RoleOptionDTO
 } = adminUserDtoModule;
 import internalUserGuardsModule from './internal-user-guards';
-import { pageOf, pageRequest } from '../../../../shared/http/pagination';
+import { pageOf, pageRequest } from '../../../../shared/application/pagination';
 import type { InternalUserDeletedListQuery, InternalUserListQuery, UserChangeLogsQuery } from '../../requests/iam.request';
 const { InternalUserGuards } = internalUserGuardsModule;
 const ENTITY = { entityType: 'InternalUser', entityTable: 'users' };

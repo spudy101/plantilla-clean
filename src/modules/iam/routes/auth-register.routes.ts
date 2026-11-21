@@ -1,11 +1,11 @@
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { RegisterHeaders, RegisterBody, RequestResetBody, ConfirmResetBody } from '../requests/iam.request';
 const router = express.Router();
 import AuthRegisterController from '../controllers/auth-register.controller';
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import PiiMaskingMiddleware from '../../../shared/security/pii-masking.middleware';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import PiiMaskingMiddleware from '../../../shared/presentation/http/pii-masking.middleware';
 
 // === RF-AUTH-01: Registro de Usuario (confirmación de correo y celular) ===
 

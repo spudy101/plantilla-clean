@@ -1,5 +1,5 @@
-import type { User } from '../../../../shared/database/generated/prisma/client';
-import type { RequestAuditContext } from '../../../../shared/types/audit-context';
+import type { User } from '../../../../shared/infrastructure/database/generated/prisma/client';
+import type { RequestAuditContext } from '../../../../shared/application/audit-context';
 // modules/shared-endpoints/kyc/iam/services/auth-login/sms-login-challenge.service.ts
 //
 // Desafío MFA por SMS en el login: emisión y verificación del código.
@@ -11,14 +11,14 @@ import auditModule from '../../../audit';
 const { userLoginAttemptRepository, audit } = auditModule;
 import notificationModule from '../../../notification';
 const { verificationCodeRepository, SmsService } = notificationModule;
-import AppError from '../../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import AppError from '../../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { MOCKS } = constantsModule;
 import authLoginDtoModule from '../../responses/auth-login.response';
 const { MFARequiredResponseDTO } = authLoginDtoModule;
-import errorMessageModule from '../../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 // ============================================================

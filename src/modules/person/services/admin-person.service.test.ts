@@ -15,7 +15,7 @@
 jest.mock('uuid', () => ({ v4: jest.fn(() => 'uuid-fixed') }));
 
 // --- cliente de Prisma: fábrica de transacción controlable por test ---
-jest.mock('../../../shared/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
 
 // --- Repositorios ---
 jest.mock('../../iam/repositories/user.repository', () => ({
@@ -61,11 +61,11 @@ jest.mock('../helpers/profile.helper', () => ({
 jest.mock('../../approvals/services/dual-approval.service', () => ({
   gate: jest.fn()
 }));
-jest.mock('../../../shared/observability/request-context.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/request-context.util', () => ({
   originFromContext: jest.fn(() => ({ originSessionId: 'sess-1' }))
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
@@ -73,12 +73,12 @@ jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
 // AppError real-ish: factories que devuelven Error con statusCode/code para poder usar .rejects.
 // Dos roles de cliente para poder probar el cambio entre ellos (la plantilla trae solo CLIENTE).
-jest.mock('../../../shared/constants/rbac', () => ({
-  ...jest.requireActual('../../../shared/constants/rbac').default,
+jest.mock('../../../shared/domain/constants/rbac', () => ({
+  ...jest.requireActual('../../../shared/domain/constants/rbac').default,
   CLIENT_ROLE_NAMES: ['CLIENTE', 'CLIENTE_VERIFICADO']
 }));
 
-jest.mock('../../../shared/http/app-error.util', () => {
+jest.mock('../../../shared/presentation/http/app-error.util', () => {
   const make = (statusCode: number, code: string) => (message: string, details: unknown = null) => {
     return Object.assign(new Error(message), { statusCode, code, details });
   };
@@ -92,7 +92,7 @@ jest.mock('../../../shared/http/app-error.util', () => {
 });
 
 // --- Constantes (el real valida .env y hace process.exit) ---
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo.test/x.png' } },
   RBAC_ROLES: { CLIENTE: 'cliente' },
   CLIENT_ROLE_NAMES: ['cliente', 'cliente_verificado']
@@ -114,7 +114,7 @@ jest.mock('../responses/admin-person.response', () => ({
 
 import { managedTransaction } from 'tests/helpers/transaction';
 import { mocked, Loose } from 'tests/helpers/mock';
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import userRepositoryModule from '../../iam/repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);

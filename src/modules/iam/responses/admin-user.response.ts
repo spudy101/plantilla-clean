@@ -1,6 +1,6 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import type { Role } from '../../../shared/database/generated/prisma/client';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import type { Role } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 import personModule from '../../person';
 const { personComponentsDto: componentsPersonModule } = personModule;

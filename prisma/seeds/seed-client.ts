@@ -8,7 +8,7 @@
 // sin pisar lo que se editó desde el admin. Para cambiar un dato ya sembrado en bases existentes se
 // escribe una migración (prisma/migrations), no se edita el seed. Única excepción: los templates de
 // los tipos de notificación, que la API no edita y el seed mantiene al día (notifications.seed.ts).
-import type prisma from '../../src/shared/database/prisma';
+import type prisma from '../../src/shared/infrastructure/database/prisma';
 
 export type SeedClient = typeof prisma;
 

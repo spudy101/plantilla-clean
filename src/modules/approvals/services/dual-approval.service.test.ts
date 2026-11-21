@@ -22,7 +22,7 @@ jest.mock('../../notification/services/notification-creation.service', () => ({
   crearNotificacion: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
 }));
@@ -38,7 +38,7 @@ import { mocked, Loose, fixture } from 'tests/helpers/mock';
 import approvalRepoModule from '../repositories/approval-request.repository';
 const approvalRepo = mocked(approvalRepoModule);
 import dualApproval from './dual-approval.service';
-import domainEnumsModule from '../../../shared/constants/domain-enums';
+import domainEnumsModule from '../../../shared/infrastructure/database/domain-enums';
 const { APPROVAL_REQUEST_STATUS } = domainEnumsModule;
 
 const OP = 'RBAC_ROLE_CHANGE'; // condición ALWAYS, approverRoles: ['ADMIN']

@@ -1,9 +1,9 @@
 // Componentes shared del framework de doble aprobación global (approval_requests).
 // Todas las keys de respuesta en camelCase.
 
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import type { DbDate, Maybe } from '../../../shared/types/db-rows';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import type { DbDate, Maybe } from '../../../shared/infrastructure/database/db-rows';
 
 /** Usuario incluido en la solicitud (Prisma): firstName/lastName viven en Person. */
 interface ApprovalUserRow {

@@ -1,8 +1,8 @@
 // modules/schemas/kyc/person/repositories/person-reference.repository.ts
 //
 // Referencias personales (borrado lógico con is_active).
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PersonReference, Prisma } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PersonReference, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 class PersonReferenceRepository extends PrismaRepository {
   async findAllByPersonId(personId: string): Promise<PersonReference[]> {

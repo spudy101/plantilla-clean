@@ -16,7 +16,7 @@ const mockDb = {
   personLocation: { upsert: jest.fn() }
 };
 
-jest.mock('../../../src/shared/database/prisma', () => mockDb);
+jest.mock('../../../src/shared/infrastructure/database/prisma', () => mockDb);
 
 import roleRepository from '../../../src/modules/iam/repositories/role.repository';
 import userRepository from '../../../src/modules/iam/repositories/user.repository';
@@ -26,7 +26,7 @@ import trustedDeviceRepository from '../../../src/modules/iam/repositories/auth-
 import credentialResetRepository from '../../../src/modules/iam/repositories/credential-reset.repository';
 import biometricRepositories from '../../../src/modules/iam/repositories/biometric.repository';
 import personLocationRepository from '../../../src/modules/person/repositories/person-location.repository';
-import HashUtil from '../../../src/shared/security/hash.util';
+import HashUtil from '../../../src/shared/infrastructure/security/hash.util';
 import { page } from '../../helpers/page';
 
 const { biometricChallengeRepository } = biometricRepositories;

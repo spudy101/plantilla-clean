@@ -1,20 +1,20 @@
 // Worker de archivado: exportación diaria de la auditoría a S3 (un JSONL por día) y retención técnica
 // (operaciones y claves de idempotencia vencidas).
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() }
 }));
 jest.mock('../repositories/audit-log.repository', () => ({ findCreatedBetween: jest.fn() }));
-jest.mock('../../../shared/observability/operation.repository', () => ({ purgeOlderThan: jest.fn() }));
-jest.mock('../../../shared/http/idempotency/idempotency.repository', () => ({ purgeExpired: jest.fn() }));
-jest.mock('../../../shared/infra/s3.util', () => ({ uploadArchive: jest.fn() }));
-jest.mock('../../settings/repositories/system-global-config.repository', () => ({ findActive: jest.fn() }));
+jest.mock('../../../shared/infrastructure/observability/operation.repository', () => ({ purgeOlderThan: jest.fn() }));
+jest.mock('../../../shared/infrastructure/database/idempotency.repository', () => ({ purgeExpired: jest.fn() }));
+jest.mock('../../../shared/infrastructure/storage/s3.util', () => ({ uploadArchive: jest.fn() }));
+jest.mock('../../settings/infrastructure/persistence/legacy-system-global-config.repository', () => ({ findActive: jest.fn() }));
 jest.mock('../audit.service', () => ({ record: jest.fn() }));
 
 import worker from './audit-archive.worker';
 import auditLogRepositoryModule from '../repositories/audit-log.repository';
-import operationRepositoryModule from '../../../shared/observability/operation.repository';
-import S3UtilModule from '../../../shared/infra/s3.util';
-import idempotencyRepositoryModule from '../../../shared/http/idempotency/idempotency.repository';
+import operationRepositoryModule from '../../../shared/infrastructure/observability/operation.repository';
+import S3UtilModule from '../../../shared/infrastructure/storage/s3.util';
+import idempotencyRepositoryModule from '../../../shared/infrastructure/database/idempotency.repository';
 import { mocked } from 'tests/helpers/mock';
 
 const auditLogRepository = mocked(auditLogRepositoryModule);

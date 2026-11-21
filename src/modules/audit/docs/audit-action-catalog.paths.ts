@@ -1,5 +1,5 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import { AuditActionListQuery } from '../requests/audit.request';
 import {
   AuditActionCatalogItemSchema,

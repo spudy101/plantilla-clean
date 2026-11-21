@@ -1,8 +1,8 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
-import piiMaskingDoc from '../../../shared/validation/pii-masking.doc';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
+import piiMaskingDoc from '../../../shared/presentation/validation/pii-masking.doc';
 import { PersonContactSchema, PersonLocationSchema, PersonSchema, UserSchema } from './person-components.response';
-import type { Person } from '../../../shared/database/generated/prisma/client';
+import type { Person } from '../../../shared/infrastructure/database/generated/prisma/client';
 import type { UserProfileRow } from '../../iam';
 import componentsPersonModule from './person-components.response';
 const { UserComponent, PersonComponent, PersonContactComponent, PersonLocationComponent } = componentsPersonModule;
@@ -10,7 +10,7 @@ const { UserComponent, PersonComponent, PersonContactComponent, PersonLocationCo
 import legalModule from '../../legal';
 const { legalComponentsDto } = legalModule;
 const { UserConsentComponent } = legalComponentsDto;
-import MaskingUtil from '../../../shared/security/masking.util';
+import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
 
 /**
  * ============================================================

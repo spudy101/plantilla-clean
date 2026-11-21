@@ -8,15 +8,15 @@
 // por wildcard en la matriz RBAC.
 
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { InternalUserListQuery, InternalUserDeletedListQuery, CreateInternalUserBody, InternalUserIdParams, UpdateInternalUserBody, ChangeInternalRoleBody, ChangeStatusBody, DeleteInternalUserBody, UserChangeLogsQuery } from '../requests/iam.request';
 const router = express.Router();
 import AdminUserController from '../controllers/admin-user.controller';
 import AuthMiddleware from '../middlewares/auth.middleware';
 import RbacMiddleware from '../middlewares/rbac.middleware';
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import constantsModule from '../../../shared/constants';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import constantsModule from '../../../shared/infrastructure/config';
 const { RBAC_MODULES, RBAC_ACTIONS } = constantsModule;
 
 const M = RBAC_MODULES.INTERNAL_USERS;

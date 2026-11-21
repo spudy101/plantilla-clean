@@ -1,6 +1,6 @@
 // Salida pública de banners (landing + app cliente). No expone isActive ni sortOrder: el público solo ve
 // contenido publicado, ya ordenado.
-import { z } from '../../../shared/validation/z';
+import { z } from '../../../shared/presentation/validation/z';
 import type { StoredBanner } from './admin-promotional-banner.response';
 
 export const PublicBanner = z.object({

@@ -13,9 +13,9 @@ jest.mock('@aws-sdk/client-ses', () => ({
   SendRawEmailCommand: class { constructor(public params: unknown) {} }
 }));
 
-jest.mock('../../../shared/infra/provider-call.util', () => ({ callProvider: jest.fn() }));
+jest.mock('../../../shared/infrastructure/providers/provider-call.util', () => ({ callProvider: jest.fn() }));
 
-jest.mock('../../../shared/security/masking.util', () => ({
+jest.mock('../../../shared/infrastructure/security/masking.util', () => ({
   maskEmail: jest.fn().mockReturnValue('m***@test.cl'),
   redactPayload: jest.fn(p => p)
 }));
@@ -24,19 +24,19 @@ jest.mock('./email-suppression.service', () => ({
   isSuppressed: jest.fn().mockResolvedValue(false)
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { fromEmail: 'no-reply@test.cl', logoUrl: 'https://logo.test/x.png' } },
   aws: { region: 'us-east-1', accessKeyId: 'ak', secretAccessKey: 'sk' }
 }));
 
 import { mocked, fixture } from 'tests/helpers/mock';
-import * as providerCallModule from '../../../shared/infra/provider-call.util';
+import * as providerCallModule from '../../../shared/infrastructure/providers/provider-call.util';
 const callProvider = mocked(providerCallModule.callProvider);
 import emailSuppressionModule from './email-suppression.service';
 const emailSuppression = mocked(emailSuppressionModule);

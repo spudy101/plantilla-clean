@@ -1,17 +1,17 @@
 // AuditService.record — clasificación desde el catálogo, contexto de la operación, regla transaccional
 // (éxito dentro de la transacción, intentos fallidos aparte), alertas y manejo de errores.
-jest.mock('../../shared/observability/logger.util', () => ({
+jest.mock('../../shared/infrastructure/observability/logger.util', () => ({
   logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() }
 }));
-jest.mock('../../shared/database/transaction-context', () => ({ activeUnit: jest.fn(() => null) }));
+jest.mock('../../shared/infrastructure/database/transaction-context', () => ({ activeUnit: jest.fn(() => null) }));
 jest.mock('./repositories/audit-log.repository', () => ({ create: jest.fn() }));
 jest.mock('./repositories/audit-alert.repository', () => ({ create: jest.fn() }));
 
 import auditServiceModule from './audit.service';
 const { AuditService } = auditServiceModule;
-import requestContext from '../../shared/observability/request-context.util';
-import txContextModule from '../../shared/database/transaction-context';
-import loggerUtilModule from '../../shared/observability/logger.util';
+import requestContext from '../../shared/infrastructure/observability/request-context.util';
+import txContextModule from '../../shared/infrastructure/database/transaction-context';
+import loggerUtilModule from '../../shared/infrastructure/observability/logger.util';
 import { mocked } from 'tests/helpers/mock';
 
 const txContext = mocked(txContextModule);

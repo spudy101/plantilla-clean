@@ -10,7 +10,7 @@
 //   (incrementa + audita failure + 400 con intentos restantes) y código correcto (marca verificado +
 //   audita + DTO). El despacho del código va en setImmediate → se drena la cola de macrotareas.
 
-jest.mock('../../../shared/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
 
 jest.mock('../repositories/verification-code.repository', () => ({
   secondsUntilNewCode: jest.fn(),
@@ -29,14 +29,14 @@ jest.mock('./sms.service', () => ({
   enviarSmsOtp: jest.fn().mockResolvedValue({ success: true })
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
 jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
 
 // EXTERNAL_PROVIDERS mutable: se alterna por prueba para forzar código determinista '123456'.
-jest.mock('../../../shared/constants', () => ({
+jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo.test/x.png' } },
   MOCKS: { EXTERNAL_PROVIDERS: false }
 }));
@@ -49,7 +49,7 @@ jest.mock('../responses/send-verification.response', () => ({
 
 import { managedTransaction } from 'tests/helpers/transaction';
 import { mocked } from 'tests/helpers/mock';
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import verificationCodeRepoModule from '../repositories/verification-code.repository';
 const verificationCodeRepo = mocked(verificationCodeRepoModule);
@@ -57,11 +57,11 @@ import NotificationUtilModule from './notification-creation.service';
 const NotificationUtil = mocked(NotificationUtilModule);
 import SmsServiceModule from './sms.service';
 const SmsService = mocked(SmsServiceModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../../audit/audit.service';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const constants = mocked(constantsModule);
 import sendVerificationDtoModule from '../responses/send-verification.response';
 const { SendVerificationResponseDTO } = mocked(sendVerificationDtoModule);

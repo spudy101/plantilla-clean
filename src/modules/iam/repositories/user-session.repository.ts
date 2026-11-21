@@ -2,10 +2,10 @@
 //
 // Sesiones de usuario. user_sessions no declara relación con users en el schema, así que el usuario de
 // las vistas admin (`sessionUser`) se adjunta con una consulta por lote (loadUserRefs).
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PageRequest } from '../../../shared/http/pagination';
-import { UserSessionStatus } from '../../../shared/database/generated/prisma/client';
-import type { Prisma, UserSession } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../shared/application/pagination';
+import { UserSessionStatus } from '../../../shared/infrastructure/database/generated/prisma/client';
+import type { Prisma, UserSession } from '../../../shared/infrastructure/database/generated/prisma/client';
 import auditModule from '../../audit';
 const { loadUserRefs } = auditModule;
 import type { UserRef } from '../../audit';

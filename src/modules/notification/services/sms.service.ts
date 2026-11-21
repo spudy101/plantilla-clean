@@ -1,17 +1,17 @@
-import type { SmsDeliveryAttempt } from '../../../shared/database/generated/prisma/client';
+import type { SmsDeliveryAttempt } from '../../../shared/infrastructure/database/generated/prisma/client';
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 /** Lo único que se usa del cliente SNS (un doble de test solo necesita send). */
 type SnsSender = Pick<InstanceType<typeof SNSClient>, 'send'>;
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import { callProvider, CircuitOpenError, AWS_CLIENT_OPTIONS } from '../../../shared/infra/provider-call.util';
-import EncryptionUtil from '../../../shared/security/encryption.util';
-import constantsModule from '../../../shared/constants';
+import { callProvider, CircuitOpenError, AWS_CLIENT_OPTIONS } from '../../../shared/infrastructure/providers/provider-call.util';
+import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
+import constantsModule from '../../../shared/infrastructure/config';
 const { MOCKS, aws } = constantsModule;
 import smsDeliveryAttemptRepository from '../repositories/sms-delivery-attempt.repository';
 import catalogsModule from '../../catalogs';
 const { phonePrefixRepository } = catalogsModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 

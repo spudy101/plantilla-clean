@@ -2,15 +2,15 @@
   "name": "base-project",
   "version": "1.0.0",
   "description": "Boilerplate reutilizable de API REST con Node.js, Express, PostgreSQL y Redis: autenticación JWT + sesiones, RBAC, MFA, auditoría, doble aprobación (maker-checker) y notificaciones.",
-  "main": "dist/src/server.js",
+  "main": "dist/src/main/server.js",
   "engines": {
     "node": ">=24"
   },
   "scripts": {
     "comment": "========== SERVIDOR ==========",
     "predev": "npm run prisma:generate --silent",
-    "dev": "nodemon src/server.ts",
-    "start": "node dist/src/server.js",
+    "dev": "nodemon src/main/server.ts",
+    "start": "node dist/src/main/server.js",
     "comment_build": "========== TYPESCRIPT ==========",
     "prebuild": "npm run prisma:generate --silent",
     "build": "tsc -p tsconfig.json",

@@ -6,10 +6,10 @@
 //   onClose → cierra la ventana (duración y procesos afectados) + audita PROVIDER_FALLBACK_RESOLVED
 // Cada aviso corre como su propia operación de sistema. Nunca lanza: un error se loguea.
 
-import { runOperation } from '../../../shared/observability/operation';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import { runOperation } from '../../../shared/infrastructure/observability/operation';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 const { errorMessage } = errorMessageModule;
 import providerFallbackEventRepository from '../repositories/provider-fallback-event.repository';
 import auditModule from '../../audit';

@@ -4,10 +4,10 @@
 // `operations` (inicio + cierre), el id lo genera el servidor y los fallos de worker quedan en failure
 // sin tumbar el proceso.
 import request from 'supertest';
-import prisma from '../../src/shared/database/prisma';
-import app from '../../src/app';
-import { runOperation } from '../../src/shared/observability/operation';
-import requestContext from '../../src/shared/observability/request-context.util';
+import prisma from '../../src/shared/infrastructure/database/prisma';
+import app from '../../src/main/app';
+import { runOperation } from '../../src/shared/infrastructure/observability/operation';
+import requestContext from '../../src/shared/infrastructure/observability/request-context.util';
 
 const POLL_MS = 50;
 const POLL_TRIES = 60;

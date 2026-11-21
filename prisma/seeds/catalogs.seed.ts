@@ -3,7 +3,7 @@
 // Catálogos chicos con clave natural única: géneros (name), tipos de documento (code), roles del RBAC
 // (name) y tipos de consentimiento (code). `createMany({ skipDuplicates })` = INSERT … ON CONFLICT DO
 // NOTHING: lo que ya existe no se toca.
-import constantsModule from '../../src/shared/constants';
+import constantsModule from '../../src/shared/infrastructure/config';
 import { reportCreated, type SeedClient } from './seed-client';
 
 const { RBAC_ROLES } = constantsModule;

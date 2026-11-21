@@ -1,13 +1,13 @@
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { AuditActionListQuery } from '../requests/audit.request';
 const router = express.Router();
 import AdminAuditActionCatalogController from '../controllers/admin-audit-action-catalog.controller';
 import iamModule from '../../iam';
 const { AuthMiddleware, RbacMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import constantsModule from '../../../shared/constants';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import constantsModule from '../../../shared/infrastructure/config';
 const { RBAC_MODULES, RBAC_ACTIONS } = constantsModule;
 
 router.get(

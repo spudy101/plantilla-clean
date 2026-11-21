@@ -15,7 +15,7 @@ GET /kyc/iam/rbac/me        → permisos del usuario logueado (solo authenticate
 
 Por cada ítem del menú, su `rbacModule` se contrasta contra `/rbac/me`: si el usuario no tiene al menos
 `read` en ese módulo, el ítem no se pinta. El árbol y las agrupaciones viven en `RBAC_MODULE_GROUPS`
-(`src/shared/constants/rbac.ts`); estos docs explican cada grupo.
+(`src/shared/domain/constants/rbac.ts`); estos docs explican cada grupo.
 
 ## Convenciones (comunes a todos los archivos)
 

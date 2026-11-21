@@ -1,12 +1,12 @@
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { ClientTypeHeaders, LoginBody, VerifyMfaBody, RefreshTokenHeaders, SessionIdParams, DeviceIdParams, RenameDeviceBody } from '../requests/iam.request';
 const router = express.Router();
 import AuthLoginController from '../controllers/auth-login.controller';
 import AuthMiddleware from '../middlewares/auth.middleware';
 import LoginIpLimiterMiddleware from '../middlewares/login-ip-limiter.middleware';
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
 
 // ============================================================
 // PUBLIC

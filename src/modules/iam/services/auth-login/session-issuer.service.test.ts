@@ -3,11 +3,11 @@
 // SessionIssuerService emite la sesión autenticada que comparten el login por contraseña, el
 // biométrico y el registro. Dependencias inyectadas por constructor (SOLID: D).
 
-jest.mock('../../../../shared/observability/logger.util', () => ({ logger: { warn: jest.fn(), info: jest.fn() } }));
+jest.mock('../../../../shared/infrastructure/observability/logger.util', () => ({ logger: { warn: jest.fn(), info: jest.fn() } }));
 
 import { mocked, fixture } from 'tests/helpers/mock';
 import SessionIssuerService from './session-issuer.service';
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = mocked(loggerUtilModule);
 
 const USER = { userId: 'u-1' };

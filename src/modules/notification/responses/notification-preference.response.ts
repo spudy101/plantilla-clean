@@ -1,5 +1,5 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 import type { PreferenceRow } from '../repositories/user-notification-preference.repository';
 
 /**

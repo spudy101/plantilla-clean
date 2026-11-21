@@ -22,9 +22,9 @@ jest.mock('../responses/user-consent.response', () => ({
   ConsentGrantedDTO: jest.fn(r => ({ id: r.userConsentId }))
 }));
 
-jest.mock('../../../shared/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
@@ -36,7 +36,7 @@ import consentTypeRepositoryModule from '../repositories/consent-type.repository
 const consentTypeRepository = mocked(consentTypeRepositoryModule);
 import userConsentRepositoryModule from '../repositories/user-consent.repository';
 const userConsentRepository = mocked(userConsentRepositoryModule);
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import auditServiceModule from '../../audit/audit.service';
 const logAudit = mocked(auditServiceModule).record;

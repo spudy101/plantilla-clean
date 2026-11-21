@@ -1,7 +1,7 @@
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../shared/constants';
+import constantsModule from '../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
 import notificationModule from '../../notification';
 const { notifier } = notificationModule;
@@ -10,7 +10,7 @@ import adminAuditAlertDtoModule from '../responses/admin-audit-alert.response';
 const { AuditAlertListDTO } = adminAuditAlertDtoModule;
 import audit from '../audit.service';
 import type { AlertsAcknowledged } from '../responses/admin-audit-alert.response';
-import { pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { AuditAlertListQuery } from '../requests/audit.request';
 
 class AdminAuditAlertService {

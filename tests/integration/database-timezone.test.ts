@@ -3,7 +3,7 @@
 // sesión en otra zona (p. ej. America/Santiago) cada instante quedaba guardado corrido 3-4 h y `now()`
 // en SQL no coincidía con las fechas que manda la app.
 
-import prisma from '../../src/shared/database/prisma';
+import prisma from '../../src/shared/infrastructure/database/prisma';
 
 afterAll(() => prisma.$disconnect());
 

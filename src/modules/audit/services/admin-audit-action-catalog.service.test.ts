@@ -6,7 +6,7 @@
 // (category/risk/module/search), ordena ASC/DESC y pagina. El logger se mockea; los DTOs
 // del catálogo (funciones puras) se usan reales.
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));

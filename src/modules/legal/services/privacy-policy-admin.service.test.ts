@@ -12,18 +12,18 @@ jest.mock('../repositories/privacy-policy-admin.repository', () => ({
   createVersion: jest.fn()
 }));
 
-jest.mock('../../../shared/infra/s3.util', () => ({
+jest.mock('../../../shared/infrastructure/storage/s3.util', () => ({
   uploadPublicDocument: jest.fn().mockResolvedValue('https://cdn.test/legal/privacy-policy-v1-1.pdf'),
   invalidateCloudFront: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/infra/redis.util', () => ({ del: jest.fn().mockResolvedValue(1) }));
+jest.mock('../../../shared/infrastructure/cache/redis.util', () => ({ del: jest.fn().mockResolvedValue(1) }));
 
 jest.mock('../../notification/notify', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
@@ -38,13 +38,13 @@ jest.mock('../responses/privacy-policy-admin.response', () => ({
 import { mocked } from 'tests/helpers/mock';
 import repoModule from '../repositories/privacy-policy-admin.repository';
 const repo = mocked(repoModule);
-import S3UtilModule from '../../../shared/infra/s3.util';
+import S3UtilModule from '../../../shared/infrastructure/storage/s3.util';
 const S3Util = mocked(S3UtilModule);
-import redisClientModule from '../../../shared/infra/redis.util';
+import redisClientModule from '../../../shared/infrastructure/cache/redis.util';
 const redisClient = mocked(redisClientModule);
 import NotificationCreationServiceModule from '../../notification/notify';
 const notifier = mocked(NotificationCreationServiceModule);
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../../audit/audit.service';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;

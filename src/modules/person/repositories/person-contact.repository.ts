@@ -2,9 +2,9 @@
 //
 // Contacto de la persona. email y teléfonos van cifrados (piiExtension): se leen y escriben en claro y
 // se buscan por su hash.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { PersonContact, Prisma } from '../../../shared/database/generated/prisma/client';
-import { hashValue } from '../../../shared/database/pii-fields';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { PersonContact, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+import { hashValue } from '../../../shared/infrastructure/database/pii-fields';
 
 const PREFIX_REF = { select: { phonePrefixId: true, prefix: true } } satisfies Prisma.PhonePrefixDefaultArgs;
 

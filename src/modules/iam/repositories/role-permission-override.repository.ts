@@ -1,8 +1,8 @@
 // modules/schemas/kyc/iam/repositories/role-permission-override.repository.ts
 //
 // Permisos extra por rol (RBAC). origin_session_id lo completa la extensión de Prisma al crear.
-import PrismaRepository from '../../../shared/database/prisma.repository';
-import type { Prisma, RolePermissionOverride } from '../../../shared/database/generated/prisma/client';
+import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
+import type { Prisma, RolePermissionOverride } from '../../../shared/infrastructure/database/generated/prisma/client';
 
 const WITH_GRANTED_BY = {
   grantedBy: { select: { userId: true, username: true, person: { select: { firstName: true, lastName: true } } } }

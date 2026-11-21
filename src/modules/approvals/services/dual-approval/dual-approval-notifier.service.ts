@@ -8,16 +8,16 @@ import iamModule from '../../../iam';
 const { userRepository } = iamModule;
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
-import loggerUtilModule from '../../../../shared/observability/logger.util';
+import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import constantsModule from '../../../../shared/constants';
+import constantsModule from '../../../../shared/infrastructure/config';
 const { notifications } = constantsModule;
-import errorMessageModule from '../../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
-import type { AdminAuditContext } from '../../../../shared/types/audit-context';
-import type DualApprovalConstants from '../../../../shared/constants/dual-approval';
-import type { ApprovalRequest } from '../../../../shared/database/generated/prisma/client';
+import type { AdminAuditContext } from '../../../../shared/application/audit-context';
+import type DualApprovalConstants from '../../../../shared/domain/constants/dual-approval';
+import type { ApprovalRequest } from '../../../../shared/infrastructure/database/generated/prisma/client';
 
 
 const NOTIF_DUAL_APPROVAL_RESOLVED = 'DUAL_APPROVAL_RESOLVED';

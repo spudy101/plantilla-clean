@@ -1,8 +1,8 @@
 // config/swagger/modules/admin/kyc/iam/admin-rbac.paths.ts
 
-import commonResponses from '../../../config/swagger/responses/common.responses';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
 import { PermissionRevokedSchema } from '../responses/admin-rbac.response';
-import { jsonBody, toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import { jsonBody, toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import { GrantPermissionBody, PermissionIdParams, RoleNameParams } from '../requests/iam.request';
 import {
   EffectivePermissionsSchema,

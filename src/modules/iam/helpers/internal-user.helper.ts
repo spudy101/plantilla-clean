@@ -12,14 +12,14 @@ import { v4 as uuidv4 } from 'uuid';
 import userRepository from '../repositories/user.repository';
 import personModule from '../../person';
 const { personRepository, personContactRepository } = personModule;
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import unitOfWork from '../../../shared/database/unit-of-work';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
-import { shouldPropagate } from '../../../shared/http/error-propagation';
+import { shouldPropagate } from '../../../shared/presentation/http/error-propagation';
 
 
 class InternalUserHelper {

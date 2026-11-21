@@ -7,7 +7,7 @@
 //
 // Se llama UNA vez al arranque desde src/server.ts.
 
-import loggerUtilModule from '../../shared/observability/logger.util';
+import loggerUtilModule from '../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import DualApproval from './services/dual-approval.service';
 

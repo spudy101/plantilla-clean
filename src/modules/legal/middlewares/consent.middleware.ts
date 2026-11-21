@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
 import userConsentRepository from '../repositories/user-consent.repository';
 import consentTypeRepository from '../repositories/consent-type.repository';

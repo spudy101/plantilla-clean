@@ -3,21 +3,21 @@
 //   - `retryable` en todo error; `Retry-After` cuando se sabe cuánto esperar
 //   - `errors` = array por campo; `details` = objeto de contexto (p. ej. `code` de un 401)
 
-jest.mock('../../../src/shared/infra/redis.util', () => ({ isAvailable: () => false, getClient: () => null }));
-jest.mock('../../../src/shared/observability/logger.util', () => ({
+jest.mock('../../../src/shared/infrastructure/cache/redis.util', () => ({ isAvailable: () => false, getClient: () => null }));
+jest.mock('../../../src/shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() },
   sanitizeForLog: (v: unknown) => v
 }));
-jest.mock('../../../src/shared/observability/audit-hook', () => ({ auditInfraEvent: jest.fn() }));
+jest.mock('../../../src/shared/infrastructure/observability/audit-hook', () => ({ auditInfraEvent: jest.fn() }));
 
 import express from 'express';
 import request from 'supertest';
-import AppError from '../../../src/shared/http/app-error.util';
-import ApiResponse from '../../../src/shared/http/app-response.util';
-import ErrorMiddleware from '../../../src/shared/http/error.middleware';
-import RequestLockMiddleware from '../../../src/shared/http/request-lock.middleware';
-import { CircuitOpenError } from '../../../src/shared/infra/circuit-breaker.util';
-import { isRetryableStatus } from '../../../src/shared/http/retryable';
+import AppError from '../../../src/shared/presentation/http/app-error.util';
+import ApiResponse from '../../../src/shared/presentation/http/app-response.util';
+import ErrorMiddleware from '../../../src/shared/presentation/http/error.middleware';
+import RequestLockMiddleware from '../../../src/shared/presentation/http/request-lock.middleware';
+import { CircuitOpenError } from '../../../src/shared/infrastructure/providers/circuit-breaker.util';
+import { isRetryableStatus } from '../../../src/shared/presentation/http/retryable';
 
 function appThrowing(err: unknown) {
   const app = express();

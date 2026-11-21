@@ -7,12 +7,12 @@
 
 import { randomUUID } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../../src/shared/database/generated/prisma/client';
-import prisma from '../../src/shared/database/prisma';
-import constantsModule from '../../src/shared/constants';
-import { isDatabaseUnavailable, isTransactionConflict } from '../../src/shared/database/database-errors';
-import unitOfWork from '../../src/shared/database/unit-of-work';
-import txContext from '../../src/shared/database/transaction-context';
+import { PrismaClient } from '../../src/shared/infrastructure/database/generated/prisma/client';
+import prisma from '../../src/shared/infrastructure/database/prisma';
+import constantsModule from '../../src/shared/infrastructure/config';
+import { isDatabaseUnavailable, isTransactionConflict } from '../../src/shared/infrastructure/database/database-errors';
+import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
+import txContext from '../../src/shared/infrastructure/database/transaction-context';
 
 const { database } = constantsModule;
 const TAG = `dberr-it-${randomUUID().slice(0, 8)}`;

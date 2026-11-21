@@ -1,16 +1,16 @@
 // modules/admin/privacy-policy/routes/privacy-policy-admin.routes.ts
 
 import express from 'express';
-import { validate } from '../../../shared/validation/validate';
+import { validate } from '../../../shared/presentation/validation/validate';
 import { PrivacyPolicyListQuery, PrivacyPolicyIdParams, CreatePrivacyPolicyBody, PrivacyPolicyFiles } from '../requests/legal.request';
 const router = express.Router();
 import PrivacyPolicyAdminController from '../controllers/privacy-policy-admin.controller';
 import iamModule from '../../iam';
 const { AuthMiddleware, RbacMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/http/request-lock.middleware';
-import UploadMiddleware from '../../../shared/http/upload.middleware';
-import rbacModule from '../../../shared/constants/rbac';
+import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
+import UploadMiddleware from '../../../shared/presentation/http/upload.middleware';
+import rbacModule from '../../../shared/domain/constants/rbac';
 const { RBAC_MODULES, RBAC_ACTIONS } = rbacModule;
 
 /**

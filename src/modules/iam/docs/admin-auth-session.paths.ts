@@ -1,6 +1,6 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
 import { SessionRevokedSchema } from '../responses/admin-auth-session.response';
-import { toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import { toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import {
   AdminSessionListQuery,
   AttemptListQuery,

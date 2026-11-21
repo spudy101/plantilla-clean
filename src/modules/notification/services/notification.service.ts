@@ -1,6 +1,6 @@
 import type * as Feed from '../notification-feed.types';
-import unitOfWork from '../../../shared/database/unit-of-work';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import notificationRepository from '../repositories/notification.repository';
 import globalNotificationRepository from '../repositories/global-notification.repository';
@@ -9,11 +9,11 @@ import globalNotificationReadRepository from '../repositories/global-notificatio
 import notificationCreationService from './notification-creation.service';
 import NotificationEmitter from '../utils/notification-emitter.util';
 import NotificationCountUtil from '../utils/notification-count.util';
-import errorMessageModule from '../../../shared/utils/error-message.util';
+import errorMessageModule from '../../../shared/kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
 import auditModule from '../../audit';
-import { pageRequest } from '../../../shared/http/pagination';
+import { pageRequest } from '../../../shared/application/pagination';
 import type { GlobalNotificationListQuery, NotificationFeedQuery, PersonalNotificationListQuery } from '../requests/notification.request';
 const { audit } = auditModule;
 

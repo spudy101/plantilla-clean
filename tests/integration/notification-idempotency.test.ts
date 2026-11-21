@@ -9,7 +9,7 @@ process.env.EXTERNAL_API_KEYS = API_KEY;
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import type { Express } from 'express';
-import prisma from '../../src/shared/database/prisma';
+import prisma from '../../src/shared/infrastructure/database/prisma';
 
 const TAG = `notif-idem-${randomUUID().slice(0, 8)}`;
 const CODE = TAG.toUpperCase().replace(/-/g, '_');
@@ -20,7 +20,7 @@ let typeId: string;
 
 describe('POST /notifications idempotente · app real + Postgres', () => {
   beforeAll(async () => {
-    app = (await import('../../src/app')).default;
+    app = (await import('../../src/main/app')).default;
     categoryId = (await prisma.notificationCategory.create({ data: { code: CODE, name: TAG } })).notificationCategoryId;
     typeId = (
       await prisma.notificationType.create({

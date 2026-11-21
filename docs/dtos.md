@@ -70,9 +70,9 @@ real que las usa; los campos que aparecen según una opción van `.optional()` e
 ## Esquemas de salida
 
 ```ts
-import { z } from '../../../shared/validation/z';
-import { dateTime, listOf } from '../../../shared/validation/output';
-import piiMaskingDoc from '../../../shared/validation/pii-masking.doc';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime, listOf } from '../../../shared/presentation/validation/output';
+import piiMaskingDoc from '../../../shared/presentation/validation/pii-masking.doc';
 
 export const XyzSchema = z.object({
   xyzId: z.uuid(),
@@ -101,7 +101,7 @@ function ListXyzResponseDTO(rows: XyzRow[], metadata: PageMetadata) {
 }
 ```
 
-El service arma `metadata` con `pageMetadata(page, total, filtros)` (`src/shared/http/pagination.ts`: `{ pagination, sort, filters? }`, con el orden y los filtros **aplicados**) y se lo pasa al DTO; nunca se arma a mano. En
+El service arma `metadata` con `pageMetadata(page, total, filtros)` (`src/shared/application/pagination.ts`: `{ pagination, sort, filters? }`, con el orden y los filtros **aplicados**) y se lo pasa al DTO; nunca se arma a mano. En
 Swagger se documenta con `commonResponses.paginated({ $ref: '#/components/schemas/Xyz' })`.
 
 ## Excepción de snake_case: valores de enum

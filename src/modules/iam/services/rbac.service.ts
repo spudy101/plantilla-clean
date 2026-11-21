@@ -23,10 +23,10 @@
 //   surta efecto de inmediato sin esperar los 60s.
 //   Fail-open: si Redis no está disponible, se consulta BD directamente.
 
-import { interopDefault } from '../../../shared/utils/interop.util';
-import constantsModule from '../../../shared/constants';
+import { interopDefault } from '../../../shared/kernel/interop.util';
+import constantsModule from '../../../shared/infrastructure/config';
 const { RBAC_WILDCARD, RBAC_MODULES, RBAC_MODULE_GROUPS, RBAC_ACTIONS, ROLE_PERMISSIONS } = constantsModule;
-import redisClient from '../../../shared/infra/redis.util';
+import redisClient from '../../../shared/infrastructure/cache/redis.util';
 
 const CACHE_TTL_SECONDS = 60;
 // v2: los overrides pasaron a camelCase (moduleName) con Prisma; la clave nueva evita leer entradas viejas.

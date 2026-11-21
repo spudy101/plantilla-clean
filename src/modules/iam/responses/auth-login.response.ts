@@ -1,7 +1,7 @@
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 import { TrustedDeviceSchema } from './auth-components.response';
-import type { UserTrustedDevice } from '../../../shared/database/generated/prisma/client';
+import type { UserTrustedDevice } from '../../../shared/infrastructure/database/generated/prisma/client';
 import type { UserProfileRow, UserWith } from '../repositories/user.repository';
 import personModule from '../../person';
 const { personComponentsDto: componentsPersonModule } = personModule;

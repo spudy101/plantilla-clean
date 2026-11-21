@@ -4,8 +4,8 @@
 import EmailBounceWebhookService from '../services/email-bounce-webhook.service';
 import emailBounceWebhookDtoModule from '../responses/email-bounce-webhook.response';
 const { EmailBounceWebhookAckDTO } = emailBounceWebhookDtoModule;
-import ApiResponse from '../../../shared/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/http/error.middleware';
+import ApiResponse from '../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
 const { asyncHandler } = errorMiddlewareModule;
 
 class EmailBounceWebhookController {

@@ -1,8 +1,8 @@
 // Capa IP del endpoint de login (RF-AUTH-02 CA-05): si la IP está bloqueada → 429 + Retry-After; cada
 // intento suma al contador y, al superar el límite, la IP queda bloqueada (ver LoginRateLimiter).
 import type { NextFunction, Request, Response } from 'express';
-import AppError from '../../../shared/http/app-error.util';
-import loggerUtilModule from '../../../shared/observability/logger.util';
+import AppError from '../../../shared/presentation/http/app-error.util';
+import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
 import LoginRateLimiter from '../utils/login-rate-limiter.util';
 

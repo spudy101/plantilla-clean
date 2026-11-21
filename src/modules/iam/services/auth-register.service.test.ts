@@ -68,7 +68,7 @@ jest.mock('../repositories/user-session.repository', () => ({
   closeAllByUser: jest.fn()
 }));
 
-jest.mock('../../../shared/security/jwt.util', () => ({
+jest.mock('../../../shared/infrastructure/security/jwt.util', () => ({
   generateAccessToken: jest.fn(),
   generateRefreshToken: jest.fn()
 }));
@@ -85,15 +85,15 @@ jest.mock('../../notification/notify', () => ({
   notify: jest.fn(),
   notifyEmail: jest.fn()
 }));
-jest.mock('../../../shared/observability/request-context.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/request-context.util', () => ({
   originFromContext: jest.fn(() => ({}))
 }));
-jest.mock('../../../shared/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
+jest.mock('../../../shared/infrastructure/database/prisma', () => ({ __esModule: true, default: { $transaction: jest.fn() } }));
 jest.mock('../responses/auth-register.response', () => ({
   RegisterResponseDTO: jest.fn(x => ({ dto: true, userId: x.user?.userId, tokens: x.tokens }))
 }));
 
-jest.mock('../../../shared/observability/logger.util', () => ({
+jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
@@ -109,7 +109,7 @@ const mockConstants = {
   notifications: { ses: { logoUrl: 'https://logo' } },
   jwt: { accessTokenExpiry: '15m' }
 };
-jest.mock('../../../shared/constants', () => mockConstants);
+jest.mock('../../../shared/infrastructure/config', () => mockConstants);
 
 import { managedTransaction } from 'tests/helpers/transaction';
 import { mocked } from 'tests/helpers/mock';
@@ -141,7 +141,7 @@ import roleRepositoryModule from '../repositories/role.repository';
 const roleRepository = mocked(roleRepositoryModule);
 import userSessionRepositoryModule from '../repositories/user-session.repository';
 const userSessionRepository = mocked(userSessionRepositoryModule);
-import JwtUtilModule from '../../../shared/security/jwt.util';
+import JwtUtilModule from '../../../shared/infrastructure/security/jwt.util';
 const JwtUtil = mocked(JwtUtilModule);
 import RefreshTokenStoreModule from '../utils/refresh-token-store.util';
 const RefreshTokenStore = mocked(RefreshTokenStoreModule);
@@ -151,7 +151,7 @@ import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
 import NotificationUtilModule from '../../notification/notify';
 const notifier = mocked(NotificationUtilModule);
-import prismaModule from '../../../shared/database/prisma';
+import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import auditServiceModule from '../../audit/audit.service';
 const logAudit = mocked(auditServiceModule).record;

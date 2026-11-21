@@ -6,7 +6,7 @@ const { userSessionRepository } = iamModule;
 import userActivityDtoModule from '../responses/user-activity.response';
 const { UserActivityListResponseDTO } = userActivityDtoModule;
 import audit from '../audit.service';
-import { pageMetadata, pageRequest } from '../../../shared/http/pagination';
+import { pageMetadata, pageRequest } from '../../../shared/application/pagination';
 import type { RecentActivityQuery } from '../requests/audit.request';
 
 // Whitelist client-safe del feed: hitos que el usuario entiende y le pertenecen. Nada de acciones

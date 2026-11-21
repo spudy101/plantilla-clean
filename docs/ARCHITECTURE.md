@@ -1,5 +1,9 @@
 # Arquitectura
 
+> **Este repositorio está migrando a Clean Architecture.** La referencia es [CLEAN-ARCHITECTURE.md](CLEAN-ARCHITECTURE.md):
+> `shared/` y los módulos que tienen carpeta `domain/` (hoy: `settings`) ya la siguen. Este documento describe la
+> estructura **en capas** de la plantilla original, que siguen los módulos todavía sin migrar.
+
 Este documento es la referencia de cómo está organizado el proyecto y dónde va cada cosa.
 Si algo del código lo contradice, el código está mal (o este documento está desactualizado: arréglalo).
 
@@ -89,16 +93,16 @@ Cada petición tiene **un esquema Zod** en `requests/` y cada respuesta uno en `
 
 ```ts
 // requests/admin-promotional-banner.request.ts
-import { z } from '../../../shared/validation/z';
-import { text, optionalText } from '../../../shared/validation/fields';
+import { z } from '../../../shared/presentation/validation/z';
+import { text, optionalText } from '../../../shared/presentation/validation/fields';
 export const BannerInput = z.object({ title: text('El título', { max: 120 }), tag: optionalText('La etiqueta', 40) });
 
 // routes
 router.put('/promotional-banners', AuthMiddleware.authenticate, …, validate({ body: ReplaceBannersBody }), Controller.replace);
 ```
 
-Los campos genéricos (uuid, texto, entero, booleano) están en `shared/validation/fields.ts`; los de un dominio
-(documento, teléfono…) en su módulo. Importar `z` siempre desde `shared/validation/z` (mensajes en español).
+Los campos genéricos (uuid, texto, entero, booleano) están en `shared/presentation/validation/fields.ts`; los de un dominio
+(documento, teléfono…) en su módulo. Importar `z` siempre desde `shared/presentation/validation/z` (mensajes en español).
 
 En `responses/`, cada archivo tiene la función que arma la salida (`XxxDTO` o un `Component.build`) y, al
 final, su esquema (`XxxSchema`). Una prueba de conformidad (`*.response.test.ts`) corre cada función sobre un
@@ -118,11 +122,11 @@ parameters: toParameters(CategoryIdParams, 'path'),
 requestBody: jsonBody('AdminNotificationCategoryUpdateRequest'),
 ```
 
-Piezas de salida compartidas: `dateTime()` y `PaginationMetadata` en `shared/validation/output.ts`;
-los textos de enmascaramiento PII en `shared/validation/pii-masking.doc.ts`. Si otro módulo necesita un esquema
+Piezas de salida compartidas: `dateTime()` y `PaginationMetadata` en `shared/presentation/validation/output.ts`;
+los textos de enmascaramiento PII en `shared/presentation/validation/pii-masking.doc.ts`. Si otro módulo necesita un esquema
 de salida, el `index.ts` lo expone (`personModule.personSchemas`, `iamModule.authSchemas`,
 `catalogsModule.catalogSchemas`, `legalModule.legalSchemas`). Los esquemas globales de Swagger
-(`src/config/swagger/schemas`) también se generan desde los módulos: ahí no se escribe nada a mano.
+(`src/main/swagger/schemas`) también se generan desde los módulos: ahí no se escribe nada a mano.
 
 > Los esquemas de entrada migrados desde express-validator usan `input()` (aceptan campos no declarados, como
 > antes); para código nuevo usá `z.object` (descarta lo que no está declarado).
@@ -149,7 +153,7 @@ generaría ciclos de carga. Para exponer algo nuevo, se agrega un getter al `ind
 
 ### Cómo usa `shared/` algo de un módulo
 
-No lo importa: publica un punto de registro y `src/app.ts` le conecta el módulo dueño al arrancar.
+No lo importa: publica un punto de registro y `src/main/app.ts` le conecta el módulo dueño al arrancar.
 
 | `shared/` necesita… | Punto de registro | Lo provee |
 |---|---|---|
@@ -170,8 +174,8 @@ No lo importa: publica un punto de registro y `src/app.ts` le conecta el módulo
 | Registrar un hecho de negocio | `audit.record(acción, { actorId, … })` del index de `modules/audit` |
 | Un job periódico | `modules/<dominio>/workers/` |
 | Integrar un proveedor externo | `modules/<dominio>/providers/` |
-| Llamar a un proveedor externo (SES, S3, SNS…) | `callProvider` de `shared/infra/provider-call.util` (nunca `client.send` suelto) |
-| Una operación que no se debe ejecutar dos veces aunque el cliente reintente (crear, enviar, cobrar) | `idempotent()` de `shared/http/idempotency` en la ruta (ver docs/idempotency.md) |
+| Llamar a un proveedor externo (SES, S3, SNS…) | `callProvider` de `shared/infrastructure/providers/provider-call.util` (nunca `client.send` suelto) |
+| Una operación que no se debe ejecutar dos veces aunque el cliente reintente (crear, enviar, cobrar) | `idempotent()` de `shared/presentation/http/idempotency` en la ruta (ver docs/idempotency.md) |
 | Un error temporal (reintentar puede funcionar) | `retryable` + `retryAfter` en el `AppError` (ver docs/errors-and-retries.md) |
 | Algo técnico sin negocio (cifrado, Redis, paginación) | `shared/<área>/` |
 | Un dominio nuevo | copiar el molde de un módulo existente |
@@ -227,7 +231,7 @@ de worker o tarea de sistema) de principio a fin.
 
 ## Listados: paginación, orden y filtros
 
-Todos los listados siguen el mismo contrato (`src/shared/http/pagination.ts`):
+Todos los listados siguen el mismo contrato (`src/shared/application/pagination.ts`):
 
 - **Entrada.** El esquema del request declara `...pageQuery(campos, { sortBy })` y sus filtros tipados. Cada listado
   dice por qué campos se puede ordenar (pocos, con índice; nunca columnas sensibles); un `sortBy`, `limit` (máx.

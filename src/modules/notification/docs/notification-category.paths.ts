@@ -1,5 +1,5 @@
-import commonResponses from '../../../config/swagger/responses/common.responses';
-import { jsonBody, toOpenApi, toParameters } from '../../../shared/validation/openapi';
+import commonResponses from '../../../shared/presentation/openapi/common.responses';
+import { jsonBody, toOpenApi, toParameters } from '../../../shared/presentation/validation/openapi';
 import { CategoryIdParams, CategoryListQuery, CreateCategoryBody, UpdateCategoryBody } from '../requests/notification.request';
 import {
   NotificationCategoryAdminSchema,

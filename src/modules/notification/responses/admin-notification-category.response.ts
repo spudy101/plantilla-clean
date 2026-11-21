@@ -1,6 +1,6 @@
-import type { PageMetadata } from '../../../shared/http/pagination';
-import { z } from '../../../shared/validation/z';
-import { dateTime } from '../../../shared/validation/output';
+import type { PageMetadata } from '../../../shared/application/pagination';
+import { z } from '../../../shared/presentation/validation/z';
+import { dateTime } from '../../../shared/presentation/validation/output';
 import { NotificationCategorySchema } from './notification-components.response';
 import type { NotificationCategoryRow } from '../repositories/notification-category.repository';
 import componentsNotificationDtoModule from './notification-components.response';
