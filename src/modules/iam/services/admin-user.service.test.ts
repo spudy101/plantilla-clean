@@ -27,7 +27,7 @@ jest.mock('../repositories/role.repository', () => ({
   findById: jest.fn()
 }));
 
-jest.mock('../../catalogs/repositories/document-type.repository', () => ({
+jest.mock('../../catalogs/infrastructure/persistence/prisma-document-type.repository', () => ({
   findByCode: jest.fn()
 }));
 
@@ -107,13 +107,14 @@ jest.mock('../responses/admin-user.response', () => ({
 
 import { managedTransaction } from 'tests/helpers/transaction';
 import { mocked, Loose } from 'tests/helpers/mock';
+import catalogsModule from '../../catalogs';
 import userRepositoryModule from '../repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);
 import personRepositoryModule from '../../person/repositories/person.repository';
 const personRepository = mocked(personRepositoryModule);
 import roleRepositoryModule from '../repositories/role.repository';
 const roleRepository = mocked(roleRepositoryModule);
-import documentTypeRepositoryModule from '../../catalogs/repositories/document-type.repository';
+const documentTypeRepositoryModule = catalogsModule.documentTypeRepository;
 const documentTypeRepository = mocked(documentTypeRepositoryModule);
 import userSessionRepositoryModule from '../repositories/user-session.repository';
 const userSessionRepository = mocked(userSessionRepositoryModule);

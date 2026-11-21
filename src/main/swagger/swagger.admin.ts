@@ -8,7 +8,7 @@ const { server } = constantsModule;
 
 // ─── Módulos KYC (compartidos con client) ─────────────────────
 import authLoginPaths from '../../modules/iam/docs/auth-login.paths';
-import catalogPaths from '../../modules/catalogs/docs/maintainers.paths';
+import catalogPaths from '../../modules/catalogs/presentation/http/docs/catalogs.paths';
 import profilePaths from '../../modules/person/docs/profile.paths';
 import mfaPaths from '../../modules/iam/docs/mfa.paths';
 

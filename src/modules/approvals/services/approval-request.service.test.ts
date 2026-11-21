@@ -26,6 +26,7 @@ const DualApprovalService = mocked(DualApprovalServiceModule);
 import service from './approval-request.service';
 
 const ADMIN = 'admin-1';
+const PAGE = { page: 1, limit: 10, sortBy: 'createdAt' as const, order: 'DESC' as const };
 const ENTITY = { entityType: 'ApprovalRequest', entityTable: 'approval_requests' };
 
 describe('ApprovalRequestService', () => {
@@ -37,7 +38,7 @@ describe('ApprovalRequestService', () => {
     it('delega en el core y audita con operationKey/status normalizados', async () => {
       const coreResult = { data: [{ id: 'r1' }], metadata: {} };
       DualApprovalService.list.mockResolvedValue(coreResult);
-      const query = { operationKey: 'CLIENT_ACCOUNT_DELETE', status: 'pending' };
+      const query = { ...PAGE, operationKey: 'CLIENT_ACCOUNT_DELETE', status: 'pending' as const };
 
       const result = await service.list(query, ADMIN);
 
@@ -50,7 +51,7 @@ describe('ApprovalRequestService', () => {
     it('normaliza operationKey/status ausentes a null en la auditoría', async () => {
       DualApprovalService.list.mockResolvedValue({ data: [] });
 
-      await service.list({}, ADMIN);
+      await service.list(PAGE, ADMIN);
 
       expect(logAudit).toHaveBeenCalledWith('APPROVAL_REQUEST_LIST_VIEWED', { actorId: ADMIN, details: { operationKey: null, status: null }, ...ENTITY }
       );

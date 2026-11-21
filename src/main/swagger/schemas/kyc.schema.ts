@@ -11,7 +11,7 @@ import {
   GenderSchema,
   PhonePrefixSchema,
   RoleSchema
-} from '../../../modules/catalogs/responses/catalog-components.response';
+} from '../../../modules/catalogs/presentation/http/responses/catalog.response';
 import {
   PersonContactSchema,
   PersonLocationSchema,

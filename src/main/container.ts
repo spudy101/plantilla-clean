@@ -11,6 +11,13 @@ import { createSettingsModule } from '../modules/settings/settings.module';
 import { auditTrailAdapter } from './adapters/audit-trail.adapter';
 import { notifierAdapter } from './adapters/notifier.adapter';
 import { routeGuardsAdapter } from './adapters/route-guards.adapter';
+import redisClient from '../shared/infrastructure/cache/redis.util';
+import { createCatalogsModule } from '../modules/catalogs/catalogs.module';
+import {
+  notificationTypeCatalogAdapter,
+  privacyPolicyCatalogAdapter,
+  roleCatalogAdapter
+} from './adapters/catalog-sources.adapter';
 
 const { logger } = loggerUtilModule;
 
@@ -22,7 +29,15 @@ export function createContainer() {
     guards: routeGuardsAdapter
   });
 
-  return { settings };
+  const catalogs = createCatalogsModule({
+    audit: auditTrailAdapter,
+    cache: redisClient,
+    roles: roleCatalogAdapter,
+    notificationTypes: notificationTypeCatalogAdapter,
+    privacyPolicies: privacyPolicyCatalogAdapter
+  });
+
+  return { settings, catalogs };
 }
 
 export type Container = ReturnType<typeof createContainer>;

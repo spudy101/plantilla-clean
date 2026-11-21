@@ -29,7 +29,7 @@ jest.mock('../../person/repositories/person-contact.repository', () => ({
   findByEmailWithUser: jest.fn(),
   create: jest.fn()
 }));
-jest.mock('../../catalogs/repositories/document-type.repository', () => ({
+jest.mock('../../catalogs/infrastructure/persistence/prisma-document-type.repository', () => ({
   findById: jest.fn()
 }));
 jest.mock('../repositories/credential-reset.repository', () => ({
@@ -41,7 +41,7 @@ jest.mock('../repositories/credential-reset.repository', () => ({
 jest.mock('../../notification/repositories/user-notification-preference.repository', () => ({
   upsert: jest.fn()
 }));
-jest.mock('../../catalogs/repositories/country.repository', () => ({
+jest.mock('../../catalogs/infrastructure/persistence/prisma-country.repository', () => ({
   findByCode: jest.fn()
 }));
 jest.mock('../../legal/repositories/privacy-policy.repository', () => ({
@@ -53,7 +53,7 @@ jest.mock('../../legal/repositories/user-consent.repository', () => ({
 jest.mock('../../legal/repositories/consent-type.repository', () => ({
   findByCode: jest.fn()
 }));
-jest.mock('../../catalogs/repositories/gender.repository', () => ({
+jest.mock('../../catalogs/infrastructure/persistence/prisma-gender.repository', () => ({
   exists: jest.fn()
 }));
 jest.mock('../../notification/repositories/verification-code.repository', () => ({
@@ -113,19 +113,20 @@ jest.mock('../../../shared/infrastructure/config', () => mockConstants);
 
 import { managedTransaction } from 'tests/helpers/transaction';
 import { mocked } from 'tests/helpers/mock';
+import catalogsModule from '../../catalogs';
 import userRepositoryModule from '../repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);
 import personRepositoryModule from '../../person/repositories/person.repository';
 const personRepository = mocked(personRepositoryModule);
 import personContactRepositoryModule from '../../person/repositories/person-contact.repository';
 const personContactRepository = mocked(personContactRepositoryModule);
-import documentTypeRepositoryModule from '../../catalogs/repositories/document-type.repository';
+const documentTypeRepositoryModule = catalogsModule.documentTypeRepository;
 const documentTypeRepository = mocked(documentTypeRepositoryModule);
 import resetCredentialsRepositoryModule from '../repositories/credential-reset.repository';
 const credentialResetRepository = mocked(resetCredentialsRepositoryModule);
 import userNotificationPreferenceRepositoryModule from '../../notification/repositories/user-notification-preference.repository';
 const userNotificationPreferenceRepository = mocked(userNotificationPreferenceRepositoryModule);
-import countryRepositoryModule from '../../catalogs/repositories/country.repository';
+const countryRepositoryModule = catalogsModule.countryRepository;
 const countryRepository = mocked(countryRepositoryModule);
 import privacyPolicyRepositoryModule from '../../legal/repositories/privacy-policy.repository';
 const privacyPolicyRepository = mocked(privacyPolicyRepositoryModule);
@@ -133,7 +134,7 @@ import userConsentRepositoryModule from '../../legal/repositories/user-consent.r
 const userConsentRepository = mocked(userConsentRepositoryModule);
 import consentTypeRepositoryModule from '../../legal/repositories/consent-type.repository';
 const consentTypeRepository = mocked(consentTypeRepositoryModule);
-import genderRepositoryModule from '../../catalogs/repositories/gender.repository';
+const genderRepositoryModule = catalogsModule.genderRepository;
 const genderRepository = mocked(genderRepositoryModule);
 import verificationCodeRepositoryModule from '../../notification/repositories/verification-code.repository';
 const verificationCodeRepository = mocked(verificationCodeRepositoryModule);

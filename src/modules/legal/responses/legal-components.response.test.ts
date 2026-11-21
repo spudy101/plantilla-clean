@@ -1,4 +1,5 @@
 // La salida de cada constructor de legal cumple su esquema (y por lo tanto su documentación).
+import { pageMetadata } from '../../../shared/application/pagination';
 import components, {
   ConsentGrantedSchema,
   ConsentTypeDetailSchema,
@@ -48,7 +49,7 @@ describe('esquemas de salida de legal', () => {
   });
 
   it('políticas de privacidad: ítem, detalle y creada', () => {
-    ok(PrivacyPolicyItemSchema, policies.ListPrivacyPoliciesResponseDTO([policy as never], { totalItems: 1, page: 1, limit: 10 }).data[0]);
+    ok(PrivacyPolicyItemSchema, policies.ListPrivacyPoliciesResponseDTO([policy as never], pageMetadata({ page: 1, limit: 10, sortBy: 'createdAt', order: 'DESC' }, 1)).data[0]);
     ok(PrivacyPolicyDetailSchema, policies.PrivacyPolicyDetailResponseDTO(policy as never));
     ok(PrivacyPolicyDetailSchema, policies.PrivacyPolicyCreatedResponseDTO(policy as never));
   });

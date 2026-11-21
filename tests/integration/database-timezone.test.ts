@@ -10,7 +10,7 @@ afterAll(() => prisma.$disconnect());
 describe('zona horaria de la sesión', () => {
   it('es UTC', async () => {
     const [row] = await prisma.$queryRawUnsafe<{ tz: string }[]>(`SELECT current_setting('TimeZone') AS tz`);
-    expect(row.tz).toBe('UTC');
+    expect(row?.tz).toBe('UTC');
   });
 
   it('una fecha de la app se guarda como el mismo instante y now() de la base coincide con el reloj de la app', async () => {
@@ -20,6 +20,9 @@ describe('zona horaria de la sesión', () => {
       appNow
     );
 
+    if (!row) {
+      throw new Error('la consulta no devolvió filas');
+    }
     expect(row.stored).toBe(appNow.toISOString());
     expect(Math.abs(row.db_now.getTime() - appNow.getTime())).toBeLessThan(60_000);
   });

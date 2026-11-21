@@ -4,9 +4,10 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 (misma API, mismas funcionalidades). Este documento explica cómo está organizado y dónde va cada cosa.
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
-> **Estado de la migración:** `shared/` ya está repartido en capas y `settings` es el primer módulo
-> migrado completo (es el **molde** a copiar). Los demás módulos siguen con la estructura en capas de la
-> plantilla original y se migran uno por uno. Ver [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
+> **Estado de la migración:** `shared/` ya está repartido en capas; `settings` y `catalogs` están migrados
+> completos (son los **moldes** a copiar: uno de escritura, uno de solo lectura). Los demás módulos siguen con
+> la estructura en capas de la plantilla original y se migran uno por uno. Ver
+> [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
 
 ## La idea en una frase
 
@@ -118,6 +119,24 @@ Y `src/main/container.ts` le pasa los adaptadores de los otros módulos:
 const settings = createSettingsModule({ audit: auditTrailAdapter, notifier: notifierAdapter, logger, guards: routeGuardsAdapter });
 ```
 
+## Un módulo de solo lectura (catalogs)
+
+`catalogs` muestra datos de referencia (países, ciudades, géneros, tipos de documento…) en rutas públicas.
+Casi no tiene reglas, y eso también se modela:
+
+- **Dominio:** `domain/catalog-entries.ts` son modelos de solo lectura (sin comportamiento). Lo que SÍ es
+  regla, como reconocer una ciudad o un prefijo a partir del texto de un tercero, está en
+  `domain/location-names.ts` como funciones puras. El repositorio trae las ciudades y el dominio decide cuál
+  coincide.
+- **Un caso de uso genérico:** todos los catálogos se listan igual, así que `ListCatalog<Entry, Output>` es una
+  sola clase. `catalogs.module.ts` crea una instancia por catálogo con su lector, su acción de auditoría y su
+  forma de salida.
+- **Datos de otros módulos:** roles (iam), tipos de notificación (notification) y política de privacidad
+  (legal) son de otros módulos. Catalogs declara el puerto (`CatalogReader<RoleEntry>`…) y
+  `src/main/adapters/catalog-sources.adapter.ts` lo implementa leyendo esos módulos. Catalogs no los importa.
+- **Caché:** la política de privacidad se cachea 12 h a través del puerto `KeyValueCache` de
+  `shared/application`. En producción es Redis; en los tests, un `Map`.
+
 ## Errores
 
 El dominio lanza errores que dicen **qué regla se rompió**, sin status HTTP:
@@ -176,8 +195,10 @@ Usar `settings` como molde. Por cada módulo:
 |---|---|
 | `shared/` en capas + puertos comunes + errores de dominio | ✅ |
 | Composition root (`src/main/`) | ✅ |
-| `settings` | ✅ migrado (molde) |
-| `catalogs`, `banners`, `legal`, `integration`, `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
+| `settings` | ✅ migrado (molde de escritura) |
+| `catalogs` | ✅ migrado (molde de solo lectura; respuestas verificadas idénticas a plantilla-base) |
+| `banners`, `legal`, `integration`, `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
+| `index.ts` transitorios de `settings` y `catalogs` (búsquedas que usan iam, person, notification, banners, approvals, audit) | ⏳ se borran al migrar esos módulos |
 | Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
 
 Mientras dure la migración conviven las dos formas: los módulos con `domain/` siguen estas reglas y los

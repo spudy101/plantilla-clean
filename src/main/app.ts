@@ -31,8 +31,6 @@ const { version } = packageModule;
 // ── Rutas compartidas (admin + client) ─────────────────────────────────────
 import iamModule from '../modules/iam';
 const { authLoginRoutes, mfaRoutes, adminAuthSessionRoutes, adminUserRoutes, adminRbacRoutes, authRegisterRoutes, authBiometricRoutes } = iamModule;
-import catalogsModule from '../modules/catalogs';
-const { maintainersRoutes } = catalogsModule;
 import notificationModule from '../modules/notification';
 const { notificationPreferenceRoutes, notificationRoutes, sendVerificationRoutes, adminNotificationTypeRoutes, adminNotificationCategoryRoutes, adminNotificationDeliveryRoutes, emailBounceWebhookRoutes } = notificationModule;
 import personModule from '../modules/person';
@@ -48,7 +46,7 @@ const { adminApprovalRequestRoutes } = approvalsModule;
 type Audience = 'admin' | 'client';
 
 /** Router de una audiencia: marca req.serverContext (el login valida el rol contra ella) y monta su Swagger. */
-function audienceRouter(audience: Audience) {
+function audienceRouter(audience: Audience, container: Container) {
   const router = express.Router();
   router.use((req, _res, next) => {
     req.serverContext = audience;
@@ -60,14 +58,14 @@ function audienceRouter(audience: Audience) {
   router.use('/api/v1/kyc', mfaRoutes);
   router.use('/api/v1/kyc', profileRoutes);
   router.use('/api/v1/kyc', notificationPreferenceRoutes);
-  router.use('/api/v1/kyc', maintainersRoutes);
+  router.use('/api/v1/kyc', container.catalogs.router);
   router.use('/api/v1/notification', notificationRoutes);
   router.use('/api/v1/notification', sendVerificationRoutes);
   return router;
 }
 
 function adminRouter(container: Container) {
-  const router = audienceRouter('admin');
+  const router = audienceRouter('admin', container);
   router.use('/api/v1/auth', adminAuthSessionRoutes);
   router.use('/api/v1/kyc', adminPersonRoutes);
   router.use('/api/v1/kyc', adminUserRoutes);
@@ -91,8 +89,8 @@ function adminRouter(container: Container) {
   return router;
 }
 
-function clientRouter() {
-  const router = audienceRouter('client');
+function clientRouter(container: Container) {
+  const router = audienceRouter('client', container);
   router.use('/api/v1/auth', authRegisterRoutes);
   router.use('/api/v1/auth', authBiometricRoutes);
   router.use('/api/v1/notification', emailBounceWebhookRoutes);
@@ -187,7 +185,7 @@ function createApp() {
   );
 
   app.use('/admin', adminRouter(container));
-  app.use('/client', clientRouter());
+  app.use('/client', clientRouter(container));
 
   app.use(ErrorMiddleware.handleNotFound);
   app.use(ErrorMiddleware.handleError);

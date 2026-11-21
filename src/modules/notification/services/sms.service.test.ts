@@ -14,7 +14,7 @@ jest.mock('../repositories/sms-delivery-attempt.repository', () => ({
   markFailed: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../catalogs/repositories/phone-prefix.repository', () => ({
+jest.mock('../../catalogs/infrastructure/persistence/prisma-phone-prefix.repository', () => ({
   findById: jest.fn()
 }));
 
@@ -35,9 +35,10 @@ jest.mock('../../../shared/infrastructure/config', () => ({
 }));
 
 import { mocked } from 'tests/helpers/mock';
+import catalogsModule from '../../catalogs';
 import attemptRepoModule from '../repositories/sms-delivery-attempt.repository';
 const attemptRepo = mocked(attemptRepoModule);
-import phonePrefixRepoModule from '../../catalogs/repositories/phone-prefix.repository';
+const phonePrefixRepoModule = catalogsModule.phonePrefixRepository;
 const phonePrefixRepo = mocked(phonePrefixRepoModule);
 import * as providerCallModule from '../../../shared/infrastructure/providers/provider-call.util';
 const callProvider = mocked(providerCallModule.callProvider);

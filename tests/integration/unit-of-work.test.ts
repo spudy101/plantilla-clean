@@ -8,7 +8,9 @@ import { randomUUID } from 'node:crypto';
 import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
 import txContext from '../../src/shared/infrastructure/database/transaction-context';
 import prisma from '../../src/shared/infrastructure/database/prisma';
-import genderRepository from '../../src/modules/catalogs/repositories/gender.repository';
+import { PrismaGenderRepository } from '../../src/modules/catalogs/infrastructure/persistence/prisma-gender.repository';
+
+const genderRepository = new PrismaGenderRepository();
 
 const PREFIX = `uow-it-${randomUUID().slice(0, 8)}`;
 
