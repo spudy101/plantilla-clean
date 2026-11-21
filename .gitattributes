@@ -1,0 +1,18 @@
+# Normalización de saltos de línea.
+# El repositorio guarda LF. En Windows, core.autocrlf=true convierte a CRLF al hacer checkout, lo que
+# rompe los archivos que se ejecutan en Linux (bash falla con "\r: command not found").
+# Estas reglas fuerzan LF en la copia de trabajo para esos archivos, sin depender de la config local.
+
+# Por defecto: git decide si es texto y lo normaliza a LF en el repositorio
+* text=auto
+
+# Scripts y archivos que se ejecutan/copian dentro de contenedores Linux: siempre LF
+*.sh        text eol=lf
+Dockerfile  text eol=lf
+.dockerignore text eol=lf
+.nvmrc      text eol=lf
+
+# Binarios (no tocar)
+*.png   binary
+*.jpg   binary
+*.ico   binary

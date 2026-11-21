@@ -1,0 +1,32 @@
+{
+  // Build de producción (tsc → dist/). Todo el proyecto es TypeScript en modo estricto completo, con
+  // imports/exports nativos de ES compilados a CommonJS (esModuleInterop para los paquetes CJS).
+  // El seed (prisma/), los scripts y los tests no entran al build (corren con tsx / Jest desde las fuentes):
+  // los revisa tsconfig.test.json (`npm run typecheck`). Ver docs/typescript-migration.md.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "types": ["node", "jest"],
+
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "useUnknownInCatchVariables": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    "outDir": "dist",
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "coverage", "src/**/*.test.ts"]
+}
