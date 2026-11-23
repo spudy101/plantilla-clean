@@ -4,11 +4,11 @@
 // contraseña y el biométrico. Dependencias inyectadas por constructor (SOLID: D).
 
 jest.mock('../../../../shared/infrastructure/observability/logger.util', () => ({ logger: { warn: jest.fn() }, logAudit: jest.fn() }));
-jest.mock('../../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 import { mocked, fixture } from 'tests/helpers/mock';
 import LoginPolicyGateService from './login-policy-gate.service';
-import auditServiceModule from '../../../audit/audit.service';
+import auditServiceModule from '../../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import constantsModule from '../../../../shared/infrastructure/config';
 const { INTERNAL_ROLE_NAMES } = constantsModule;

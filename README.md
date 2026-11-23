@@ -2,7 +2,7 @@
 
 > **Versión Clean Architecture** de la plantilla base: misma API y funcionalidades, organizada en
 > `domain → application → infrastructure / presentation` con un composition root en `src/main/`.
-> Guía: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). Migración en curso: `shared/`, `settings`, `catalogs`, `banners`, `legal` e `integration`
+> Guía: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). Migración en curso: `shared/`, `settings`, `catalogs`, `banners`, `legal`, `integration` y `audit`
 > ya están en Clean; el resto de los módulos se migra uno por uno.
 
 > Plantilla base de API REST en Node.js para arrancar proyectos nuevos con el núcleo transversal ya
@@ -162,7 +162,7 @@ Detalle del pipeline: [`docs/request-flow.md`](docs/request-flow.md) · auditor�
 │   │   ├── person/             # persona, contactos, ubicación, referencias, perfil
 │   │   ├── catalogs/           # países, ciudades, géneros, tipos de documento, avatares  ✅ Clean
 │   │   ├── notification/       # tipos, envío (email/SMS/push), preferencias, rebotes
-│   │   ├── audit/              # auditoría, alertas, operaciones, bitácora de cambios
+│   │   ├── audit/              # auditoría, alertas, operaciones, bitácora de cambios  ✅ Clean
 │   │   ├── legal/              # consentimientos, políticas de privacidad  ✅ Clean
 │   │   ├── approvals/          # doble aprobación (maker-checker)
 │   │   ├── settings/           # configuración global  ✅ Clean (molde para migrar el resto)

@@ -6,10 +6,9 @@ import routeParamUtilModule from '../../../shared/presentation/http/route-param.
 const { routeParam } = routeParamUtilModule;
 import authUserUtilModule from '../../../shared/presentation/http/auth-user.util';
 const { requireAuthUser } = authUserUtilModule;
-import auditModule from '../../audit';
+import adminAuditContextUtilModule from '../../../shared/presentation/http/admin-audit-context.util';
 import { validQuery } from '../../../shared/presentation/validation/validate';
 import { ApprovalListQuery } from '../requests/approval-request.request';
-const { adminAuditContextUtil: adminAuditContextUtilModule } = auditModule;
 const { adminAuditContext } = adminAuditContextUtilModule;
 
 class ApprovalRequestController {

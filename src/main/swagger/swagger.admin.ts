@@ -26,12 +26,12 @@ import notificationTypePaths from '../../modules/notification/docs/notification-
 
 // ─── Módulos Admin — Auditoría ────────────────────────────────
 import adminAuthSessionPaths from '../../modules/iam/docs/admin-auth-session.paths';
-import changeLogPaths from '../../modules/audit/docs/change-log.paths';
-import auditLogPaths from '../../modules/audit/docs/audit-log.paths';
-import auditAlertPaths from '../../modules/audit/docs/audit-alert.paths';
-import auditActionCatalogPaths from '../../modules/audit/docs/audit-action-catalog.paths';
-import sessionTracePaths from '../../modules/audit/docs/session-trace.paths';
-import operationPaths from '../../modules/audit/docs/operation.paths';
+import changeLogPaths from '../../modules/audit/presentation/http/docs/change-log.paths';
+import auditLogPaths from '../../modules/audit/presentation/http/docs/audit-log.paths';
+import auditAlertPaths from '../../modules/audit/presentation/http/docs/audit-alert.paths';
+import auditActionCatalogPaths from '../../modules/audit/presentation/http/docs/audit-action-catalog.paths';
+import sessionTracePaths from '../../modules/audit/presentation/http/docs/session-trace.paths';
+import operationPaths from '../../modules/audit/presentation/http/docs/operation.paths';
 import integrationMonitoringPaths from '../../modules/integration/presentation/http/docs/integration-monitoring.paths';
 import notificationDeliveryPaths from '../../modules/notification/docs/notification-delivery.paths';
 import notificationCategoryPaths from '../../modules/notification/docs/notification-category.paths';

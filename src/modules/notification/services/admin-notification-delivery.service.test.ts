@@ -16,12 +16,12 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 import { mocked, Loose } from 'tests/helpers/mock';
 import deliveryRepoModule from '../repositories/notification-delivery.repository';
 const deliveryRepo = mocked(deliveryRepoModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import service from './admin-notification-delivery.service';
 import { DeliveryListQuery } from '../requests/notification.request';

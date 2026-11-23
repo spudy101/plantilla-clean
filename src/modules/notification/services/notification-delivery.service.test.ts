@@ -22,7 +22,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 import { mocked, Loose } from 'tests/helpers/mock';
 import notificationRepoModule from '../repositories/notification.repository';
@@ -39,7 +39,7 @@ import pushServiceModule from './push-notification.service';
 const pushService = mocked(pushServiceModule);
 import smsServiceModule from './sms.service';
 const smsService = mocked(smsServiceModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const audit = mocked(auditServiceModule);
 import delivery, { LEASE_MS, MAX_ATTEMPTS } from './notification-delivery.service';
 

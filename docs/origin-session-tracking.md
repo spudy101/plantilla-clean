@@ -67,9 +67,10 @@ duplicarlo en `users` sería redundante.
 ## Ver "qué hizo el usuario en la sesión" con detalle (ENTITY_REGISTRY)
 
 El timeline forense (`GET /records/audit/sessions/:id`) sale de `audit_logs`. Para **hidratar** el detalle
-de las filas referenciadas (`GET /records/audit/sessions/:id/entities`), el service
-`src/modules/audit/services/admin-session-trace.service.ts` tiene un `ENTITY_REGISTRY` que mapea
-`entity_table → { repository, pk, entityType, dto }`. Las tablas no registradas caen en `skipped`.
+de las filas referenciadas (`GET /records/audit/sessions/:id/entities`), audit recibe un registro
+(puerto `TracedEntityRegistry`) que arma `src/main/adapters/audit-sources.adapter.ts` y que mapea
+`entity_table → { entityType, findByIds }` (cada fuente devuelve sus filas ya en forma de salida). Las tablas
+no registradas caen en `skipped`.
 
 Hoy registra: `user_consents`, `user_notification_preferences`, `user_trusted_devices`.
 

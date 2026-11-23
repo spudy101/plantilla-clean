@@ -24,7 +24,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../../../shared/infrastructure/config', () => ({
   RBAC_ROLES: { SUPER_ADMIN: 'super_admin', ADMIN: 'admin', AUDITOR: 'auditor' },
@@ -54,7 +54,7 @@ jest.mock('../responses/admin-rbac.response', () => ({
 import { mocked, Loose } from 'tests/helpers/mock';
 import RbacServiceModule from './rbac.service';
 const RbacService = mocked(RbacServiceModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import NotificationCreationServiceModule from '../../notification/notify';
 const notifier = mocked(NotificationCreationServiceModule);

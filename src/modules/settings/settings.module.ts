@@ -15,6 +15,7 @@ import { PrismaSystemGlobalConfigRepository } from './infrastructure/persistence
 import { GetSystemGlobalConfig } from './application/use-cases/get-system-global-config.use-case';
 import { UpdateSystemGlobalConfig } from './application/use-cases/update-system-global-config.use-case';
 import { GetIntegrationResilience } from './application/use-cases/get-integration-resilience.use-case';
+import { GetAuditRetention } from './application/use-cases/get-audit-retention.use-case';
 import { SystemGlobalConfigController } from './presentation/http/system-global-config.controller';
 import { createSystemGlobalConfigRouter } from './presentation/http/system-global-config.routes';
 
@@ -32,6 +33,7 @@ export interface SettingsModule {
     getSystemGlobalConfig: GetSystemGlobalConfig;
     updateSystemGlobalConfig: UpdateSystemGlobalConfig;
     getIntegrationResilience: GetIntegrationResilience;
+    getAuditRetention: GetAuditRetention;
   };
 }
 
@@ -41,11 +43,12 @@ export function createSettingsModule({ audit, notifier, logger, guards }: Settin
   const getSystemGlobalConfig = new GetSystemGlobalConfig(configs, audit);
   const updateSystemGlobalConfig = new UpdateSystemGlobalConfig(configs, audit, notifier, logger);
   const getIntegrationResilience = new GetIntegrationResilience(configs);
+  const getAuditRetention = new GetAuditRetention(configs);
 
   const controller = new SystemGlobalConfigController(getSystemGlobalConfig, updateSystemGlobalConfig);
 
   return {
     adminRouter: createSystemGlobalConfigRouter(controller, guards),
-    useCases: { getSystemGlobalConfig, updateSystemGlobalConfig, getIntegrationResilience }
+    useCases: { getSystemGlobalConfig, updateSystemGlobalConfig, getIntegrationResilience, getAuditRetention }
   };
 }

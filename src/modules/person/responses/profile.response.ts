@@ -10,7 +10,7 @@ const { UserComponent, PersonComponent, PersonContactComponent, PersonLocationCo
 import legalModule from '../../legal';
 const { legalComponentsDto } = legalModule;
 const { UserConsentComponent } = legalComponentsDto;
-import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import MaskingUtil from '../../../shared/domain/pii/masking.util';
 
 /**
  * ============================================================

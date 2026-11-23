@@ -1,7 +1,7 @@
 // Bloques reutilizables del módulo de notificaciones (client y admin): nunca duplicarlos.
 // Cada constructor tiene su esquema Zod de salida al final del archivo (tipa y documenta la respuesta).
 
-import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import MaskingUtil from '../../../shared/domain/pii/masking.util';
 import { z } from '../../../shared/presentation/validation/z';
 import { dateTime } from '../../../shared/presentation/validation/output';
 import type { DbDate, Maybe } from '../../../shared/infrastructure/database/db-rows';

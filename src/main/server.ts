@@ -12,12 +12,10 @@ import notificationModule from '../modules/notification';
 const { NotificationWorker, NotificationEmitter } = notificationModule;
 import iamModule from '../modules/iam';
 const { SessionExpirationWorker } = iamModule;
-import auditModule from '../modules/audit';
-const { AuditArchiveWorker } = auditModule;
 import approvalsModule from '../modules/approvals';
 const { DualApprovalExpirationWorker, dualApprovalBootstrap: dualApprovalBootstrapModule } = approvalsModule;
 const { registerDualApprovalHandlers } = dualApprovalBootstrapModule;
-import app from './app';
+import app, { container } from './app';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
@@ -42,7 +40,7 @@ function startWorkers() {
   }
   NotificationWorker.iniciar();
   SessionExpirationWorker.iniciar();
-  AuditArchiveWorker.iniciar();
+  container.audit.retentionWorker.start();
   DualApprovalExpirationWorker.iniciar();
   logger.info('✅ Workers iniciados');
 }

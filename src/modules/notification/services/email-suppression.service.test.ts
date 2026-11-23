@@ -18,7 +18,7 @@ jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({
   generateHash: jest.fn().mockReturnValue('email-hash-de-prueba')
 }));
 
-jest.mock('../../../shared/infrastructure/security/masking.util', () => ({
+jest.mock('../../../shared/domain/pii/masking.util', () => ({
   maskEmail: jest.fn().mockReturnValue('u***@e***.com')
 }));
 
@@ -26,17 +26,17 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 import { mocked } from 'tests/helpers/mock';
 import suppressionRepoModule from '../repositories/email-bounce-suppression.repository';
 const suppressionRepo = mocked(suppressionRepoModule);
 import EncryptionUtilModule from '../../../shared/infrastructure/security/encryption.util';
 const EncryptionUtil = mocked(EncryptionUtilModule);
-import MaskingUtilModule from '../../../shared/infrastructure/security/masking.util';
+import MaskingUtilModule from '../../../shared/domain/pii/masking.util';
 const MaskingUtil = mocked(MaskingUtilModule);
 import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;
 import service from './email-suppression.service';

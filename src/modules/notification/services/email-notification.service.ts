@@ -4,7 +4,7 @@ const { logger } = loggerUtilModule;
 import constantsModule from '../../../shared/infrastructure/config';
 const { notifications, aws } = constantsModule;
 import { callProvider, AWS_CLIENT_OPTIONS } from '../../../shared/infrastructure/providers/provider-call.util';
-import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import MaskingUtil from '../../../shared/domain/pii/masking.util';
 import emailSuppressionService from './email-suppression.service';
 import NotificationContentUtil from '../utils/notification-content.util';
 import type * as Types from '../notification.types';

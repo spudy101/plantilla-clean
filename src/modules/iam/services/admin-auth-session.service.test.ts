@@ -13,7 +13,7 @@ jest.mock('../repositories/user-session.repository', () => ({
   closeSession: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../audit/repositories/audit-log.repository', () => ({
+jest.mock('../../audit/infrastructure/persistence/prisma-audit-log.repository', () => ({
   findAuthAttemptsPaginated: jest.fn()
 }));
 
@@ -33,7 +33,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo.test/logo.png' } }
@@ -48,7 +48,7 @@ jest.mock('../responses/admin-auth-session.response', () => ({
 import { mocked, Loose } from 'tests/helpers/mock';
 import userSessionRepositoryModule from '../repositories/user-session.repository';
 const userSessionRepository = mocked(userSessionRepositoryModule);
-import auditLogRepositoryModule from '../../audit/repositories/audit-log.repository';
+const auditLogRepositoryModule = jest.requireMock<import('../../audit/infrastructure/persistence/prisma-audit-log.repository').PrismaAuditLogRepository>('../../audit/infrastructure/persistence/prisma-audit-log.repository');
 const auditLogRepository = mocked(auditLogRepositoryModule);
 import RefreshTokenStoreModule from '../utils/refresh-token-store.util';
 const RefreshTokenStore = mocked(RefreshTokenStoreModule);
@@ -57,7 +57,7 @@ const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
 import NotificationCreationServiceModule from '../../notification/notify';
 const notifier = mocked(NotificationCreationServiceModule);
 import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;
 import adminAuthSessionDtoModule from '../responses/admin-auth-session.response';

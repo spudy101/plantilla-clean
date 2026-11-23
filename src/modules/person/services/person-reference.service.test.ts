@@ -10,7 +10,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../repositories/person-reference.repository', () => ({
   findAllByPersonId: jest.fn(),
@@ -28,7 +28,7 @@ jest.mock('../responses/person-reference.response', () => ({
 import { mocked, fixture } from 'tests/helpers/mock';
 import referenceRepoModule from '../repositories/person-reference.repository';
 const referenceRepo = mocked(referenceRepoModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import service from './person-reference.service';
 

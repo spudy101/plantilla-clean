@@ -16,7 +16,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../repositories/notification.repository', () => ({
   findByUserPaginated: jest.fn(),
@@ -53,7 +53,7 @@ import { mocked } from 'tests/helpers/mock';
 import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;
 import notificationRepoModule from '../repositories/notification.repository';

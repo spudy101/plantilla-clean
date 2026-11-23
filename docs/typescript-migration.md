@@ -134,7 +134,7 @@ Tipos y helpers compartidos:
 - **Query string**: `PaginationHelper.stringParam(query, 'x')` (string no vacío o null) y
   `PaginationHelper.booleanParam(query, 'x')` (acepta el boolean que dejan los validators con
   `.toBoolean()` — Express 4 reescribe `req.query` — o `'true'`/`'false'`).
-- **Contexto admin**: `src/modules/audit/utils/admin-audit-context.util` → `adminAuditContext(req, res)` (antes 6 copias
+- **Contexto admin**: `src/shared/presentation/http/admin-audit-context.util` → `adminAuditContext(req, res)` (antes 6 copias
   locales con variaciones).
 - **Tipos que cruzan archivos** van en un `*.types.ts` del dominio (`notification.types`,
   `notification-feed.types`, `profile.types`): un módulo que exporta una instancia (`export default

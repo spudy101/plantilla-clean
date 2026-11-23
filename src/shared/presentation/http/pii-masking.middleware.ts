@@ -1,7 +1,7 @@
 // shared/middlewares/pii-masking.middleware.ts
 
 import type { NextFunction, Request, Response } from 'express';
-import MaskingUtil from '../../infrastructure/security/masking.util';
+import MaskingUtil from '../../domain/pii/masking.util';
 
 /**
  * [RF-USR-01] | CA-06 | Red de seguridad de enmascaramiento PII.

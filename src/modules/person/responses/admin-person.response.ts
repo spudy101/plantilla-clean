@@ -12,7 +12,7 @@ import componentsPersonModule from './person-components.response';
 const { UserComponent, PersonComponent, PersonContactComponent, PersonLocationComponent } = componentsPersonModule;
 import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
 const safeDecrypt = (value: unknown) => EncryptionUtil.safeDecrypt(value);
-import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import MaskingUtil from '../../../shared/domain/pii/masking.util';
 
 import catalogsModule from '../../catalogs';
 const { catalogComponentsDto: componentsCatalogDtoModule } = catalogsModule;

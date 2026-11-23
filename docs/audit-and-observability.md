@@ -56,7 +56,7 @@ await audit.record('PERSON_ROLE_CHANGED', {
 });
 ```
 
-- **La acción es una clave del catálogo** (`src/modules/audit/catalog/`): un typo no compila. Cada acción
+- **La acción es una clave del catálogo** (`src/modules/audit/domain/catalog/`): un typo no compila. Cada acción
   define su descripción, categoría y riesgo, y si dispara una alerta (`alert: true`).
 - **Quién, desde dónde y en qué operación** (IP, user-agent, sesión, correlationId, origen) sale solo del
   contexto de la operación: no se pasa por parámetro.

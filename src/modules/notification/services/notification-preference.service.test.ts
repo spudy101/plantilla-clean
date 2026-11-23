@@ -9,12 +9,12 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 import { mocked } from 'tests/helpers/mock';
 import prefRepoModule from '../repositories/user-notification-preference.repository';
 const prefRepo = mocked(prefRepoModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import service from './notification-preference.service';
 

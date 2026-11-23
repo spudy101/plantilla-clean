@@ -4,9 +4,10 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 (misma API, mismas funcionalidades). Este documento explica cómo está organizado y dónde va cada cosa.
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
-> **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners`, `legal` e `integration`
-> están migrados completos (moldes: escritura, solo lectura, agregado + archivos en S3, y un módulo que otros
-> usan, y uno que reacciona a eventos de infraestructura). Los demás módulos siguen con
+> **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners`, `legal`,
+> `integration` y `audit` están migrados completos (moldes: escritura, solo lectura, agregado + archivos en S3,
+> un módulo que otros usan, uno que reacciona a eventos de infraestructura y uno del que dependen todos).
+> Los demás módulos siguen con
 > la estructura en capas de la plantilla original y se migran uno por uno. Ver
 > [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
 
@@ -117,7 +118,8 @@ export function createSettingsModule({ audit, notifier, logger, guards }: Settin
 Y `src/main/container.ts` le pasa los adaptadores de los otros módulos:
 
 ```ts
-const settings = createSettingsModule({ audit: auditTrailAdapter, notifier: notifierAdapter, logger, guards: routeGuardsAdapter });
+const audit = createAuditModule({ … });   // primero: su `trail` (AuditTrail) lo usan todos
+const settings = createSettingsModule({ audit: audit.trail, notifier: notifierAdapter, logger, guards: routeGuardsAdapter });
 ```
 
 ## Un módulo de solo lectura (catalogs)
@@ -173,6 +175,34 @@ caída cuando pasa. El que avisa es el circuit breaker de `shared/infrastructure
 - **Datos de otro módulo:** cuántos procesos fallaron durante la caída sale de los intentos de SMS de
   notification. Integration declara `FailedProcessCounter` y `src/main/adapters/failed-process-counter.adapter.ts`
   decide para qué productos se puede contar (hoy solo `aws_sms`).
+
+## Un módulo del que dependen todos (audit)
+
+`audit` registra los hechos de negocio de todos los módulos y además tiene su propia API de consulta (logs,
+alertas, catálogo de acciones, bitácora de cambios, traza de sesiones y de operaciones, feed de actividad del
+cliente) y un worker de retención.
+
+- **La escritura es un caso de uso:** `RecordAuditEvent` clasifica el hecho con el catálogo
+  (`domain/catalog`, que es dominio: la taxonomía de la auditoría), toma quién/desde dónde del puerto
+  `OperationContext`, decide si se escribe dentro de la unidad de trabajo o aparte (un intento fallido debe
+  quedar) y si dispara una alerta. `audit.module.ts` lo entrega como `trail` (el puerto `AuditTrail` de
+  `shared/application`); `src/main/container.ts` crea audit **primero** y pasa ese `trail` a los demás módulos.
+  Los propios casos de uso de audit también auditan sus consultas por ese mismo puerto.
+- **Lo que es de otros módulos llega por puertos:** las sesiones de iam (`SessionDirectory`), las filas de
+  dominio que muestra la traza de una sesión (`TracedEntityRegistry`: consentimientos de legal, preferencias de
+  notification, dispositivos de iam) y la política de retención de settings (`RetentionSettingsReader`, con el
+  caso de uso `GetAuditRetention`). Los implementa `src/main/adapters/audit-sources.adapter.ts` y el container.
+- **Reglas en el dominio:** clasificación y alertas (`audit-log.ts`), la bitácora de cambios con su
+  enmascarado (`account-change.ts`), el catálogo de acciones (`action-catalog.ts`), la lista client-safe y la
+  mezcla del feed (`activity-feed.ts`), los cortes de retención y la key del archivo diario (`retention.ts`).
+- **Lo que no era de audit salió a `shared/`:** el enmascarado de PII es dominio puro
+  (`shared/domain/pii/masking.util.ts`), `loadUserRefs` es infraestructura de base de datos
+  (`shared/infrastructure/database/user-ref.ts`), `buildAuditDiff` es kernel y `adminAuditContext` es
+  presentación HTTP.
+- **Transitorio:** iam, person, notification y approvals todavía escriben con `audit.record` del `index.ts`
+  (el mismo caso de uso, armado en `infrastructure/legacy/audit-recorder.ts`), iam lee intentos de
+  autenticación e historial de cambios por el index, y los intentos de login (que son de iam) viven en audit
+  hasta migrar iam.
 
 ## Errores
 
@@ -237,8 +267,9 @@ Usar `settings` como molde. Por cada módulo:
 | `banners` | ✅ migrado (agregado BannerCatalog, imágenes por el puerto BannerImageStorage) |
 | `legal` | ✅ migrado (consentimientos y políticas; casos de uso que usa iam; caché de catalogs por un puerto; respuestas verificadas idénticas a plantilla-base) |
 | `integration` | ✅ migrado (ventanas de fallback del circuit breaker por un listener; procesos afectados por el puerto FailedProcessCounter; respuestas verificadas idénticas a plantilla-base) |
-| `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
-| `index.ts` transitorios de `settings`, `catalogs` y `legal` (búsquedas que usan iam, person, notification, approvals, audit) | ⏳ se borran al migrar esos módulos |
+| `audit` | ✅ migrado (RecordAuditEvent detrás del AuditTrail de todos; sesiones, traza y retención por puertos; respuestas y Swagger verificados idénticos a plantilla-base, salvo el arreglo de la exportación CSV/XLSX) |
+| `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
+| `index.ts` transitorios de `settings`, `catalogs`, `legal` y `audit` (lo que usan iam, person, notification y approvals) | ⏳ se borran al migrar esos módulos |
 | Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
 
 Mientras dure la migración conviven las dos formas: los módulos con `domain/` siguen estas reglas y los

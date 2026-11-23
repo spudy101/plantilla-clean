@@ -54,7 +54,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 // MOCKS.EXTERNAL_PROVIDERS mutable: en true el OTP es fijo '123456'.
 jest.mock('../../../shared/infrastructure/config', () => ({ MOCKS: { EXTERNAL_PROVIDERS: false } }));
@@ -89,7 +89,7 @@ import SmsServiceModule from '../../notification/services/sms.service';
 const SmsService = mocked(SmsServiceModule);
 import constantsModule from '../../../shared/infrastructure/config';
 const constants = mocked(constantsModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import mfa from './mfa.service';
 

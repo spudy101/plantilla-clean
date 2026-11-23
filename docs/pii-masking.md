@@ -2,7 +2,7 @@
 
 > **Complementa** a [`encryption-pii.md`](./encryption-pii.md): ahí se explica cómo se guarda la PII
 > (cifrada at-rest); aquí, cómo **sale** por la API.
-> Piezas: `src/shared/domain/constants/pii-fields.ts` · `src/shared/infrastructure/security/masking.util.ts` ·
+> Piezas: `src/shared/domain/constants/pii-fields.ts` · `src/shared/domain/pii/masking.util.ts` ·
 > `src/shared/infrastructure/security/pii-masking.middleware.ts`.
 
 ## Idea general

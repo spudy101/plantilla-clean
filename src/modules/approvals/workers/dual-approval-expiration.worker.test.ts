@@ -13,12 +13,12 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 import { mocked } from 'tests/helpers/mock';
 import approvalRepoModule from '../repositories/approval-request.repository';
 const approvalRepo = mocked(approvalRepoModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import DualApprovalExpirationWorker from './dual-approval-expiration.worker';
 

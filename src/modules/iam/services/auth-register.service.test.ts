@@ -97,7 +97,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 // mockConstants es la MISMA referencia devuelta por la factory.
 const mockConstants = {
@@ -154,7 +154,7 @@ import NotificationUtilModule from '../../notification/notify';
 const notifier = mocked(NotificationUtilModule);
 import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 
 import service from './auth-register.service';

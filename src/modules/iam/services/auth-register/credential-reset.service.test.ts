@@ -4,7 +4,7 @@
 // repositorios: las dependencias se inyectan por constructor (SOLID: D).
 
 jest.mock('../../../../shared/infrastructure/observability/logger.util', () => ({ logger: { info: jest.fn(), warn: jest.fn() }, logAudit: jest.fn() }));
-jest.mock('../../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 jest.mock('../../utils/token-blacklist.util', () => ({ invalidateUserSessions: jest.fn().mockResolvedValue(undefined) }));
 
 import { managedTransaction } from 'tests/helpers/transaction';
@@ -12,7 +12,7 @@ import { mocked, Loose, fixture } from 'tests/helpers/mock';
 import CredentialResetService from './credential-reset.service';
 import TokenBlacklistUtilModule from '../../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
-import auditServiceModule from '../../../audit/audit.service';
+import auditServiceModule from '../../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 
 const flush = () => new Promise(resolve => { setImmediate(resolve); });

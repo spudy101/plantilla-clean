@@ -8,7 +8,9 @@
 // se agregan acá y desaparecen sus singletons.
 import loggerUtilModule from '../shared/infrastructure/observability/logger.util';
 import { createSettingsModule } from '../modules/settings/settings.module';
-import { auditTrailAdapter } from './adapters/audit-trail.adapter';
+import { createAuditModule } from '../modules/audit/audit.module';
+import { auditSessionsAdapter, tracedEntitiesAdapter } from './adapters/audit-sources.adapter';
+import type { SettingsModule } from '../modules/settings/settings.module';
 import { notifierAdapter } from './adapters/notifier.adapter';
 import { routeGuardsAdapter } from './adapters/route-guards.adapter';
 import redisClient from '../shared/infrastructure/cache/redis.util';
@@ -31,15 +33,29 @@ import { failedProcessCounterAdapter } from './adapters/failed-process-counter.a
 const { logger } = loggerUtilModule;
 
 export function createContainer() {
+  // audit va primero: su AuditTrail lo usan todos los demás. Su política de retención es de settings, que se
+  // crea después; el lector la busca recién al usarse (cuando corre el worker).
+  let settingsModule: SettingsModule | null = null;
+  const audit = createAuditModule({
+    logger,
+    notifier: notifierAdapter,
+    guards: routeGuardsAdapter,
+    sessions: auditSessionsAdapter,
+    tracedEntities: tracedEntitiesAdapter,
+    retentionSettings: { read: () => (settingsModule ? settingsModule.useCases.getAuditRetention.execute() : Promise.resolve(null)) },
+    operationsRetentionDays: constantsModule.logging.operationsRetentionDays,
+    notificationLogoUrl: constantsModule.notifications.ses.logoUrl
+  });
+
   const settings = createSettingsModule({
-    audit: auditTrailAdapter,
+    audit: audit.trail,
     notifier: notifierAdapter,
     logger,
     guards: routeGuardsAdapter
   });
 
   const catalogs = createCatalogsModule({
-    audit: auditTrailAdapter,
+    audit: audit.trail,
     cache: redisClient,
     roles: roleCatalogAdapter,
     notificationTypes: notificationTypeCatalogAdapter,
@@ -47,7 +63,7 @@ export function createContainer() {
   });
 
   const banners = createBannersModule({
-    audit: auditTrailAdapter,
+    audit: audit.trail,
     logger,
     ids: uuidGenerator,
     cache: localCache,
@@ -55,7 +71,7 @@ export function createContainer() {
   });
 
   const legal = createLegalModule({
-    audit: auditTrailAdapter,
+    audit: audit.trail,
     notifier: notifierAdapter,
     logger,
     unitOfWork,
@@ -65,13 +81,15 @@ export function createContainer() {
   });
 
   const integration = createIntegrationModule({
-    audit: auditTrailAdapter,
+    audit: audit.trail,
     logger,
     guards: routeGuardsAdapter,
     failedProcesses: failedProcessCounterAdapter
   });
 
-  return { settings, catalogs, banners, legal, integration };
+  settingsModule = settings;
+
+  return { audit, settings, catalogs, banners, legal, integration };
 }
 
 export type Container = ReturnType<typeof createContainer>;

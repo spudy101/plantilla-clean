@@ -15,7 +15,7 @@ import routeParamUtilModule from '../../../shared/presentation/http/route-param.
 const { routeParam } = routeParamUtilModule;
 import authUserUtilModule from '../../iam/utils/auth-user.util';
 const { requireAuthUser } = authUserUtilModule;
-import adminAuditContextUtilModule from '../../audit/utils/admin-audit-context.util';
+import adminAuditContextUtilModule from '../../../shared/presentation/http/admin-audit-context.util';
 const { adminAuditContext } = adminAuditContextUtilModule;
 
 class MyController {

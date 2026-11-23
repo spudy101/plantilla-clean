@@ -26,7 +26,7 @@ import personReferencePaths from '../../modules/person/docs/person-reference.pat
 import userConsentPaths from '../../modules/legal/presentation/http/docs/user-consent.paths';
 
 // ─── Módulos Client — Actividad reciente del usuario ──────────
-import userActivityPaths from '../../modules/audit/docs/user-activity.paths';
+import userActivityPaths from '../../modules/audit/presentation/http/docs/user-activity.paths';
 
 // ─── Módulos Client — Banners promocionales (público) ─────────
 import promotionalBannerPublicPaths from '../../modules/banners/presentation/http/docs/promotional-banner.paths';

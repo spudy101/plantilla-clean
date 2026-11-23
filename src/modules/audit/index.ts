@@ -1,80 +1,61 @@
-// API pública del módulo audit: lo ÚNICO que otros módulos (y src/app.ts) pueden importar.
-// Lo que no está acá es interno del módulo (docs/ARCHITECTURE.md, regla 2).
+// API pública del módulo audit para los módulos que todavía no están en Clean Architecture (iam, person,
+// notification, approvals).
 //
-// Cada export se carga al usarse (getter): los módulos se usan entre sí y un index que cargara todo
-// de una vez crearía ciclos de carga. Uso: import auditModule from '…/audit'; const { X } = auditModule;
+// En Clean, audit no se usa importando este index: src/main/container.ts arma el módulo (createAuditModule en
+// audit.module.ts) y entrega su AuditTrail a los módulos migrados. Lo que queda acá es TRANSITORIO: la
+// escritura de auditoría, las lecturas que hace iam (intentos de autenticación, historial de cambios de un
+// usuario) y los intentos de login, que son de iam. Cuando esos módulos se migren, se borra.
 import { interopDefault } from '../../shared/kernel/interop.util';
+import type { PrismaAuditLogRepository } from './infrastructure/persistence/prisma-audit-log.repository';
+import type { PrismaChangeLogRepository } from './infrastructure/persistence/prisma-change-log.repository';
+import type { PrismaUserLoginAttemptRepository } from './infrastructure/persistence/prisma-user-login-attempt.repository';
+
+/** Una instancia de la clase exportada `name`; si el módulo está reemplazado por un jest.mock (objeto plano), el mock. */
+function instanceOf<T>(mod: unknown, name: string): T {
+  const Ctor = (mod as Record<string, unknown>)[name];
+  return (typeof Ctor === 'function' ? new (Ctor as new () => T)() : mod) as T;
+}
+
+/** Una instancia por pieza, creada al primer uso (los index se cargan perezosamente: ver ARCHITECTURE.md). */
+const instances = new Map<string, unknown>();
+function lazy<T>(key: string, create: () => T): T {
+  if (!instances.has(key)) {
+    instances.set(key, create());
+  }
+  return instances.get(key) as T;
+}
 
 export default {
+  /** @deprecated Transitorio: audit.record(acción, hecho) y audit.recordChange(cambio). */
   get audit() {
-    return interopDefault(require('./audit.service') as typeof import('./audit.service'));
+    return interopDefault(require('./infrastructure/legacy/audit-recorder') as typeof import('./infrastructure/legacy/audit-recorder'));
   },
 
-  get auditComponentsDto() {
-    return interopDefault(require('./responses/audit-components.response') as typeof import('./responses/audit-components.response'));
+  /** @deprecated Transitorio para iam (intentos de autenticación de la vista de sesiones). */
+  get auditLogRepository(): Pick<PrismaAuditLogRepository, 'findAuthAttemptsPaginated'> {
+    return lazy('auditLogs', () =>
+      instanceOf<PrismaAuditLogRepository>(require('./infrastructure/persistence/prisma-audit-log.repository'), 'PrismaAuditLogRepository')
+    );
   },
 
-  get auditAlertRepository() {
-    return interopDefault(require('./repositories/audit-alert.repository') as typeof import('./repositories/audit-alert.repository'));
+  /** @deprecated Transitorio para iam (historial de cambios de un usuario interno). */
+  get userChangeLogRepository(): Pick<PrismaChangeLogRepository, 'findByUserId'> {
+    return lazy('changeLogs', () =>
+      instanceOf<PrismaChangeLogRepository>(require('./infrastructure/persistence/prisma-change-log.repository'), 'PrismaChangeLogRepository')
+    );
   },
 
-  get auditLogRepository() {
-    return interopDefault(require('./repositories/audit-log.repository') as typeof import('./repositories/audit-log.repository'));
-  },
-
-  get userChangeLogRepository() {
-    return interopDefault(require('./repositories/change-log.repository') as typeof import('./repositories/change-log.repository'));
-  },
-
-  get userLoginAttemptRepository() {
-    return interopDefault(require('./repositories/user-login-attempt.repository') as typeof import('./repositories/user-login-attempt.repository'));
-  },
-
-  get loadUserRefs() {
-    return (require('./repositories/user-ref') as typeof import('./repositories/user-ref')).loadUserRefs;
-  },
-
-  get adminAuditActionCatalogRoutes() {
-    return interopDefault(require('./routes/admin-audit-action-catalog.routes') as typeof import('./routes/admin-audit-action-catalog.routes'));
-  },
-
-  get adminAuditAlertRoutes() {
-    return interopDefault(require('./routes/admin-audit-alert.routes') as typeof import('./routes/admin-audit-alert.routes'));
-  },
-
-  get adminAuditLogRoutes() {
-    return interopDefault(require('./routes/admin-audit-log.routes') as typeof import('./routes/admin-audit-log.routes'));
-  },
-
-  get adminChangeLogRoutes() {
-    return interopDefault(require('./routes/admin-change-log.routes') as typeof import('./routes/admin-change-log.routes'));
-  },
-
-  get adminOperationRoutes() {
-    return interopDefault(require('./routes/admin-operation.routes') as typeof import('./routes/admin-operation.routes'));
-  },
-
-  get adminSessionTraceRoutes() {
-    return interopDefault(require('./routes/admin-session-trace.routes') as typeof import('./routes/admin-session-trace.routes'));
-  },
-
-  get userActivityRoutes() {
-    return interopDefault(require('./routes/user-activity.routes') as typeof import('./routes/user-activity.routes'));
-  },
-
-  get adminAuditContextUtil() {
-    return interopDefault(require('./utils/admin-audit-context.util') as typeof import('./utils/admin-audit-context.util'));
-  },
-
-  get auditDiffUtil() {
-    return interopDefault(require('./utils/audit-diff.util') as typeof import('./utils/audit-diff.util'));
-  },
-
-  get AuditArchiveWorker() {
-    return interopDefault(require('./workers/audit-archive.worker') as typeof import('./workers/audit-archive.worker'));
+  /** @deprecated Transitorio para iam: los intentos de login son suyos y se mudan al migrarlo. */
+  get userLoginAttemptRepository(): Pick<PrismaUserLoginAttemptRepository, 'recordAttempt' | 'checkIfBlocked'> {
+    return lazy('loginAttempts', () =>
+      instanceOf<PrismaUserLoginAttemptRepository>(
+        require('./infrastructure/persistence/prisma-user-login-attempt.repository'),
+        'PrismaUserLoginAttemptRepository'
+      )
+    );
   }
 };
 
-export type { AuditActionKey, ChangeInput, ChangeType } from './audit.service';
-export type { AuditLogWithExecutor } from './repositories/audit-log.repository';
-export type { UserRef } from './repositories/user-ref';
+export type { AuditActionKey } from './domain/audit-action';
+export type { AccountChange as ChangeInput, ChangeType } from './domain/account-change';
+export type { AuditLogWithExecutor } from './domain/audit-log';

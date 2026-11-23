@@ -15,7 +15,7 @@ jest.mock('@aws-sdk/client-ses', () => ({
 
 jest.mock('../../../shared/infrastructure/providers/provider-call.util', () => ({ callProvider: jest.fn() }));
 
-jest.mock('../../../shared/infrastructure/security/masking.util', () => ({
+jest.mock('../../../shared/domain/pii/masking.util', () => ({
   maskEmail: jest.fn().mockReturnValue('m***@test.cl'),
   redactPayload: jest.fn(p => p)
 }));
@@ -28,7 +28,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { fromEmail: 'no-reply@test.cl', logoUrl: 'https://logo.test/x.png' } },
@@ -40,7 +40,7 @@ import * as providerCallModule from '../../../shared/infrastructure/providers/pr
 const callProvider = mocked(providerCallModule.callProvider);
 import emailSuppressionModule from './email-suppression.service';
 const emailSuppression = mocked(emailSuppressionModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import service from './email-notification.service';
 

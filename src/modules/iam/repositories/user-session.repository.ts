@@ -6,9 +6,7 @@ import PrismaRepository from '../../../shared/infrastructure/database/prisma.rep
 import type { PageRequest } from '../../../shared/application/pagination';
 import { UserSessionStatus } from '../../../shared/infrastructure/database/generated/prisma/client';
 import type { Prisma, UserSession } from '../../../shared/infrastructure/database/generated/prisma/client';
-import auditModule from '../../audit';
-const { loadUserRefs } = auditModule;
-import type { UserRef } from '../../audit';
+import { loadUserRefs, type UserRef } from '../../../shared/infrastructure/database/user-ref';
 const DEVICE_REF = {
   device: { select: { userTrustedDeviceId: true, deviceName: true, deviceType: true, browser: true, os: true, status: true } }
 } satisfies Prisma.UserSessionInclude;

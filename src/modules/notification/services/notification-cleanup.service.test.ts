@@ -25,7 +25,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 import { mocked } from 'tests/helpers/mock';
 import notificationRepoModule from '../repositories/notification.repository';

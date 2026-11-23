@@ -24,7 +24,7 @@ jest.mock('../repositories/user.repository', () => ({
   updatePrivacyPolicy: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../audit/repositories/user-login-attempt.repository', () => ({
+jest.mock('../../audit/infrastructure/persistence/prisma-user-login-attempt.repository', () => ({
   recordAttempt: jest.fn().mockResolvedValue(undefined),
   checkIfBlocked: jest.fn()
 }));
@@ -155,7 +155,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 // ── Constantes (el módulo real valida .env y hace process.exit) ──────────────
 jest.mock('../../../shared/infrastructure/config', () => ({
@@ -197,7 +197,7 @@ jest.mock('../responses/auth-login.response', () => ({
 import { mocked, Loose } from 'tests/helpers/mock';
 import userRepositoryModule from '../repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);
-import userLoginAttemptRepositoryModule from '../../audit/repositories/user-login-attempt.repository';
+const userLoginAttemptRepositoryModule = jest.requireMock<import('../../audit/infrastructure/persistence/prisma-user-login-attempt.repository').PrismaUserLoginAttemptRepository>('../../audit/infrastructure/persistence/prisma-user-login-attempt.repository');
 const userLoginAttemptRepository = mocked(userLoginAttemptRepositoryModule);
 import verificationCodeRepositoryModule from '../../notification/repositories/verification-code.repository';
 const verificationCodeRepository = mocked(verificationCodeRepositoryModule);
@@ -225,7 +225,7 @@ import SmsServiceModule from '../../notification/services/sms.service';
 const SmsService = mocked(SmsServiceModule);
 import LoginRateLimiterModule from '../utils/login-rate-limiter.util';
 const LoginRateLimiter = mocked(LoginRateLimiterModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 
 import service from './auth-login.service';

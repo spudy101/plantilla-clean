@@ -20,7 +20,7 @@ jest.mock('../../../src/shared/infrastructure/database/prisma', () => mockDb);
 
 import roleRepository from '../../../src/modules/iam/repositories/role.repository';
 import userRepository from '../../../src/modules/iam/repositories/user.repository';
-import changeLogRepository from '../../../src/modules/audit/repositories/change-log.repository';
+import { PrismaChangeLogRepository } from '../../../src/modules/audit/infrastructure/persistence/prisma-change-log.repository';
 import userSessionRepository from '../../../src/modules/iam/repositories/user-session.repository';
 import trustedDeviceRepository from '../../../src/modules/iam/repositories/auth-trusted-device.repository';
 import credentialResetRepository from '../../../src/modules/iam/repositories/credential-reset.repository';
@@ -55,7 +55,8 @@ describe('RoleRepository.findByNames', () => {
   });
 });
 
-describe('ChangeLogRepository (vista sobre audit_logs): filtros', () => {
+describe('PrismaChangeLogRepository (vista sobre audit_logs): filtros', () => {
+  const changeLogRepository = new PrismaChangeLogRepository();
   const whereOfLastQuery = () => mockDb.auditLog.findMany.mock.calls.at(-1)[0].where;
 
   it('siempre filtra por la acción USER_FIELD_CHANGED; el usuario afectado es entity_id', async () => {
@@ -63,8 +64,8 @@ describe('ChangeLogRepository (vista sobre audit_logs): filtros', () => {
     expect(whereOfLastQuery()).toMatchObject({ action: 'USER_FIELD_CHANGED', entityId: 'user-1' });
   });
 
-  it('findByAdminUser filtra por quién hizo el cambio (user_id) y rol admin (details)', async () => {
-    await changeLogRepository.findByAdminUser('admin-1', page());
+  it('filtra por quién hizo el cambio (user_id) y su rol (details)', async () => {
+    await changeLogRepository.list({ changedByUserId: 'admin-1', changedByRole: 'admin' }, page(), null);
     expect(whereOfLastQuery()).toMatchObject({
       userId: 'admin-1',
       AND: [{ details: { path: ['changedByRole'], equals: 'admin' } }]
@@ -72,7 +73,7 @@ describe('ChangeLogRepository (vista sobre audit_logs): filtros', () => {
   });
 
   it('filtra por tipo de cambio en details', async () => {
-    await changeLogRepository.findAllPaginated({ changeType: 'email' }, page());
+    await changeLogRepository.list({ changeType: 'email' }, page(), null);
     expect(whereOfLastQuery().AND).toEqual([{ details: { path: ['changeType'], equals: 'email' } }]);
   });
 });

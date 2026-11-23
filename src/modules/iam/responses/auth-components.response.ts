@@ -1,4 +1,4 @@
-import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import MaskingUtil from '../../../shared/domain/pii/masking.util';
 import { z } from '../../../shared/presentation/validation/z';
 import { dateTime } from '../../../shared/presentation/validation/output';
 import type { DbDate, Maybe, UserRefRow } from '../../../shared/infrastructure/database/db-rows';

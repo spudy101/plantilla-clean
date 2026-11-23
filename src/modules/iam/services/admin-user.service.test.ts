@@ -36,7 +36,7 @@ jest.mock('../repositories/user-session.repository', () => ({
   closeAllByUser: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../audit/repositories/change-log.repository', () => ({
+jest.mock('../../audit/infrastructure/persistence/prisma-change-log.repository', () => ({
   findByUserId: jest.fn()
 }));
 
@@ -74,7 +74,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../../../shared/infrastructure/config', () => ({
   INTERNAL_ROLE_NAMES: ['auditor', 'admin', 'super_admin'],
@@ -92,7 +92,7 @@ jest.mock('../../approvals/services/dual-approval.service', () => ({
   gate: jest.fn().mockResolvedValue({ pending: false })
 }));
 
-jest.mock('../../audit/utils/audit-diff.util', () => ({
+jest.mock('../../../shared/kernel/audit-diff.util', () => ({
   buildAuditDiff: jest.fn().mockReturnValue({ before: { firstName: 'A' }, after: { firstName: 'B' } })
 }));
 
@@ -118,7 +118,7 @@ const documentTypeRepositoryModule = catalogsModule.documentTypeRepository;
 const documentTypeRepository = mocked(documentTypeRepositoryModule);
 import userSessionRepositoryModule from '../repositories/user-session.repository';
 const userSessionRepository = mocked(userSessionRepositoryModule);
-import userChangeLogRepositoryModule from '../../audit/repositories/change-log.repository';
+const userChangeLogRepositoryModule = jest.requireMock<import('../../audit/infrastructure/persistence/prisma-change-log.repository').PrismaChangeLogRepository>('../../audit/infrastructure/persistence/prisma-change-log.repository');
 const userChangeLogRepository = mocked(userChangeLogRepositoryModule);
 import InternalUserHelperModule from '../helpers/internal-user.helper';
 const InternalUserHelper = mocked(InternalUserHelperModule);
@@ -130,7 +130,7 @@ import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
 import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import NotificationCreationServiceModule from '../../notification/notify';
 const notifier = mocked(NotificationCreationServiceModule);

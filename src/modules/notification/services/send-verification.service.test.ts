@@ -33,7 +33,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 // EXTERNAL_PROVIDERS mutable: se alterna por prueba para forzar código determinista '123456'.
 jest.mock('../../../shared/infrastructure/config', () => ({
@@ -58,7 +58,7 @@ const NotificationUtil = mocked(NotificationUtilModule);
 import SmsServiceModule from './sms.service';
 const SmsService = mocked(SmsServiceModule);
 import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const { logger } = mocked(loggerUtilModule);
 const logAudit = mocked(auditServiceModule).record;
 import constantsModule from '../../../shared/infrastructure/config';

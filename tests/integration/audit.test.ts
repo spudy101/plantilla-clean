@@ -8,12 +8,13 @@
 import { randomUUID } from 'node:crypto';
 import prisma from '../../src/shared/infrastructure/database/prisma';
 import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
-import auditLogRepository from '../../src/modules/audit/repositories/audit-log.repository';
-import auditAlertRepository from '../../src/modules/audit/repositories/audit-alert.repository';
-import userLoginAttemptRepository from '../../src/modules/audit/repositories/user-login-attempt.repository';
-import audit from '../../src/modules/audit/audit.service';
+import { PrismaAuditLogRepository } from '../../src/modules/audit/infrastructure/persistence/prisma-audit-log.repository';
+import { PrismaAuditAlertRepository } from '../../src/modules/audit/infrastructure/persistence/prisma-audit-alert.repository';
+import { PrismaUserLoginAttemptRepository } from '../../src/modules/audit/infrastructure/persistence/prisma-user-login-attempt.repository';
+import audit from '../../src/modules/audit/infrastructure/legacy/audit-recorder';
 import requestContext from '../../src/shared/infrastructure/observability/request-context.util';
 import { page } from '../helpers/page';
+import type { NewAuditLog } from '../../src/modules/audit/domain/audit-log';
 
 const TAG = `audit-it-${randomUUID().slice(0, 8)}`;
 const SESSION_A = randomUUID();
@@ -22,7 +23,28 @@ let roleId: string;
 let personId: string;
 let userId: string;
 
+const auditLogRepository = new PrismaAuditLogRepository();
+const auditAlertRepository = new PrismaAuditAlertRepository();
+const userLoginAttemptRepository = new PrismaUserLoginAttemptRepository();
+
 const base = { risk: 'low' as const, outcome: 'success' as const, source: 'http', module: TAG };
+/** Un registro nuevo con lo mínimo (el resto en null). */
+const newLog = (over: Partial<NewAuditLog> & Pick<NewAuditLog, 'action'>): NewAuditLog => ({
+  description: null,
+  category: null,
+  userId: null,
+  correlationId: null,
+  ip: null,
+  userAgent: null,
+  fingerprint: null,
+  details: {},
+  entityId: null,
+  entityType: null,
+  entityTable: null,
+  sessionId: null,
+  ...base,
+  ...over
+});
 
 describe('Auditoría · Prisma contra Postgres', () => {
   beforeAll(async () => {
@@ -89,16 +111,16 @@ describe('Auditoría · Prisma contra Postgres', () => {
   });
 
   it('listado con executor, conteo por sesión y referencias de entidades', async () => {
-    await auditLogRepository.create({ ...base, action: `${TAG}-a`, userId, sessionId: SESSION_A, entityTable: 'user_consents', entityId: randomUUID() });
-    await auditLogRepository.create({ ...base, action: `${TAG}-a`, userId, sessionId: SESSION_A });
-    await auditLogRepository.create({ ...base, action: `${TAG}-b`, sessionId: SESSION_B });
+    await auditLogRepository.append(newLog({ action: `${TAG}-a`, userId, sessionId: SESSION_A, entityTable: 'user_consents', entityId: randomUUID() }), { independent: false });
+    await auditLogRepository.append(newLog({ action: `${TAG}-a`, userId, sessionId: SESSION_A }), { independent: false });
+    await auditLogRepository.append(newLog({ action: `${TAG}-b`, sessionId: SESSION_B }), { independent: false });
 
-    const { rows, count } = await auditLogRepository.searchPaginated({ module: TAG, sessionId: SESSION_A }, page());
+    const { rows, count } = await auditLogRepository.search({ module: TAG, sessionId: SESSION_A }, page());
     expect(count).toBe(2);
     expect(rows[0]?.executor).toEqual({ userId, username: TAG, person: { firstName: 'Ana', lastName: TAG } });
 
-    const counts = await auditLogRepository.countBySessionIds([SESSION_A, SESSION_B, randomUUID()]);
-    expect(Object.fromEntries(counts.map(c => [c.sessionId, c.count]))).toEqual({ [SESSION_A]: 2, [SESSION_B]: 1 });
+    const counts = await auditLogRepository.countBySessions([SESSION_A, SESSION_B, randomUUID()]);
+    expect(Object.fromEntries(counts)).toEqual({ [SESSION_A]: 2, [SESSION_B]: 1 });
 
     const refs = await auditLogRepository.findEntityRefsBySession(SESSION_A);
     expect(refs).toHaveLength(1);
@@ -117,9 +139,9 @@ describe('Auditoría · Prisma contra Postgres', () => {
   });
 
   it('alertas: reconocer solo cambia las pendientes y adjunta quién reconoció', async () => {
-    const alert = await auditAlertRepository.create({ action: TAG, risk: 'high', userId });
-    expect(await auditAlertRepository.acknowledge(alert.auditAlertId, userId)).toBe(1);
-    expect(await auditAlertRepository.acknowledge(alert.auditAlertId, userId)).toBe(0);
+    const alert = await prisma.auditAlert.create({ data: { action: TAG, risk: 'high', userId } });
+    expect(await auditAlertRepository.acknowledge([alert.auditAlertId], userId)).toBe(1);
+    expect(await auditAlertRepository.acknowledge([alert.auditAlertId], userId)).toBe(0);
     expect(await auditAlertRepository.findById(alert.auditAlertId)).toMatchObject({ acknowledged: true, actor: { userId }, acknowledgedByUser: { username: TAG } });
   });
 

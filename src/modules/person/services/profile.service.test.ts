@@ -44,7 +44,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 // DTOs passthrough: objetos etiquetados para verificar qué recibieron.
 jest.mock('../responses/profile.response', () => ({
@@ -89,7 +89,7 @@ import KycSharedUtilModule from '../utils/kyc-shared.util';
 const KycSharedUtil = mocked(KycSharedUtilModule);
 import ProfileHelperModule from '../helpers/profile.helper';
 const ProfileHelper = mocked(ProfileHelperModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import kycModule from '../responses/person-components.response';
 const { PersonContactComponent, PersonLocationComponent } = mocked(kycModule);

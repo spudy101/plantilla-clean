@@ -5,7 +5,7 @@
 import { fixture } from 'tests/helpers/mock';
 import componentsApprovalDtoModule from '../../../src/modules/approvals/responses/approval-components.response';
 const { ApprovalRequestComponent } = componentsApprovalDtoModule;
-import adminAuditContextUtilModule from '../../../src/modules/audit/utils/admin-audit-context.util';
+import adminAuditContextUtilModule from '../../../src/shared/presentation/http/admin-audit-context.util';
 const { adminAuditContext } = adminAuditContextUtilModule;
 
 describe('Timestamps de modelos underscored', () => {

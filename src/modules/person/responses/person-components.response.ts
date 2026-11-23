@@ -1,5 +1,5 @@
 import EncryptionUtil from '../../../shared/infrastructure/security/encryption.util';
-import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import MaskingUtil from '../../../shared/domain/pii/masking.util';
 import type { DbDate, Maybe } from '../../../shared/infrastructure/database/db-rows';
 import { z } from '../../../shared/presentation/validation/z';
 import { dateTime } from '../../../shared/presentation/validation/output';

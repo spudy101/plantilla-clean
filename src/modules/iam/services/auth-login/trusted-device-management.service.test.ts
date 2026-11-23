@@ -7,7 +7,7 @@ jest.mock('../../../../shared/infrastructure/observability/logger.util', () => (
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
   logAudit: jest.fn()
 }));
-jest.mock('../../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 jest.mock('../../utils/device-blocklist.util', () => ({ block: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('../../utils/token-blacklist.util', () => ({
   invalidateDeviceTokens: jest.fn().mockResolvedValue(undefined),

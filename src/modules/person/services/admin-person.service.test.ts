@@ -69,7 +69,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 // AppError real-ish: factories que devuelven Error con statusCode/code para poder usar .rejects.
 // Dos roles de cliente para poder probar el cambio entre ellos (la plantilla trae solo CLIENTE).
@@ -132,7 +132,7 @@ import ProfileHelperModule from '../helpers/profile.helper';
 const ProfileHelper = mocked(ProfileHelperModule);
 import DualApprovalServiceModule from '../../approvals/services/dual-approval.service';
 const DualApprovalService = mocked(DualApprovalServiceModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import service from './admin-person.service';
 

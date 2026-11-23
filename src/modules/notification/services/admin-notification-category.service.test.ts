@@ -24,7 +24,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../responses/admin-notification-category.response', () => ({
   NotificationCategoryAdminDTO: (cat: Loose) => ({ dto: 'category', id: cat.notificationCategoryId, code: cat.code }),
@@ -36,7 +36,7 @@ import categoryRepoModule from '../repositories/notification-category.repository
 const categoryRepo = mocked(categoryRepoModule);
 import typeRepoModule from '../repositories/notification-type.repository';
 const typeRepo = mocked(typeRepoModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import service from './admin-notification-category.service';
 import { CategoryListQuery } from '../requests/notification.request';

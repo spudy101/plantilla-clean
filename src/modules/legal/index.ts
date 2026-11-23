@@ -1,5 +1,5 @@
 // API pública del módulo legal para los módulos que todavía no están en Clean Architecture (iam, person,
-// audit).
+// y la traza de sesión de audit, que lo lee desde src/main/adapters/audit-sources.adapter.ts).
 //
 // En Clean, legal no se usa importando este index: src/main/container.ts arma el módulo (createLegalModule en
 // legal.module.ts). Lo que queda acá es TRANSITORIO: lecturas puntuales (devuelven entidades del dominio), el
@@ -67,7 +67,7 @@ export default {
     return repositories.consentTypes();
   },
 
-  /** @deprecated Transitorio para person (perfil y derecho de supresión) y audit (session-trace). */
+  /** @deprecated Transitorio para person (perfil y derecho de supresión) y la traza de sesión de audit (src/main/adapters). */
   get userConsentRepository(): Pick<PrismaUserConsentRepository, 'findCurrentByUser' | 'findByIds' | 'revokeAll'> {
     return repositories.userConsents();
   },
@@ -88,7 +88,7 @@ export default {
     });
   },
 
-  /** @deprecated Transitorio para person (perfil) y audit (session-trace): salidas de consentimientos. */
+  /** @deprecated Transitorio para person (perfil) y la traza de sesión de audit (src/main/adapters): salidas de consentimientos. */
   get legalComponentsDto() {
     const m = require('./application/dto/user-consent.output') as typeof import('./application/dto/user-consent.output');
     return {

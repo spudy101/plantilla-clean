@@ -29,7 +29,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo.test/x.png' } }
@@ -51,7 +51,7 @@ import userRepoModule from '../../iam/repositories/user.repository';
 const userRepo = mocked(userRepoModule);
 import notificationCreationModule from './notification-creation.service';
 const notificationCreation = mocked(notificationCreationModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 import service from './admin-notification-type.service';
 import { TypeListQuery } from '../requests/notification.request';

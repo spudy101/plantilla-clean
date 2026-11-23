@@ -12,9 +12,6 @@ import SecurityMiddleware from '../shared/presentation/http/security.middleware'
 import ErrorMiddleware from '../shared/presentation/http/error.middleware';
 import { operationMiddleware } from '../shared/infrastructure/observability/operation';
 import { registerAuditSink } from '../shared/infrastructure/observability/audit-hook';
-import auditModule from '../modules/audit';
-const { audit, adminChangeLogRoutes, adminAuditLogRoutes, adminAuditAlertRoutes, adminAuditActionCatalogRoutes, adminSessionTraceRoutes, adminOperationRoutes, userActivityRoutes } = auditModule;
-import type { AuditActionKey } from '../modules/audit';
 import { registerResilienceSource } from '../shared/infrastructure/providers/resilience-config.util';
 import CircuitBreaker from '../shared/infrastructure/providers/circuit-breaker.util';
 import { createContainer } from './container';
@@ -68,12 +65,7 @@ function adminRouter(container: Container) {
   router.use('/api/v1/notification', adminNotificationCategoryRoutes);
   router.use('/api/v1/notification', adminNotificationDeliveryRoutes);
   router.use('/api/v1/records', container.legal.adminRouter);
-  router.use('/api/v1/records', adminChangeLogRoutes);
-  router.use('/api/v1/records', adminAuditLogRoutes);
-  router.use('/api/v1/records', adminAuditAlertRoutes);
-  router.use('/api/v1/records', adminAuditActionCatalogRoutes);
-  router.use('/api/v1/records', adminSessionTraceRoutes);
-  router.use('/api/v1/records', adminOperationRoutes);
+  router.use('/api/v1/records', container.audit.adminRouter);
   router.use('/api/v1/core', container.settings.adminRouter);
   router.use('/api/v1/core', container.banners.adminRouter);
   router.use('/api/v1/core', adminApprovalRequestRoutes);
@@ -88,7 +80,7 @@ function clientRouter(container: Container) {
   router.use('/api/v1/notification', emailBounceWebhookRoutes);
   router.use('/api/v1/kyc', personReferenceRoutes);
   router.use('/api/v1/records', container.legal.clientRouter);
-  router.use('/api/v1/records', userActivityRoutes);
+  router.use('/api/v1/records', container.audit.clientRouter);
   router.use('/api/v1/core', container.banners.publicRouter);
   return router;
 }
@@ -137,13 +129,12 @@ async function health(req: Request, res: Response) {
   });
 }
 
-function createApp() {
+function createApp(container: Container) {
   // shared/ no conoce los módulos: lo que necesita de ellos se conecta acá, una sola vez.
   //  - eventos de infraestructura que se auditan (worker caído, Redis, 401/403) → módulo audit
   //  - configuración de resiliencia (timeouts, circuit breaker) → módulo settings
   //  - qué hacer cuando un circuito se abre o se cierra (ventana de fallback + auditoría) → módulo integration
-  registerAuditSink(({ action, ...input }) => audit.record(action as AuditActionKey, { actorId: input.actorId ?? null, ...input }));
-  const container = createContainer();
+  registerAuditSink(({ action, ...input }) => container.audit.trail.record(action, { ...input, actorId: input.actorId ?? null }));
   registerResilienceSource(() => container.settings.useCases.getIntegrationResilience.execute());
   CircuitBreaker.registerCallbacks(container.integration.circuitListener);
 
@@ -184,4 +175,7 @@ function createApp() {
   return app;
 }
 
-export default createApp();
+/** Los módulos armados: server.ts inicia sus workers. */
+export const container = createContainer();
+
+export default createApp(container);

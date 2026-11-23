@@ -1,7 +1,7 @@
 import { z } from '../../../shared/presentation/validation/z';
 import { dateTime } from '../../../shared/presentation/validation/output';
 import type { DeliveryWithNotification } from '../repositories/notification-delivery.repository';
-import MaskingUtil from '../../../shared/infrastructure/security/masking.util';
+import MaskingUtil from '../../../shared/domain/pii/masking.util';
 
 /** Una entrega con lo justo de su notificación para que soporte responda "¿le llegó?". */
 function NotificationDeliveryListDTO(record: DeliveryWithNotification) {

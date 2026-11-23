@@ -26,7 +26,7 @@ jest.mock('../repositories/user.repository', () => ({
   updatePrivacyPolicy: jest.fn()
 }));
 
-jest.mock('../../audit/repositories/user-login-attempt.repository', () => ({
+jest.mock('../../audit/infrastructure/persistence/prisma-user-login-attempt.repository', () => ({
   recordAttempt: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -95,7 +95,7 @@ jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({
   logAudit: jest.fn(),
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }));
-jest.mock('../../audit/audit.service', () => ({ record: jest.fn() }));
+jest.mock('../../audit/infrastructure/legacy/audit-recorder', () => ({ record: jest.fn() }));
 
 jest.mock('../../../shared/infrastructure/config', () => ({
   INTERNAL_ROLE_NAMES: ['admin', 'ejecutivo'],
@@ -120,7 +120,7 @@ jest.mock('../responses/auth-login.response', () => ({
 
 import userRepositoryModule from '../repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);
-import userLoginAttemptRepositoryModule from '../../audit/repositories/user-login-attempt.repository';
+const userLoginAttemptRepositoryModule = jest.requireMock<import('../../audit/infrastructure/persistence/prisma-user-login-attempt.repository').PrismaUserLoginAttemptRepository>('../../audit/infrastructure/persistence/prisma-user-login-attempt.repository');
 const userLoginAttemptRepository = mocked(userLoginAttemptRepositoryModule);
 import trustedDeviceRepositoryModule from '../repositories/auth-trusted-device.repository';
 const trustedDeviceRepository = mocked(trustedDeviceRepositoryModule);
@@ -144,7 +144,7 @@ import userSessionRepositoryModule from '../repositories/user-session.repository
 const userSessionRepository = mocked(userSessionRepositoryModule);
 import NotificationUtilModule from '../../notification/notify';
 const notifier = mocked(NotificationUtilModule);
-import auditServiceModule from '../../audit/audit.service';
+import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
 
 import service from './auth-biometric.service';
