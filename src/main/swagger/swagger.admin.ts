@@ -32,7 +32,7 @@ import auditAlertPaths from '../../modules/audit/docs/audit-alert.paths';
 import auditActionCatalogPaths from '../../modules/audit/docs/audit-action-catalog.paths';
 import sessionTracePaths from '../../modules/audit/docs/session-trace.paths';
 import operationPaths from '../../modules/audit/docs/operation.paths';
-import integrationMonitoringPaths from '../../modules/integration/docs/integration-monitoring.paths';
+import integrationMonitoringPaths from '../../modules/integration/presentation/http/docs/integration-monitoring.paths';
 import notificationDeliveryPaths from '../../modules/notification/docs/notification-delivery.paths';
 import notificationCategoryPaths from '../../modules/notification/docs/notification-category.paths';
 

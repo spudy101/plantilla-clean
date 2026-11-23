@@ -17,8 +17,6 @@ const { audit, adminChangeLogRoutes, adminAuditLogRoutes, adminAuditAlertRoutes,
 import type { AuditActionKey } from '../modules/audit';
 import { registerResilienceSource } from '../shared/infrastructure/providers/resilience-config.util';
 import CircuitBreaker from '../shared/infrastructure/providers/circuit-breaker.util';
-import integrationModule from '../modules/integration';
-const { providerFallback, adminIntegrationMonitoringRoutes } = integrationModule;
 import { createContainer } from './container';
 import type { Container } from './container';
 import redisClient from '../shared/infrastructure/cache/redis.util';
@@ -79,7 +77,7 @@ function adminRouter(container: Container) {
   router.use('/api/v1/core', container.settings.adminRouter);
   router.use('/api/v1/core', container.banners.adminRouter);
   router.use('/api/v1/core', adminApprovalRequestRoutes);
-  router.use('/api/v1/integration', adminIntegrationMonitoringRoutes);
+  router.use('/api/v1/integration', container.integration.adminRouter);
   return router;
 }
 
@@ -147,7 +145,7 @@ function createApp() {
   registerAuditSink(({ action, ...input }) => audit.record(action as AuditActionKey, { actorId: input.actorId ?? null, ...input }));
   const container = createContainer();
   registerResilienceSource(() => container.settings.useCases.getIntegrationResilience.execute());
-  CircuitBreaker.registerCallbacks(providerFallback);
+  CircuitBreaker.registerCallbacks(container.integration.circuitListener);
 
   const app = express();
 

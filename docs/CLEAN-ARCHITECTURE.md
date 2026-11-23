@@ -4,9 +4,9 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 (misma API, mismas funcionalidades). Este documento explica cómo está organizado y dónde va cada cosa.
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
-> **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners` y `legal`
+> **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners`, `legal` e `integration`
 > están migrados completos (moldes: escritura, solo lectura, agregado + archivos en S3, y un módulo que otros
-> usan). Los demás módulos siguen con
+> usan, y uno que reacciona a eventos de infraestructura). Los demás módulos siguen con
 > la estructura en capas de la plantilla original y se migran uno por uno. Ver
 > [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
 
@@ -157,6 +157,23 @@ iniciar sesión, person muestra los consentimientos en el perfil y audit los mue
 - **Un middleware que usa un caso de uso:** `requireConsent(code)` (presentation) llama a `VerifyConsent`
   (application). El módulo lo expone ya armado para usarlo en cualquier ruta.
 
+## Un módulo que reacciona a la infraestructura (integration)
+
+`integration` muestra el semáforo de los proveedores externos y el historial de sus caídas, y registra cada
+caída cuando pasa. El que avisa es el circuit breaker de `shared/infrastructure`, que no conoce el negocio.
+
+- **Reglas en el dominio:** `providerNameFor('ses')` → `aws_ses`, `FallbackEvent` (activa si no tiene fin,
+  duración en segundos) y `availabilityOf(state)` (CLOSED → Disponible, HALF_OPEN → Degradado, OPEN → No
+  disponible).
+- **El breaker es un detalle detrás de dos adaptadores:** `CircuitBreakerStatusReader` implementa el puerto
+  `CircuitStatusReader` (lo que lee el dashboard) y `fallback-circuit.listener.ts` convierte `onOpen`/`onClose`
+  en los casos de uso `RecordFallbackOpened` y `RecordFallbackResolved`. El listener corre cada aviso como
+  operación de sistema y nunca lanza (el breaker no debe fallar por no poder registrar la ventana).
+  `integration.module.ts` lo devuelve como `circuitListener` y `src/main/app.ts` lo registra en el breaker.
+- **Datos de otro módulo:** cuántos procesos fallaron durante la caída sale de los intentos de SMS de
+  notification. Integration declara `FailedProcessCounter` y `src/main/adapters/failed-process-counter.adapter.ts`
+  decide para qué productos se puede contar (hoy solo `aws_sms`).
+
 ## Errores
 
 El dominio lanza errores que dicen **qué regla se rompió**, sin status HTTP:
@@ -219,7 +236,8 @@ Usar `settings` como molde. Por cada módulo:
 | `catalogs` | ✅ migrado (molde de solo lectura; respuestas verificadas idénticas a plantilla-base) |
 | `banners` | ✅ migrado (agregado BannerCatalog, imágenes por el puerto BannerImageStorage) |
 | `legal` | ✅ migrado (consentimientos y políticas; casos de uso que usa iam; caché de catalogs por un puerto; respuestas verificadas idénticas a plantilla-base) |
-| `integration`, `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
+| `integration` | ✅ migrado (ventanas de fallback del circuit breaker por un listener; procesos afectados por el puerto FailedProcessCounter; respuestas verificadas idénticas a plantilla-base) |
+| `audit`, `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
 | `index.ts` transitorios de `settings`, `catalogs` y `legal` (búsquedas que usan iam, person, notification, approvals, audit) | ⏳ se borran al migrar esos módulos |
 | Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
 

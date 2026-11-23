@@ -25,6 +25,8 @@ import { createLegalModule } from '../modules/legal/legal.module';
 import { privacyPolicyCacheAdapter } from './adapters/privacy-policy-cache.adapter';
 import unitOfWork from '../shared/infrastructure/database/unit-of-work';
 import constantsModule from '../shared/infrastructure/config';
+import { createIntegrationModule } from '../modules/integration/integration.module';
+import { failedProcessCounterAdapter } from './adapters/failed-process-counter.adapter';
 
 const { logger } = loggerUtilModule;
 
@@ -62,7 +64,14 @@ export function createContainer() {
     notificationLogoUrl: constantsModule.notifications.ses.logoUrl
   });
 
-  return { settings, catalogs, banners, legal };
+  const integration = createIntegrationModule({
+    audit: auditTrailAdapter,
+    logger,
+    guards: routeGuardsAdapter,
+    failedProcesses: failedProcessCounterAdapter
+  });
+
+  return { settings, catalogs, banners, legal, integration };
 }
 
 export type Container = ReturnType<typeof createContainer>;

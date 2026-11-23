@@ -14,7 +14,9 @@ jest.mock('../../../src/shared/infrastructure/database/prisma', () => mockDb);
 
 import { Prisma } from '../../../src/shared/infrastructure/database/generated/prisma/client';
 import approvalRequestRepository from '../../../src/modules/approvals/repositories/approval-request.repository';
-import providerFallbackEventRepository from '../../../src/modules/integration/repositories/provider-fallback-event.repository';
+import { PrismaFallbackEventRepository } from '../../../src/modules/integration/infrastructure/persistence/prisma-fallback-event.repository';
+
+const providerFallbackEventRepository = new PrismaFallbackEventRepository();
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -58,13 +60,20 @@ describe('ApprovalRequestRepository — cierre y vencimiento', () => {
   });
 });
 
-describe('ProviderFallbackEventRepository.closeFallback', () => {
+describe('PrismaFallbackEventRepository.closeLatestOpen', () => {
+  const closedRow = { providerFallbackEventId: 'f-1', provider: 'sms', circuitProduct: 'aws_sms', startedAt: new Date('2026-01-01T00:00:10Z') };
+
   it('cierra la ventana abierta más reciente desde el inicio menos la tolerancia', async () => {
     const startedAt = new Date('2026-01-01T00:00:10Z');
     mockDb.providerFallbackEvent.findFirst.mockResolvedValue({ providerFallbackEventId: 'f-1' });
-    mockDb.providerFallbackEvent.update.mockResolvedValue('closed');
+    mockDb.providerFallbackEvent.update.mockResolvedValue({ ...closedRow, endedAt: new Date('2026-01-01T00:01:00Z'), affectedProcessesCount: 4 });
 
-    await expect(providerFallbackEventRepository.closeFallback({ provider: 'sms', startedAt, endedAt: new Date(), affectedCount: 4 })).resolves.toBe('closed');
+    await expect(providerFallbackEventRepository.closeLatestOpen({ provider: 'sms', startedAt, endedAt: new Date(), affectedCount: 4 })).resolves.toMatchObject({
+      fallbackEventId: 'f-1',
+      isActive: false,
+      durationSeconds: 50,
+      affectedProcessesCount: 4
+    });
 
     expect(mockDb.providerFallbackEvent.findFirst).toHaveBeenCalledWith({
       where: { provider: 'sms', endedAt: null, startedAt: { gte: new Date('2026-01-01T00:00:05Z') } },
@@ -78,7 +87,7 @@ describe('ProviderFallbackEventRepository.closeFallback', () => {
 
   it('sin ventana abierta devuelve null', async () => {
     mockDb.providerFallbackEvent.findFirst.mockResolvedValue(null);
-    await expect(providerFallbackEventRepository.closeFallback({ provider: 'sms', endedAt: new Date(), affectedCount: null })).resolves.toBeNull();
+    await expect(providerFallbackEventRepository.closeLatestOpen({ provider: 'sms', startedAt: null, endedAt: new Date(), affectedCount: null })).resolves.toBeNull();
     expect(mockDb.providerFallbackEvent.update).not.toHaveBeenCalled();
   });
 });

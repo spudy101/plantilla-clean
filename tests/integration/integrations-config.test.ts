@@ -11,9 +11,10 @@ import ErrorMiddleware from '../../src/shared/presentation/http/error.middleware
 import { PrismaSystemGlobalConfigRepository } from '../../src/modules/settings/infrastructure/persistence/prisma-system-global-config.repository';
 import { IntegrationResilience } from '../../src/modules/settings/domain/integration-resilience';
 import approvalRequestRepository from '../../src/modules/approvals/repositories/approval-request.repository';
-import providerFallbackEventRepository from '../../src/modules/integration/repositories/provider-fallback-event.repository';
+import { PrismaFallbackEventRepository } from '../../src/modules/integration/infrastructure/persistence/prisma-fallback-event.repository';
 import { page } from '../helpers/page';
 
+const providerFallbackEventRepository = new PrismaFallbackEventRepository();
 const TAG = `g4-it-${randomUUID().slice(0, 8)}`;
 let roleId: string;
 const userIds: string[] = [];
@@ -112,11 +113,11 @@ describe('Integraciones y config · Prisma contra Postgres', () => {
 
   it('fallback: abrir y cerrar la ventana del proveedor', async () => {
     const startedAt = new Date();
-    await providerFallbackEventRepository.openFallback({ provider: TAG, circuitProduct: 'aws_sms', startedAt, metadata: { reason: 'it' } });
+    await providerFallbackEventRepository.open({ provider: TAG, circuitProduct: 'aws_sms', startedAt });
     expect(await prisma.providerFallbackEvent.count({ where: { provider: TAG, endedAt: null } })).toBe(1);
 
-    const closed = await providerFallbackEventRepository.closeFallback({ provider: TAG, startedAt, endedAt: new Date(), affectedCount: 2 });
-    expect(closed).toMatchObject({ provider: TAG, affectedProcessesCount: 2 });
-    expect(await providerFallbackEventRepository.closeFallback({ provider: TAG, endedAt: new Date(), affectedCount: 0 })).toBeNull();
+    const closed = await providerFallbackEventRepository.closeLatestOpen({ provider: TAG, startedAt, endedAt: new Date(), affectedCount: 2 });
+    expect(closed).toMatchObject({ provider: TAG, affectedProcessesCount: 2, isActive: false });
+    expect(await providerFallbackEventRepository.closeLatestOpen({ provider: TAG, startedAt: null, endedAt: new Date(), affectedCount: 0 })).toBeNull();
   });
 });
