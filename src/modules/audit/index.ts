@@ -1,4 +1,4 @@
-// API pública del módulo audit para los módulos que todavía no están en Clean Architecture (iam, person,
+// API pública del módulo audit para los módulos que todavía no están en Clean Architecture (iam,
 // notification, approvals).
 //
 // En Clean, audit no se usa importando este index: src/main/container.ts arma el módulo (createAuditModule en

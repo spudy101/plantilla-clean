@@ -13,10 +13,11 @@ jest.mock('../repositories/user.repository', () => ({
   findById: jest.fn(),
   findForAccountDeletion: jest.fn(),
   update: jest.fn().mockResolvedValue(undefined),
-  setActiveStatus: jest.fn().mockResolvedValue(undefined)
+  setActiveStatus: jest.fn().mockResolvedValue(undefined),
+  verifyPassword: jest.fn().mockResolvedValue(true)
 }));
 
-jest.mock('../../person/repositories/person.repository', () => ({
+jest.mock('../../person/infrastructure/persistence/prisma-person.repository', () => ({
   update: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -44,14 +45,13 @@ jest.mock('../helpers/internal-user.helper', () => ({
   createInternalUser: jest.fn()
 }));
 
-jest.mock('../../person/helpers/profile.helper', () => ({
+jest.mock('../../person/infrastructure/legacy/profile-helper', () => ({
   validateNationalIdUnique: jest.fn().mockResolvedValue(undefined),
   validateEmailUnique: jest.fn().mockResolvedValue(undefined),
-  validateCurrentPassword: jest.fn().mockResolvedValue(undefined),
   deleteAccountLogic: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../person/utils/kyc-shared.util', () => ({
+jest.mock('../../person/infrastructure/legacy/kyc-shared.util', () => ({
   generateSecurePassword: jest.fn().mockReturnValue('TempPass123!'),
   logChange: jest.fn().mockResolvedValue(undefined)
 }));
@@ -110,7 +110,7 @@ import { mocked, Loose } from 'tests/helpers/mock';
 import catalogsModule from '../../catalogs';
 import userRepositoryModule from '../repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);
-import personRepositoryModule from '../../person/repositories/person.repository';
+const personRepositoryModule = jest.requireMock<import('../../person/infrastructure/persistence/prisma-person.repository').PrismaPersonRepository>('../../person/infrastructure/persistence/prisma-person.repository');
 const personRepository = mocked(personRepositoryModule);
 import roleRepositoryModule from '../repositories/role.repository';
 const roleRepository = mocked(roleRepositoryModule);
@@ -122,9 +122,9 @@ const userChangeLogRepositoryModule = jest.requireMock<import('../../audit/infra
 const userChangeLogRepository = mocked(userChangeLogRepositoryModule);
 import InternalUserHelperModule from '../helpers/internal-user.helper';
 const InternalUserHelper = mocked(InternalUserHelperModule);
-import ProfileHelperModule from '../../person/helpers/profile.helper';
+import ProfileHelperModule from '../../person/infrastructure/legacy/profile-helper';
 const ProfileHelper = mocked(ProfileHelperModule);
-import KycSharedUtilModule from '../../person/utils/kyc-shared.util';
+import KycSharedUtilModule from '../../person/infrastructure/legacy/kyc-shared.util';
 const KycSharedUtil = mocked(KycSharedUtilModule);
 import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
@@ -464,7 +464,7 @@ describe('AdminUserService', () => {
     it('camino inline: reautentica, ejecuta la ofuscación en transacción y confirma la eliminación', async () => {
       const result = await service.deleteUser('u-1', 'pwd', AUDIT_CTX);
 
-      expect(ProfileHelper.validateCurrentPassword).toHaveBeenCalledWith('hash', 'pwd');
+      expect(userRepository.verifyPassword).toHaveBeenCalledWith('pwd', 'hash');
       expect(ProfileHelper.deleteAccountLogic).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u-1', personId: 'p-1' }));
       expect(userSessionRepository.closeAllByUser).toHaveBeenCalledWith('u-1', 'account_deleted');
       expect(logAudit).toHaveBeenCalledWith('INTERNAL_USER_DELETED', expect.objectContaining({ actorId: 'admin-1' }));

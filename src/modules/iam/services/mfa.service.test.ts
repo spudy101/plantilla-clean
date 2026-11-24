@@ -26,7 +26,7 @@ jest.mock('../../notification/repositories/verification-code.repository', () => 
   markAsVerified: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../person/utils/kyc-shared.util', () => ({
+jest.mock('../../person/infrastructure/legacy/kyc-shared.util', () => ({
   logChange: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -79,7 +79,7 @@ import userRepoModule from '../repositories/user.repository';
 const userRepo = mocked(userRepoModule);
 import verificationCodeRepoModule from '../../notification/repositories/verification-code.repository';
 const verificationCodeRepo = mocked(verificationCodeRepoModule);
-import KycSharedUtilModule from '../../person/utils/kyc-shared.util';
+import KycSharedUtilModule from '../../person/infrastructure/legacy/kyc-shared.util';
 const KycSharedUtil = mocked(KycSharedUtilModule);
 import TotpUtilModule from '../../../shared/infrastructure/security/totp.util';
 const TotpUtil = mocked(TotpUtilModule);

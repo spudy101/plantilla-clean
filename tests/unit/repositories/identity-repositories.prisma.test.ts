@@ -25,7 +25,7 @@ import userSessionRepository from '../../../src/modules/iam/repositories/user-se
 import trustedDeviceRepository from '../../../src/modules/iam/repositories/auth-trusted-device.repository';
 import credentialResetRepository from '../../../src/modules/iam/repositories/credential-reset.repository';
 import biometricRepositories from '../../../src/modules/iam/repositories/biometric.repository';
-import personLocationRepository from '../../../src/modules/person/repositories/person-location.repository';
+import { PrismaPersonLocationRepository } from '../../../src/modules/person/infrastructure/persistence/prisma-person-location.repository';
 import HashUtil from '../../../src/shared/infrastructure/security/hash.util';
 import { page } from '../../helpers/page';
 
@@ -161,10 +161,10 @@ describe('Consumo de un solo uso (token de reset, challenge biométrico)', () =>
   });
 });
 
-describe('PersonLocationRepository.upsertByPersonId', () => {
+describe('PrismaPersonLocationRepository.save', () => {
   it('upsert por person_id (UNIQUE): la actualización no pisa el origen de la captura', async () => {
     const data = { departmentId: 'd-1', cityId: 'c-1', address: 'Calle 1' };
-    await personLocationRepository.upsertByPersonId('p-1', data);
+    await new PrismaPersonLocationRepository().save('p-1', data);
     expect(mockDb.personLocation.upsert).toHaveBeenCalledWith({
       where: { personId: 'p-1' },
       create: { personId: 'p-1', ...data },

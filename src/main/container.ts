@@ -29,6 +29,16 @@ import unitOfWork from '../shared/infrastructure/database/unit-of-work';
 import constantsModule from '../shared/infrastructure/config';
 import { createIntegrationModule } from '../modules/integration/integration.module';
 import { failedProcessCounterAdapter } from './adapters/failed-process-counter.adapter';
+import { createPersonModule } from '../modules/person/person.module';
+import {
+  clientAccountsAdapter,
+  contactVerificationsAdapter,
+  dualApprovalGateAdapter,
+  profileCatalogsAdapter,
+  profileConsentsAdapter,
+  roleDirectoryAdapter
+} from './adapters/person-sources.adapter';
+import approvalsModule from '../modules/approvals';
 
 const { logger } = loggerUtilModule;
 
@@ -87,9 +97,30 @@ export function createContainer() {
     failedProcesses: failedProcessCounterAdapter
   });
 
+  const person = createPersonModule({
+    audit: audit.trail,
+    changeLog: { record: change => audit.recordAccountChange(change) },
+    notifier: notifierAdapter,
+    logger,
+    unitOfWork,
+    ids: uuidGenerator,
+    guards: routeGuardsAdapter,
+    accounts: clientAccountsAdapter,
+    roles: roleDirectoryAdapter,
+    catalogs: profileCatalogsAdapter,
+    verifications: contactVerificationsAdapter,
+    consents: profileConsentsAdapter,
+    approvals: dualApprovalGateAdapter,
+    notificationLogoUrl: constantsModule.notifications.ses.logoUrl
+  });
+  // La baja de una cuenta de cliente queda pendiente de una segunda aprobación: approvals la reanuda con esto
+  approvalsModule.DualApprovalService.register('CLIENT_ACCOUNT_DELETE', (payload: { userId: string }, ctx) =>
+    person.useCases.executeClientAccountDeletion.execute({ userId: payload.userId, ctx })
+  );
+
   settingsModule = settings;
 
-  return { audit, settings, catalogs, banners, legal, integration };
+  return { audit, settings, catalogs, banners, legal, integration, person };
 }
 
 export type Container = ReturnType<typeof createContainer>;

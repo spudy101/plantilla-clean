@@ -9,7 +9,7 @@ const { server } = constantsModule;
 // ─── Módulos KYC (compartidos con admin) ──────────────────────
 import authLoginPaths from '../../modules/iam/docs/auth-login.paths';
 import catalogPaths from '../../modules/catalogs/presentation/http/docs/catalogs.paths';
-import profilePaths from '../../modules/person/docs/profile.paths';
+import profilePaths from '../../modules/person/presentation/http/docs/profile.paths';
 import mfaPaths from '../../modules/iam/docs/mfa.paths';
 
 // ─── Módulos Notification (compartidos con admin) ─────────────
@@ -20,7 +20,7 @@ import notificationPreferencePaths from '../../modules/notification/docs/notific
 import authRegisterPaths from '../../modules/iam/docs/auth-register.paths';
 import sendVerificationPaths from '../../modules/notification/docs/send-verification.paths';
 import authBiometricPaths from '../../modules/iam/docs/auth-biometric.paths';
-import personReferencePaths from '../../modules/person/docs/person-reference.paths';
+import personReferencePaths from '../../modules/person/presentation/http/docs/person-reference.paths';
 
 // ─── Módulos Client — Consentimientos ─────────────────────────
 import userConsentPaths from '../../modules/legal/presentation/http/docs/user-consent.paths';

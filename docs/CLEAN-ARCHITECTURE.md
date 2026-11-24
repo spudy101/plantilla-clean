@@ -5,8 +5,9 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
 > **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners`, `legal`,
-> `integration` y `audit` están migrados completos (moldes: escritura, solo lectura, agregado + archivos en S3,
-> un módulo que otros usan, uno que reacciona a eventos de infraestructura y uno del que dependen todos).
+> `integration`, `audit` y `person` están migrados completos (moldes: escritura, solo lectura, agregado + archivos
+> en S3, un módulo que otros usan, uno que reacciona a eventos de infraestructura, uno del que dependen todos y
+> uno que trabaja sobre los datos de otro).
 > Los demás módulos siguen con
 > la estructura en capas de la plantilla original y se migran uno por uno. Ver
 > [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
@@ -199,10 +200,43 @@ cliente) y un worker de retención.
   (`shared/domain/pii/masking.util.ts`), `loadUserRefs` es infraestructura de base de datos
   (`shared/infrastructure/database/user-ref.ts`), `buildAuditDiff` es kernel y `adminAuditContext` es
   presentación HTTP.
-- **Transitorio:** iam, person, notification y approvals todavía escriben con `audit.record` del `index.ts`
+- **Transitorio:** iam, notification y approvals todavía escriben con `audit.record` del `index.ts`
   (el mismo caso de uso, armado en `infrastructure/legacy/audit-recorder.ts`), iam lee intentos de
   autenticación e historial de cambios por el index, y los intentos de login (que son de iam) viven en audit
   hasta migrar iam.
+
+## Un módulo que trabaja sobre los datos de otro (person)
+
+`person` es la persona detrás de cada cuenta (nombres, documento, contacto, ubicación, referencias), el perfil
+propio del titular y el panel de clientes del admin. Casi todo lo que hace toca también el **usuario**, que es de
+iam (username, contraseña, estado, rol, MFA, baja).
+
+- **Las cuentas son un puerto:** `ClientAccounts` (leer el perfil completo o la cuenta sobre la que actúa el
+  panel, confirmar una contraseña; cambiar username, avatar, contraseña, estado, rol, MFA, baja) y `RoleDirectory`.
+  Las formas en que person las lee (`ClientAccount`, `AccountTarget`) y las reglas del panel ("una cuenta eliminada
+  es intocable", "el rol solo cambia entre roles de cliente", "qué factores apaga desactivar el MFA") están en
+  `domain/client-account.ts`. Los implementa `src/main/adapters/person-sources.adapter.ts` con iam.
+- **Lo demás de otros módulos, también por puertos** (en el mismo adaptador): los valores de catálogo que elige la
+  persona (`ProfileCatalogs`), los códigos OTP confirmados de notification (`ContactVerifications`), los
+  consentimientos de legal que muestra el perfil y que se revocan en la baja (`ProfileConsents`), la doble
+  aprobación (`DualApprovalGate`) y la bitácora de cambios (`AccountChangeLog`, el `recordAccountChange` de audit).
+  Los avisos a una dirección de email (la vieja tras un cambio, la de una cuenta eliminada) suman el puerto
+  `EmailNotifier` a `shared/application`.
+- **Reglas en el dominio:** los nombres (`namesChanges`, `fullNameOf`), el formato del documento según el rol, la
+  baja (`account-deletion.ts`: qué se ofusca y cómo), qué cambios del perfil van a la bitácora
+  (`profile-changes.ts`), la ciudad del departamento y el tope de referencias.
+- **Casos de uso compartidos:** `ChangeContactEmail` (el titular con OTP, el admin sin él), `AnonymizeAccount` (la
+  baja del titular, la del panel y, por el index, la de los usuarios internos de iam) e `IdentityChecks`
+  (unicidad de documento, email y teléfono).
+- **La doble aprobación reanuda un caso de uso:** `person.module.ts` devuelve `ExecuteClientAccountDeletion` y
+  `src/main/container.ts` lo registra como handler de `CLIENT_ACCOUNT_DELETE` (antes lo registraba el bootstrap de
+  approvals importando person).
+- **Un esquema que es de otro módulo:** el perfil documenta sus consentimientos con el esquema de legal, así que
+  `profile.response.ts` exporta `profileSchema(item)` y `src/main/swagger` le pasa el de legal.
+- **Transitorio:** iam usa por el `index.ts` los repositorios con los que crea personas y contactos, la unicidad de
+  documento y email, la baja de usuarios internos, la bitácora y las piezas de salida y de entrada de person. Lo
+  que necesita adaptadores de otros módulos (la baja, la bitácora) lo deja armado `person.module.ts` en
+  `infrastructure/legacy/legacy-bindings.ts`.
 
 ## Errores
 
@@ -268,8 +302,9 @@ Usar `settings` como molde. Por cada módulo:
 | `legal` | ✅ migrado (consentimientos y políticas; casos de uso que usa iam; caché de catalogs por un puerto; respuestas verificadas idénticas a plantilla-base) |
 | `integration` | ✅ migrado (ventanas de fallback del circuit breaker por un listener; procesos afectados por el puerto FailedProcessCounter; respuestas verificadas idénticas a plantilla-base) |
 | `audit` | ✅ migrado (RecordAuditEvent detrás del AuditTrail de todos; sesiones, traza y retención por puertos; respuestas y Swagger verificados idénticos a plantilla-base, salvo el arreglo de la exportación CSV/XLSX) |
-| `person`, `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
-| `index.ts` transitorios de `settings`, `catalogs`, `legal` y `audit` (lo que usan iam, person, notification y approvals) | ⏳ se borran al migrar esos módulos |
+| `person` | ✅ migrado (las cuentas de iam por el puerto ClientAccounts; la baja que reanuda la doble aprobación; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
+| `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
+| `index.ts` transitorios de `settings`, `catalogs`, `legal`, `audit` y `person` (lo que usan iam, notification, approvals y los adaptadores de `src/main/`) | ⏳ se borran al migrar esos módulos |
 | Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
 
 Mientras dure la migración conviven las dos formas: los módulos con `domain/` siguen estas reglas y los

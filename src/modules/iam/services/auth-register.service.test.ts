@@ -20,11 +20,11 @@ jest.mock('../repositories/user.repository', () => ({
   update: jest.fn(),
   updatePassword: jest.fn()
 }));
-jest.mock('../../person/repositories/person.repository', () => ({
+jest.mock('../../person/infrastructure/persistence/prisma-person.repository', () => ({
   findByNationalId: jest.fn(),
   create: jest.fn()
 }));
-jest.mock('../../person/repositories/person-contact.repository', () => ({
+jest.mock('../../person/infrastructure/persistence/prisma-person-contact.repository', () => ({
   findByEmail: jest.fn(),
   findByEmailWithUser: jest.fn(),
   create: jest.fn()
@@ -75,7 +75,7 @@ jest.mock('../../../shared/infrastructure/security/jwt.util', () => ({
 jest.mock('../utils/refresh-token-store.util', () => ({
   save: jest.fn()
 }));
-jest.mock('../../person/utils/kyc-shared.util', () => ({
+jest.mock('../../person/infrastructure/legacy/kyc-shared.util', () => ({
   logChange: jest.fn()
 }));
 jest.mock('../utils/token-blacklist.util', () => ({
@@ -116,9 +116,9 @@ import { mocked } from 'tests/helpers/mock';
 import catalogsModule from '../../catalogs';
 import userRepositoryModule from '../repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);
-import personRepositoryModule from '../../person/repositories/person.repository';
+const personRepositoryModule = jest.requireMock<import('../../person/infrastructure/persistence/prisma-person.repository').PrismaPersonRepository>('../../person/infrastructure/persistence/prisma-person.repository');
 const personRepository = mocked(personRepositoryModule);
-import personContactRepositoryModule from '../../person/repositories/person-contact.repository';
+const personContactRepositoryModule = jest.requireMock<import('../../person/infrastructure/persistence/prisma-person-contact.repository').PrismaPersonContactRepository>('../../person/infrastructure/persistence/prisma-person-contact.repository');
 const personContactRepository = mocked(personContactRepositoryModule);
 const documentTypeRepositoryModule = catalogsModule.documentTypeRepository;
 const documentTypeRepository = mocked(documentTypeRepositoryModule);
@@ -146,7 +146,7 @@ import JwtUtilModule from '../../../shared/infrastructure/security/jwt.util';
 const JwtUtil = mocked(JwtUtilModule);
 import RefreshTokenStoreModule from '../utils/refresh-token-store.util';
 const RefreshTokenStore = mocked(RefreshTokenStoreModule);
-import KycSharedUtilModule from '../../person/utils/kyc-shared.util';
+import KycSharedUtilModule from '../../person/infrastructure/legacy/kyc-shared.util';
 const KycSharedUtil = mocked(KycSharedUtilModule);
 import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);

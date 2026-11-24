@@ -1,5 +1,5 @@
 // API pública del módulo catalogs para los módulos que todavía no están en Clean Architecture
-// (iam, person, notification).
+// (iam, notification) y para los adaptadores de src/main/ que conectan a person.
 //
 // En Clean, catalogs no se usa importando este index: src/main/container.ts arma el módulo
 // (createCatalogsModule en catalogs.module.ts). Lo que queda acá es TRANSITORIO: búsquedas puntuales por id
@@ -12,7 +12,6 @@ import type { PrismaAvatarRepository } from './infrastructure/persistence/prisma
 import type { PrismaCountryRepository } from './infrastructure/persistence/prisma-country.repository';
 import type { PrismaDepartmentRepository } from './infrastructure/persistence/prisma-department.repository';
 import type { PrismaCityRepository } from './infrastructure/persistence/prisma-city.repository';
-import type { RoleEntry } from './domain/catalog-entries';
 
 /** Una instancia de la clase exportada `name`; si el módulo está reemplazado por un jest.mock (objeto plano), el mock. */
 function instanceOf<T>(mod: unknown, name: string): T {
@@ -30,7 +29,7 @@ function lazy<T>(key: string, create: () => T): T {
 }
 
 export default {
-  /** @deprecated Transitorio para iam y person. */
+  /** @deprecated Transitorio para iam y para el adaptador de person (src/main/adapters). */
   get documentTypeRepository(): PrismaDocumentTypeRepository {
     return lazy('documentType', () => {
       const m =
@@ -48,7 +47,7 @@ export default {
     });
   },
 
-  /** @deprecated Transitorio para iam y person. */
+  /** @deprecated Transitorio para iam y para el adaptador de person (src/main/adapters). */
   get genderRepository(): PrismaGenderRepository {
     return lazy('gender', () => {
       const m =
@@ -57,7 +56,7 @@ export default {
     });
   },
 
-  /** @deprecated Transitorio para person. */
+  /** @deprecated Transitorio para el adaptador de person (src/main/adapters). */
   get avatarRepository(): PrismaAvatarRepository {
     return lazy('avatar', () => {
       const m =
@@ -66,7 +65,7 @@ export default {
     });
   },
 
-  /** @deprecated Transitorio para person. */
+  /** @deprecated Transitorio para el adaptador de person (src/main/adapters). */
   get departmentRepository(): PrismaDepartmentRepository {
     return lazy('department', () => {
       const m =
@@ -75,7 +74,7 @@ export default {
     });
   },
 
-  /** @deprecated Transitorio para person. */
+  /** @deprecated Transitorio para el adaptador de person (src/main/adapters). */
   get cityRepository(): PrismaCityRepository {
     return lazy('city', () => {
       const m =
@@ -91,22 +90,5 @@ export default {
         require('./infrastructure/persistence/prisma-phone-prefix.repository') as typeof import('./infrastructure/persistence/prisma-phone-prefix.repository');
       return instanceOf(m, 'PrismaPhonePrefixRepository');
     });
-  },
-
-  /** @deprecated Transitorio para person: el rol dentro de la respuesta de una persona. */
-  get catalogComponentsDto() {
-    const { toRoleOutput } = require('./application/dto/catalog.output') as typeof import('./application/dto/catalog.output');
-    // Acepta un rol parcial (solo id, nombre y descripción): lo que falta no sale en la respuesta
-    type PartialRole = Pick<RoleEntry, 'roleId' | 'name' | 'description'> & Partial<RoleEntry>;
-    return {
-      RoleComponent: { build: (role: PartialRole | null | undefined) => (role ? toRoleOutput(role as RoleEntry) : null) }
-    };
-  },
-
-  /** Esquemas de salida (Zod) que otros módulos incluyen en sus respuestas. */
-  get catalogSchemas() {
-    const m =
-      require('./presentation/http/responses/catalog.response') as typeof import('./presentation/http/responses/catalog.response');
-    return { RoleSchema: m.RoleSchema };
   }
 };

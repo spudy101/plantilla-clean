@@ -52,14 +52,9 @@ src/modules/iam/services/
 └── auth-biometric.service.ts             ← enrolamiento + login biométrico (delegando sesión,
                                             política y criptografía en servicios compartidos)
 
-src/modules/person/services/
-├── admin-person.service.ts               ← fachada: eliminación de cuenta + delegación
-└── admin-person/
-    ├── person-query.service.ts
-    ├── person-creation.service.ts
-    ├── person-access.service.ts          ← activar/desactivar, rol
-    ├── person-credentials.service.ts     ← contraseña, email, documento, MFA
-    └── person-guards.ts                  ← regla "cuenta eliminada es intocable"
+src/modules/person/                       ← ya en Clean Architecture (docs/CLEAN-ARCHITECTURE.md): un caso
+                                            de uso por acción en application/use-cases/ y las reglas
+                                            ("cuenta eliminada es intocable", baja, nombres) en domain/
 
 src/modules/iam/services/
 ├── admin-user.service.ts                 ← fachada (usuarios internos)
@@ -76,7 +71,6 @@ src/modules/approvals/services/
     └── dual-approval-notifier.service.ts ← avisos a aprobadores y al solicitante
 
 src/shared/infrastructure/security/es256-signature.util.ts      ← verificación ES256 (pura), extraída de auth-biometric
-src/modules/person/helpers/profile.helper.ts ← clase ProfileHelper con constructor(deps)
 ```
 
 La fachada mantiene **la misma API pública**, así controllers y tests no cambian:

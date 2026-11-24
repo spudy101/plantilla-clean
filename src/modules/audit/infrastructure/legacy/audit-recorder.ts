@@ -1,5 +1,5 @@
 // @deprecated TRANSITORIO: la escritura de auditoría para los módulos que todavía no están en Clean (iam,
-// person, notification, approvals), que la importan por el index.ts de audit.
+// notification, approvals), que la importan por el index.ts de audit.
 //
 // Es el mismo caso de uso RecordAuditEvent que src/main/container.ts entrega como puerto AuditTrail a los
 // módulos migrados, armado aquí con sus adaptadores (al primer uso). Cuando el último módulo reciba su

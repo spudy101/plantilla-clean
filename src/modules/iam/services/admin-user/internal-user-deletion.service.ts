@@ -47,7 +47,9 @@ class InternalUserDeletionService {
     if (!adminUser) {
       throw AppError.notFound('Administrador no encontrado');
     }
-    await this.profileHelper.validateCurrentPassword(adminUser.passwordHash, currentPassword);
+    if (!(await this.userRepository.verifyPassword(currentPassword, adminUser.passwordHash))) {
+      throw AppError.badRequest('Contraseña actual incorrecta');
+    }
 
     // Debe ser un interno existente, no superadmin y no estar ya eliminado.
     const user = await this.guards.getInternalUserOrFail(userId);

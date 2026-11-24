@@ -17,3 +17,15 @@ export interface Notification {
 export interface Notifier {
   notify(notification: Notification): Promise<void>;
 }
+
+/** Un aviso por email a una dirección, sin usuario detrás (o a una que el usuario ya no tiene). */
+export interface EmailNotification {
+  type: string;
+  email: string;
+  metadata?: Record<string, unknown>;
+}
+
+/** Avisos a una dirección de email: la vieja tras un cambio, la de una cuenta recién eliminada. */
+export interface EmailNotifier {
+  notifyEmail(notification: EmailNotification): Promise<void>;
+}

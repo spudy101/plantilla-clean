@@ -1,5 +1,5 @@
-// API pública del módulo legal para los módulos que todavía no están en Clean Architecture (iam, person,
-// y la traza de sesión de audit, que lo lee desde src/main/adapters/audit-sources.adapter.ts).
+// API pública del módulo legal para los módulos que todavía no están en Clean Architecture (iam) y para los
+// adaptadores de src/main/ que conectan a person y a la traza de sesión de audit.
 //
 // En Clean, legal no se usa importando este index: src/main/container.ts arma el módulo (createLegalModule en
 // legal.module.ts). Lo que queda acá es TRANSITORIO: lecturas puntuales (devuelven entidades del dominio), el
@@ -62,12 +62,12 @@ export default {
     return repositories.privacyPolicies();
   },
 
-  /** @deprecated Transitorio para person (catálogo de consentimientos del perfil). */
+  /** @deprecated Transitorio para el adaptador de person (src/main/adapters): catálogo de consentimientos del perfil. */
   get consentTypeRepository(): Pick<PrismaConsentTypeRepository, 'listActive'> {
     return repositories.consentTypes();
   },
 
-  /** @deprecated Transitorio para person (perfil y derecho de supresión) y la traza de sesión de audit (src/main/adapters). */
+  /** @deprecated Transitorio para los adaptadores de person (perfil y derecho de supresión) y de la traza de sesión de audit (src/main/adapters). */
   get userConsentRepository(): Pick<PrismaUserConsentRepository, 'findCurrentByUser' | 'findByIds' | 'revokeAll'> {
     return repositories.userConsents();
   },
@@ -88,7 +88,7 @@ export default {
     });
   },
 
-  /** @deprecated Transitorio para person (perfil) y la traza de sesión de audit (src/main/adapters): salidas de consentimientos. */
+  /** @deprecated Transitorio para los adaptadores de person (perfil) y de la traza de sesión de audit (src/main/adapters): salidas de consentimientos. */
   get legalComponentsDto() {
     const m = require('./application/dto/user-consent.output') as typeof import('./application/dto/user-consent.output');
     return {

@@ -1,22 +1,9 @@
 // Campos de credenciales (contraseña, códigos MFA, reset) con los mismos mensajes y pistas que tenía
-// BaseValidator. Los usan los requests de iam y de person (a través del index de iam).
+// BaseValidator. La política de contraseñas vive en shared (la usa también person).
 import { z, withHint } from '../../../shared/presentation/validation/z';
-import constantsModule from '../../../shared/infrastructure/config';
-const { REGEX } = constantsModule;
+import { newPassword, password } from '../../../shared/presentation/validation/password.fields';
 
-const POLICY_HINT = 'Incluí mayúsculas, minúsculas, números y un carácter especial';
-const NEW_POLICY_HINT = 'Usá al menos 10 caracteres con mayúsculas, minúsculas, números y un carácter especial';
-
-// [RF-AUTH-01] | CA-05 | Mínimo 10 caracteres + complejidad (mayúscula, minúscula, número, especial).
-const policy = (label: string, requiredMessage: string) =>
-  z
-    .string({ error: requiredMessage })
-    .min(1, { error: requiredMessage })
-    .min(10, { error: `${label} debe tener al menos 10 caracteres` })
-    .regex(REGEX.PASSWORD, { error: `${label} debe contener al menos una mayúscula, una minúscula, un número y un carácter especial` });
-
-export const password = () => withHint(policy('La contraseña', 'La contraseña es requerida'), { hint: POLICY_HINT });
-export const newPassword = () => withHint(policy('La nueva contraseña', 'La nueva contraseña es requerida'), { hint: NEW_POLICY_HINT });
+export { newPassword, password };
 
 const sixDigits = (requiredMessage: string, label: string, hint: string) =>
   withHint(

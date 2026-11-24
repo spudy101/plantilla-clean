@@ -17,14 +17,18 @@ import {
   PersonLocationSchema,
   PersonSchema,
   UserSchema
-} from '../../../modules/person/responses/person-components.response';
-import { ProfileSchema } from '../../../modules/person/responses/profile.response';
+} from '../../../modules/person/presentation/http/responses/person-components.response';
+import { profileSchema } from '../../../modules/person/presentation/http/responses/profile.response';
+import { MyConsentCatalogItemSchema } from '../../../modules/legal/presentation/http/responses/legal.response';
 import {
   TrustedDeviceSchema,
   UserChangeLogSchema,
   UserSessionSchema,
   VerificationCodeSchema
 } from '../../../modules/iam/responses/auth-components.response';
+
+/** El perfil documenta sus consentimientos con el esquema de legal. */
+const ProfileSchema = profileSchema(MyConsentCatalogItemSchema);
 
 const out = (schema: Parameters<typeof toOpenApi>[0]) => toOpenApi(schema, 'output');
 

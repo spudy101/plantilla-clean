@@ -13,8 +13,6 @@ import DualApproval from './services/dual-approval.service';
 
 import iamModule from '../iam';
 const { AdminUserService } = iamModule;
-import personModule from '../person';
-const { PersonService } = personModule;
 
 function registerDualApprovalHandlers() {
   // RBAC — cambio de rol de usuario interno. Reanuda con executeChangeRole (no re-gatea).
@@ -22,9 +20,8 @@ function registerDualApprovalHandlers() {
     AdminUserService.executeChangeRole(payload.userId, payload.roleId, ctx)
   );
 
-  // KYC — eliminación de cuenta de cliente (ofuscación irreversible). La contraseña del maker
-  // ya se validó al originar la solicitud; el handler solo ejecuta la eliminación real.
-  DualApproval.register('CLIENT_ACCOUNT_DELETE', (payload: { userId: string }, ctx) => PersonService.executeDeleteAccount(payload.userId, ctx));
+  // KYC — la eliminación de cuenta de cliente (CLIENT_ACCOUNT_DELETE) la registra src/main/container.ts: person
+  // ya está en Clean Architecture y no se importa desde acá.
 
   // IAM — eliminación de usuario interno (ofuscación irreversible).
   DualApproval.register('INTERNAL_USER_DELETE', (payload: { userId: string }, ctx) => AdminUserService.executeDeleteUser(payload.userId, ctx));
