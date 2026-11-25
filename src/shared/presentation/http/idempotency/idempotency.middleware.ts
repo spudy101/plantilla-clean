@@ -33,16 +33,19 @@ const REPLAYED_HEADER = 'Idempotent-Replayed';
 // Imprimibles ASCII sin espacios; se recomienda un UUID v4
 const KEY_FORMAT = /^[\x21-\x7E]{1,255}$/;
 
-const MS_PER_HOUR = 3_600_000;
+const MS_PER_MINUTE = 60_000;
+const MS_PER_HOUR = 60 * MS_PER_MINUTE;
 /** Cuánto se recuerda una clave: un reintento después de esto se trata como petición nueva. */
 const KEY_TTL_MS = 24 * MS_PER_HOUR;
 /**
  * Plazo de la petición dueña. Tiene que superar lo que puede tardar el handler más lento (un envío con
  * reintentos al proveedor anda en el minuto): si vence antes, otra petición la retomaría estando viva.
  */
-const LEASE_MS = 2 * 60_000;
+const LEASE_MS = 2 * MS_PER_MINUTE;
 /** Retry-After del 409 en curso: la dueña suele terminar en segundos. */
 const IN_PROGRESS_RETRY_AFTER_S = 2;
+/** Caracteres del hash (sha256 en hex) de la X-API-Key que identifican al sistema externo en la clave. */
+const API_KEY_SCOPE_LENGTH = 32;
 
 /**
  * Quién llama: las claves son de cada cliente, nunca compartidas. Usuario autenticado o sistema externo
@@ -54,7 +57,7 @@ function scopeOf(req: Request): string {
   }
   const apiKey = req.header('X-API-Key');
   if (apiKey) {
-    return `api:${crypto.createHash('sha256').update(apiKey).digest('hex').slice(0, 32)}`;
+    return `api:${crypto.createHash('sha256').update(apiKey).digest('hex').slice(0, API_KEY_SCOPE_LENGTH)}`;
   }
   throw AppError.internal('idempotent() necesita una ruta autenticada (usuario o X-API-Key)');
 }

@@ -1,7 +1,7 @@
 # Flujo de request, errores y contexto — guía de onboarding
 
 > Cómo viaja un request por la app: middlewares globales, autenticación, RBAC, rate-limit, request-lock,
-> validación, controller→service, y manejo centralizado de errores. Auditoría en `docs/audit-and-observability.md`; RBAC en
+> validación, controller → caso de uso, y manejo centralizado de errores. Auditoría en `docs/audit-and-observability.md`; RBAC en
 > `docs/rbac/rbac.md`; enmascaramiento de PII en `docs/pii-masking.md`.
 
 ## Pipeline completo
@@ -10,18 +10,21 @@
 Request
  → [middlewares globales src/main/app.ts]
  → [middlewares de ruta]  Auth → RBAC → RateLimit → RequestLock → validate(esquemas Zod)
- → Controller → Service → Repository → Model → DB
- → ApiResponse  (o AppError → ErrorMiddleware.handleError)
+ → Controller → caso de uso → (puertos) → repositorio Prisma → DB
+ → ApiResponse  (o un error → ErrorMiddleware.handleError)
 ```
 
-| Capa       | Responsabilidad                                                                     |
-| ---------- | ----------------------------------------------------------------------------------- |
-| Controller | recibe req, llama validator+service, devuelve `ApiResponse`. Sin lógica de negocio. |
-| Service    | toda la lógica; lanza `AppError`; audita con `audit.record`. No accede a DB directo. |
-| Repository | único lugar con el cliente de Prisma; extiende `PrismaRepository`.                  |
-| Schema     | `prisma/schema.prisma` (tablas, relaciones); la PII la cifra la extensión del cliente. |
-| Request    | esquema Zod en `requests/`: valida, tipa y documenta la entrada.                    |
-| DTO        | arma la respuesta en camelCase, campo a campo (nunca spread de una fila).            |
+| Pieza              | Responsabilidad                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| Request            | esquema Zod en `presentation/http/requests/`: valida, tipa y documenta la entrada.               |
+| Controller         | traduce req → entrada del caso de uso y su salida → `ApiResponse`. Sin reglas de negocio.        |
+| Caso de uso        | orquesta (`application/use-cases/`): lee por puertos, deja las reglas al dominio, audita, avisa. |
+| Dominio            | entidades y reglas (`domain/`); lanza errores del dominio (`NotFoundError`, `ConflictError`…).   |
+| Repositorio        | implementa un puerto con Prisma (`infrastructure/persistence/`); único lugar con el cliente.     |
+| DTO de salida      | lo que devuelve el caso de uso (`application/dto/`), campo a campo (nunca spread de una fila).   |
+| Schema             | `prisma/schema.prisma` (tablas, relaciones); la PII la cifra la extensión del cliente.           |
+
+Plantillas de cada pieza: `docs/implementation-patterns.md`; las reglas de capas: `docs/CLEAN-ARCHITECTURE.md`.
 
 ## Middlewares globales (`src/main/app.ts`) — ORDEN CRÍTICO
 
@@ -44,23 +47,27 @@ operación y comparte su `correlationId`. **No reordenar.** Detalle en `docs/aud
 
 ## Middlewares de ruta (orden recomendado)
 
-```js
+Las rutas son una factory que recibe el controller y las guardas (`RouteGuards`, que entrega iam por
+`src/main/adapters/route-guards.adapter.ts`):
+
+```ts
 router.post(
   '/recurso/:id',
-  AuthMiddleware.authenticate, // 1. pobla req.user (debe ir antes de RBAC)
-  RbacMiddleware.requirePermission(RBAC_MODULES.X, RBAC_ACTIONS.UPDATE), // 2. autoriza
+  guards.authenticate, // 1. pobla req.user (debe ir antes de RBAC)
+  guards.requirePermission(RBAC_MODULES.X, RBAC_ACTIONS.UPDATE), // 2. autoriza
   RateLimitMiddleware.apiLimiter(), // 3. rate limit
   RequestLockMiddleware.forAuthenticatedUsers(), // 4. dedup de requests concurrentes
   validate({ params: MyIdParams, body: UpdateMyBody }), // 5. validación (422 si falla)
-  MyController.update // 6. controller
+  controller.update // 6. controller
 );
 ```
 
 > ❌ Gotcha: RBAC antes que Auth = `req.user` undefined → falla. Auth SIEMPRE primero.
 
-## `req.user` (tras AuthMiddleware.authenticate)
+## `req.user` (tras guards.authenticate)
 
-`auth.middleware.ts` valida un **JWT RS256 propio** con `JwtUtil.verifyAccessToken` (autenticación 100% propia:
+La guarda (`modules/iam/presentation/http/auth.guards.ts`, con el caso de uso `AuthenticateRequest`) valida un
+**JWT RS256 propio** con `JwtUtil.verifyAccessToken` (autenticación 100% propia:
 la contraseña se valida contra el hash en BD en el login; en mobile además firma HMAC con ventana de 10 s),
 revisa device blocklist + token blacklist + **inactividad de 15 min para TODO usuario autenticado** (cliente e
 interno, con `last_access_at` deslizante; lo único que cambia por rol es el texto del 401), y puebla:
@@ -77,14 +84,24 @@ query string, para webhooks).
 
 `operationMiddleware` deja el contexto en AsyncLocalStorage (`requestContext.get()`) y una copia en
 `res.locals.auditContext`: `{ correlationId, source, name, ip, userAgent, fingerprintHash, method, path }`;
-`auth.middleware` le agrega `userId` y `sessionId` al autenticar. Logger, auditoría y llamadas externas lo
+la autenticación le agrega `userId` y `sessionId`. Logger, auditoría y llamadas externas lo
 toman solos. Los controllers admin arman el contexto del actor con `adminAuditContext(req, res)` cuando el
-service necesita esos datos explícitos (para persistir o notificar).
+caso de uso necesita esos datos explícitos (para persistir o notificar).
 
-## Errores — `AppError` + handler global
+## Errores — del dominio, técnicos y `AppError`
 
-`src/shared/presentation/http/app-error.util.ts` — lanzar SIEMPRE `AppError` (nunca `throw 'string'`), sin try/catch en
-controllers/validators (el `asyncHandler` reenvía al handler global).
+Cada capa lanza el error que sabe expresar, nunca `throw 'string'`, y sin try/catch en los controllers (el
+`asyncHandler` reenvía al handler global):
+
+| Quién                                   | Lanza                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| Dominio y casos de uso                  | errores del dominio (`shared/domain/errors/domain-error.ts`): `NotFoundError` 404, `ConflictError` 409, `RuleViolationError` 422, `InvalidInputError` 400, `ForbiddenError` 403, `UnauthorizedError` 401, `TooManyRequestsError` 429, `InternalError` 500 |
+| Lo que depende de algo externo          | `ServiceUnavailableError` (`shared/application/errors.ts`): 503, con `retryAfterSeconds` y `retryable` |
+| Infraestructura (también `shared/`)     | los mismos dos (JWT → `UnauthorizedError`, S3 → `NotFoundError`/`InvalidInputError`, un proveedor caído → `ServiceUnavailableError`) |
+| Presentación (middlewares, guardas)     | `AppError` (`shared/presentation/http/app-error.util.ts`), el único que conoce HTTP |
+
+`shared/presentation/http/domain-error.mapper.ts` traduce los del dominio y los técnicos a su `AppError` equivalente
+(mismo mensaje, código y detalle). Las factories de `AppError`, para la presentación:
 
 | Factory                                                | HTTP | code                 |
 | ------------------------------------------------------ | ---- | -------------------- |
@@ -98,13 +115,13 @@ controllers/validators (el `asyncHandler` reenvía al handler global).
 | `AppError.internal(msg, details?)`                     | 500  | INTERNAL_ERROR       |
 | `AppError.serviceUnavailable(msg, details?)`           | 503  | SERVICE_UNAVAILABLE  |
 
-El 2º arg `details` suele llevar `{ code: 'CODIGO_NEGOCIO' }` para que el front discrimine (ej.
-`{ code: 'MFA_REQUIRED' }`, `{ code: 'DUAL_APPROVAL_SAME_AS_MAKER' }`).
+El `details` (de un `AppError` o de un error del dominio) suele llevar `{ code: 'CODIGO_NEGOCIO' }` para que el front
+discrimine (ej. `{ code: 'MFA_REQUIRED' }`, `{ code: 'DUAL_APPROVAL_SAME_AS_MAKER' }`).
 
 `src/shared/presentation/http/error.middleware.ts`:
 
 - `asyncHandler(fn)` envuelve el handler async y reenvía rechazos a `handleError`.
-- `handleError`: loguea, guarda el error en la operación (`operations.error_code`/`error_message`) y responde. Solo
+- `handleError`: traduce un error del dominio o técnico (mapper), loguea, guarda el error en la operación (`operations.error_code`/`error_message`) y responde. Solo
   los rechazos de seguridad se auditan además: 401→`AUTH_FAILURE`, 403→`ACCESS_DENIED`. Mapea también errores de Prisma (P2002 duplicado, P2025 no encontrado…), JWT y Multer.
 
 ## Respuestas — `ApiResponse`
@@ -115,7 +132,7 @@ El 2º arg `details` suele llevar `{ code: 'CODIGO_NEGOCIO' }` para que el front
 
 Estructura éxito: `{ success, statusCode, message, data, metadata, timestamp }`.
 **Aplanado automático:** si `data` ya viene como `{ data, metadata }` (DTO de lista), `success()` lo aplana
-a nivel raíz → por eso el controller pasa el resultado del service directo, sin desestructurar.
+a nivel raíz → por eso el controller pasa el resultado del caso de uso directo, sin desestructurar.
 
 **Red de seguridad PII:** `success()` pasa `data` y `metadata` por `PiiMaskingMiddleware.apply(res, …)` — es la
 capa C del enmascaramiento, invisible desde el controller. Detalle en `docs/pii-masking.md` §2.
@@ -140,7 +157,7 @@ reconstruye la operación completa.
 ## Gotchas
 
 - Auth antes de RBAC (si no, `req.user` undefined).
-- No try/catch en controllers; usar `asyncHandler` + lanzar `AppError` en el service.
-- No desestructurar `{ data, metadata }` en el controller — pasar el resultado del service directo a `ApiResponse.success`.
+- No try/catch en controllers; usar `asyncHandler`. El caso de uso lanza errores del dominio, no `AppError`.
+- No desestructurar `{ data, metadata }` en el controller — pasar el resultado del caso de uso directo a `ApiResponse.success`.
 - Sin Redis, auth/rate-limit/lock tienen fallback a BD/memoria (los logouts se respetan vía `UserSession` en BD).
 - Nunca loguear datos sensibles; el logger redacta igual los campos conocidos (password, token, nationalId, email…).

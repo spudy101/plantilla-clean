@@ -90,7 +90,8 @@ Todo lo transversal que un proyecto necesita el día 1, ya construido y probado:
 
 - **Rate limiting** y **request locking** (store híbrido Redis + memoria, con fallback).
 - **Idempotencia** de operaciones, **correlationId** por request de punta a punta.
-- Manejo de errores centralizado (`AppError` + handler global), respuestas uniformes (`ApiResponse`).
+- Manejo de errores centralizado (errores del dominio y técnicos traducidos a HTTP por un handler global),
+  respuestas uniformes (`ApiResponse`).
 - **Swagger/OpenAPI** autogenerado por servidor. Detalle: [`docs/swagger.md`](docs/swagger.md).
 - **Workers** (cron) para expiración de sesiones, despacho de notificaciones, expiración de doble
   aprobación y archivado de auditoría.
@@ -127,23 +128,23 @@ necesita lo pide por un puerto y `src/main/` lo conecta. `shared/` es lo transve
 Express; dependen de puertos (interfaces) que implementa la infraestructura, y `src/main/container.ts` conecta
 todo. Guía: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). **Léela antes de agregar código.**
 
-### Flujo por capas (dentro de un request)
+### Flujo de un request
 
 ```
 Request
   → [middlewares globales]   operación (id + contexto + traza) → seguridad → cookies → body-parse → compression
   → [middlewares de ruta]    Auth → RBAC → RateLimit → RequestLock → validate (Zod)
-  → Controller → Service → Repository → PostgreSQL
-  → ApiResponse   (o AppError → handler global)
+  → Controller → caso de uso → (puertos) → repositorio Prisma → PostgreSQL
+  → ApiResponse   (o un error → handler global)
 ```
 
-| Capa           | Responsabilidad                                                                    |
-| -------------- | ---------------------------------------------------------------------------------- |
-| **Route**      | URL + middlewares (auth, RBAC, validación). Sin lógica.                             |
-| **Controller** | traduce HTTP ↔ servicio y devuelve `ApiResponse`. Sin lógica de negocio.            |
-| **Service**    | reglas de negocio; lanza `AppError`; audita con `audit.record`. No conoce Express.  |
-| **Repository** | único lugar con el cliente de Prisma; extiende `PrismaRepository`.                  |
-| **DTO**        | arma la respuesta: lista blanca de campos y PII enmascarada.                        |
+| Capa               | Responsabilidad                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| **domain**         | entidades y reglas de negocio; errores que dicen qué regla se rompió. TypeScript puro.       |
+| **application**    | casos de uso (orquestan: leen por puertos, auditan, avisan), puertos y DTOs de salida.       |
+| **infrastructure** | implementa los puertos: repositorios Prisma + mappers, Redis, AWS, workers.                  |
+| **presentation**   | rutas (factory), controllers, esquemas Zod de entrada y salida, docs OpenAPI.                |
+| **src/main/**      | composition root: crea cada módulo con sus dependencias y conecta los módulos entre sí.      |
 
 Detalle del pipeline: [`docs/request-flow.md`](docs/request-flow.md) · auditoría, operaciones y logs:
 [`docs/audit-and-observability.md`](docs/audit-and-observability.md).
@@ -296,9 +297,10 @@ inválido → `compression`.
 Middlewares de ruta (orden recomendado): `Auth` → `RBAC` → `RateLimit` → `RequestLock` → `validate(...)` →
 controller.
 
-Errores: lanzar siempre `AppError` (nunca `throw 'string'`) desde el service; el `asyncHandler` reenvía al
-handler global, que loguea, registra el error en la operación y responde con estructura uniforme. Detalle completo:
-[`docs/request-flow.md`](docs/request-flow.md).
+Errores: el dominio y los casos de uso lanzan errores del dominio (`NotFoundError`, `ConflictError`…) y lo que
+depende de algo externo, `ServiceUnavailableError`; nunca `throw 'string'` ni `AppError` (es HTTP: solo la
+presentación lo usa). El `asyncHandler` reenvía al handler global, que los traduce, loguea, registra el error en la
+operación y responde con estructura uniforme. Detalle completo: [`docs/request-flow.md`](docs/request-flow.md).
 
 ---
 
@@ -345,7 +347,7 @@ Toda la documentación técnica vive en [`docs/`](docs/). El README es el mapa; 
 | --- | --------- |
 | [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) | **La guía de arquitectura:** estructura, capas, reglas y dónde va cada cosa. |
 | [`getting-started.md`](docs/getting-started.md) | **Empieza aquí:** setup local, correr la app y checklist de rebranding para hacer tuya la plantilla. |
-| [`request-flow.md`](docs/request-flow.md) | Pipeline de un request, middlewares, `AppError`/`ApiResponse`, contexto de auditoría. |
+| [`request-flow.md`](docs/request-flow.md) | Pipeline de un request, middlewares, errores y `ApiResponse`, contexto de auditoría. |
 | [`auth-sessions.md`](docs/auth-sessions.md) | Login, tokens JWT RS256, rotación de refresh, sesiones, inactividad/tope, códigos 401. |
 | [`rbac/rbac.md`](docs/rbac/rbac.md) | Roles, módulos, matriz de permisos, overrides, middleware RBAC. |
 | [`rbac/modulos/`](docs/rbac/modulos/) | Binding módulo ↔ routes ↔ roles (autoritativo para el front). |

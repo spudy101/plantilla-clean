@@ -1,5 +1,3 @@
-// shared/utils/s3.util.ts
-//
 // ACTUALIZADO: soporte para DOS buckets independientes
 //
 //   BUCKET PRIVADO (s3BucketName / BUCKET_NAME)
@@ -24,7 +22,8 @@ import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 import loggerUtilModule from '../observability/logger.util';
 const { logger } = loggerUtilModule;
-import AppError from '../../presentation/http/app-error.util';
+import { InternalError, InvalidInputError, NotFoundError } from '../../domain/errors/domain-error';
+import { isExpectedError } from '../../application/errors';
 import constantsModule from '../config';
 const { aws } = constantsModule;
 import { callProvider, AWS_CLIENT_OPTIONS } from '../providers/provider-call.util';
@@ -32,7 +31,6 @@ import { providerFailure } from '../providers/provider-errors';
 import errorMessageModule from '../../kernel/error-message.util';
 
 const { errorMessage, errorName } = errorMessageModule;
-import { shouldPropagate } from '../../presentation/http/error-propagation';
 
 
 const DEFAULT_PRESIGNED_EXPIRES = 3600; // 1 hora — documentos normales
@@ -106,7 +104,7 @@ class S3Util {
    */
   static async generatePresignedUrl(key: string, expiresIn = DEFAULT_PRESIGNED_EXPIRES) {
     if (!key) {
-      throw AppError.badRequest('S3 key requerida para generar presigned URL');
+      throw new InvalidInputError('S3 key requerida para generar presigned URL', 'BAD_REQUEST');
     }
 
     try {
@@ -126,7 +124,7 @@ class S3Util {
       return url;
     } catch (error) {
       logger.error('Error generando presigned URL', { error: errorMessage(error), key });
-      throw AppError.internal('Error al generar URL de acceso al archivo');
+      throw new InternalError('Error al generar URL de acceso al archivo', 'INTERNAL_ERROR');
     }
   }
 
@@ -143,19 +141,19 @@ class S3Util {
    */
   static async downloadDocument(key: string) {
     if (!key) {
-      throw AppError.badRequest('S3 key requerida para descargar el documento');
+      throw new InvalidInputError('S3 key requerida para descargar el documento', 'BAD_REQUEST');
     }
     try {
       const response = await S3Util.call('S3:GetObject', (c, abortSignal) => c.send(new GetObjectCommand({ Bucket: S3Util.bucketName, Key: key }), { abortSignal }));
       if (!response.Body) {
-        throw AppError.notFound('Archivo no encontrado en S3');
+        throw new NotFoundError('Archivo no encontrado en S3', 'NOT_FOUND');
       }
       const bytes = await response.Body.transformToByteArray();
       return Buffer.from(bytes);
     } catch (error) {
       logger.error('Error descargando documento de S3', { error: errorMessage(error), key });
       if (errorName(error) === 'NoSuchKey' || errorName(error) === 'NotFound') {
-        throw AppError.notFound('Archivo no encontrado en S3');
+        throw new NotFoundError('Archivo no encontrado en S3', 'NOT_FOUND');
       }
       throw providerFailure(error, 'Error al descargar el documento');
     }
@@ -177,7 +175,7 @@ class S3Util {
   static async uploadImage(imageBuffer: Buffer | string, folder = 'images', options: ImageUploadOptions = {}) {
     try {
       if (!imageBuffer) {
-        throw AppError.badRequest('No se proporcionó ninguna imagen');
+        throw new InvalidInputError('No se proporcionó ninguna imagen', 'BAD_REQUEST');
       }
 
       let buffer = imageBuffer;
@@ -208,11 +206,11 @@ class S3Util {
       return s3Key;
     } catch (error) {
       logger.error('Error subiendo imagen a S3', { error: errorMessage(error), folder });
-      if (shouldPropagate(error)) {
+      if (isExpectedError(error)) {
         throw error;
       }
       if (errorMessage(error)?.includes('Input buffer') || errorMessage(error)?.includes('unsupported')) {
-        throw AppError.badRequest('Formato de imagen no válido');
+        throw new InvalidInputError('Formato de imagen no válido', 'BAD_REQUEST');
       }
       throw providerFailure(error, 'Error al subir la imagen');
     }
@@ -231,10 +229,10 @@ class S3Util {
   static async uploadDocument(fileBuffer: Buffer | string, fileName: string, folder = 'documents', contentType = 'application/pdf') {
     try {
       if (!fileBuffer) {
-        throw AppError.badRequest('No se proporcionó ningún archivo');
+        throw new InvalidInputError('No se proporcionó ningún archivo', 'BAD_REQUEST');
       }
       if (!fileName) {
-        throw AppError.badRequest('Nombre de archivo requerido');
+        throw new InvalidInputError('Nombre de archivo requerido', 'BAD_REQUEST');
       }
 
       let buffer = fileBuffer;
@@ -259,7 +257,7 @@ class S3Util {
       return s3Key;
     } catch (error) {
       logger.error('Error subiendo documento a S3', { error: errorMessage(error), fileName, folder });
-      if (shouldPropagate(error)) {
+      if (isExpectedError(error)) {
         throw error;
       }
       throw providerFailure(error, 'Error al subir el documento');
@@ -306,10 +304,10 @@ class S3Util {
   static async uploadPublicDocument(fileBuffer: Buffer, s3Key: string, contentType = 'application/pdf') {
     try {
       if (!fileBuffer) {
-        throw AppError.badRequest('No se proporcionó ningún archivo');
+        throw new InvalidInputError('No se proporcionó ningún archivo', 'BAD_REQUEST');
       }
       if (!s3Key) {
-        throw AppError.badRequest('S3 key de destino requerida');
+        throw new InvalidInputError('S3 key de destino requerida', 'BAD_REQUEST');
       }
 
       await S3Util.call('S3:PutObject', (c, abortSignal) =>
@@ -330,7 +328,7 @@ class S3Util {
       return publicUrl;
     } catch (error) {
       logger.error('Error subiendo documento público a S3', { error: errorMessage(error), s3Key });
-      if (shouldPropagate(error)) {
+      if (isExpectedError(error)) {
         throw error;
       }
       throw providerFailure(error, 'Error al subir el documento público');
@@ -401,7 +399,7 @@ class S3Util {
   static async deleteFile(s3Key: string) {
     try {
       if (!s3Key) {
-        throw AppError.badRequest('S3 key requerida');
+        throw new InvalidInputError('S3 key requerida', 'BAD_REQUEST');
       }
 
       await S3Util.call('S3:DeleteObject', (c, abortSignal) => c.send(new DeleteObjectCommand({ Bucket: S3Util.bucketName, Key: s3Key }), { abortSignal }));
@@ -410,11 +408,11 @@ class S3Util {
       return true;
     } catch (error) {
       logger.error('Error eliminando archivo de S3', { error: errorMessage(error), s3Key });
-      if (shouldPropagate(error)) {
+      if (isExpectedError(error)) {
         throw error;
       }
       if (errorName(error) === 'NoSuchKey') {
-        throw AppError.notFound('Archivo no encontrado');
+        throw new NotFoundError('Archivo no encontrado', 'NOT_FOUND');
       }
       throw providerFailure(error, 'Error al eliminar el archivo');
     }
@@ -427,7 +425,7 @@ class S3Util {
   static async deletePublicFile(s3Key: string) {
     try {
       if (!s3Key) {
-        throw AppError.badRequest('S3 key requerida');
+        throw new InvalidInputError('S3 key requerida', 'BAD_REQUEST');
       }
 
       await S3Util.call('S3:DeleteObject', (c, abortSignal) => c.send(new DeleteObjectCommand({ Bucket: S3Util.publicBucketName, Key: s3Key }), { abortSignal }));
@@ -436,11 +434,11 @@ class S3Util {
       return true;
     } catch (error) {
       logger.error('Error eliminando archivo público de S3', { error: errorMessage(error), s3Key });
-      if (shouldPropagate(error)) {
+      if (isExpectedError(error)) {
         throw error;
       }
       if (errorName(error) === 'NoSuchKey') {
-        throw AppError.notFound('Archivo no encontrado');
+        throw new NotFoundError('Archivo no encontrado', 'NOT_FOUND');
       }
       throw providerFailure(error, 'Error al eliminar el archivo público');
     }
@@ -494,14 +492,14 @@ class S3Util {
 
   static uploadMultipleImages(images: Array<Buffer | string>, folder = 'images', options: ImageUploadOptions = {}) {
     if (!Array.isArray(images) || images.length === 0) {
-      throw AppError.badRequest('Se requiere un array de imágenes');
+      throw new InvalidInputError('Se requiere un array de imágenes', 'BAD_REQUEST');
     }
     return Promise.all(images.filter(Boolean).map(img => S3Util.uploadImage(img, folder, options)));
   }
 
   static async deleteMultipleFiles(s3Keys: string[]) {
     if (!Array.isArray(s3Keys) || s3Keys.length === 0) {
-      throw AppError.badRequest('Se requiere un array de keys');
+      throw new InvalidInputError('Se requiere un array de keys', 'BAD_REQUEST');
     }
     await Promise.all(s3Keys.filter(Boolean).map(key => S3Util.deleteFile(key)));
     return true;

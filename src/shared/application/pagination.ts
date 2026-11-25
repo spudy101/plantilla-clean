@@ -1,4 +1,4 @@
-// shared/http/pagination.ts — el contrato de los listados paginados, el mismo en todos los endpoints.
+// El contrato de los listados paginados, el mismo en todos los endpoints.
 //
 //   1. Entrada: el esquema del request declara `...pageQuery(sortable, { sortBy })` (shared/validation/fields.ts)
 //      y sus filtros tipados. validate() deja la query ya parseada: page/limit con default, `sortBy` dentro

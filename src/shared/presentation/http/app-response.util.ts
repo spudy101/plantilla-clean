@@ -1,5 +1,3 @@
-// shared/utils/app-response.util.ts
-
 import type { Response } from 'express';
 import constantsModule from '../../infrastructure/config';
 const { HTTP_STATUS } = constantsModule;

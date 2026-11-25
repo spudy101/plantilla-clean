@@ -1,5 +1,4 @@
 // === RF-OPS-01: Pipeline DevSecOps, Infraestructura Base ===
-// src/utils/logger.util.ts
 import { interopDefault } from '../../kernel/interop.util';
 import path from 'node:path';
 import winston from 'winston';

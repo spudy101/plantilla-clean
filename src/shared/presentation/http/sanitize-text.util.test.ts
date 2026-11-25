@@ -1,5 +1,3 @@
-// tests/unit/shared/sanitize-text.util.test.ts
-//
 // Sanitización de texto plano (C-8, prevención XSS server-side sin dependencias).
 // Funciones puras: no tocan red, BD ni logger. Verificamos el comportamiento real
 // de stripHtmlTags, decodeHtmlEntities y sanitizePlainText (doble pasada + truncado).

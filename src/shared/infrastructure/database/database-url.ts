@@ -1,5 +1,3 @@
-// shared/database/database-url.ts
-//
 // URL de conexión de Postgres armada desde las mismas variables que usa la app (DB_HOST, DB_PORT,
 // DB_NAME, DB_USER, DB_PASSWORD, DB_SCHEMA). La necesita el CLI de Prisma (prisma.config.ts): db pull,
 // migrate, studio. El cliente de la app no la usa: le pasa la config a @prisma/adapter-pg

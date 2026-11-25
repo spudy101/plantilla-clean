@@ -1,5 +1,3 @@
-// shared/observability/operation.repository.ts
-//
 // Tabla `operations`: una fila por operación. Escribe con el cliente independiente (nunca dentro de la
 // transacción de negocio: la traza queda aunque el flujo se revierta).
 import PrismaRepository from '../database/prisma.repository';

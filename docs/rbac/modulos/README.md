@@ -20,7 +20,7 @@ Por cada ítem del menú, su `rbacModule` se contrasta contra `/rbac/me`: si el 
 ## Convenciones (comunes a todos los archivos)
 
 - Prefijo omitido en las tablas: **`/admin/api/v1`** (todo el hub es app admin).
-- `RBAC: <módulo>` = el `RbacMiddleware.requirePermission(RBAC_MODULES.<módulo>, <acción>)` de la ruta.
+- `RBAC: <módulo>` = el `guards.requirePermission(RBAC_MODULES.<módulo>, <acción>)` de la ruta.
 - Acciones RBAC: `create | read | update | delete`. En las tablas, "update" cubre PATCH/PUT de estado.
 - **Roles del template base (4):** `SUPERADMIN`/`ADMIN` (acceso total; `ADMIN` sujeto a doble aprobación),
   `AUDITOR` (lectura global) y `CLIENTE` (externo, sin panel). Un proyecto derivado agrega roles finos y les

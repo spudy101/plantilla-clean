@@ -1,5 +1,3 @@
-// shared/database/transaction-context.ts
-//
 // Unidad de trabajo activa de la petición en curso, en AsyncLocalStorage. `unitOfWork.run()` la abre y
 // la publica acá; los repositorios la toman solos (PrismaRepository#db), así un service no pasa la
 // transacción por cada llamada.

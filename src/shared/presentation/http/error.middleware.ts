@@ -1,10 +1,8 @@
 // === RF-OPS-01: Pipeline DevSecOps, Infraestructura Base ===
-// shared/middlewares/error.middleware.ts
-
 import type { NextFunction, Request, Response } from 'express';
 import ApiResponse from './app-response.util';
 import AppError from './app-error.util';
-import { DomainError } from '../../domain/errors/domain-error';
+import { isExpectedError } from '../../application/errors';
 import { toHttpError } from './domain-error.mapper';
 import loggerUtilModule from '../../infrastructure/observability/logger.util';
 const { logger, sanitizeForLog } = loggerUtilModule;
@@ -179,8 +177,8 @@ class ErrorMiddleware {
   // 👇 handleError queda limpio y dentro del límite de líneas
   static handleError(thrown: unknown, req: Request, res: Response, _next: NextFunction): Response {
     // 👈 _next para satisfacer no-unused-vars (Express reconoce el handler de errores por sus 4 parámetros)
-    // Un error del dominio (Clean Architecture) se traduce a su equivalente HTTP y sigue el camino del AppError
-    const rawError = thrown instanceof DomainError ? toHttpError(thrown) : thrown;
+    // Un error del dominio o técnico de la aplicación se traduce a su equivalente HTTP y sigue el camino del AppError
+    const rawError = isExpectedError(thrown) ? toHttpError(thrown) : thrown;
     const err = (rawError ?? {}) as HandledError;
     const statusCode = err.statusCode || 500;
     const errorCode = err.code || ERROR_CODES.INTERNAL_ERROR;

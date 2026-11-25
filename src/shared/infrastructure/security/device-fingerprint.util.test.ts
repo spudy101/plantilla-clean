@@ -1,5 +1,3 @@
-// tests/unit/shared/device-fingerprint.util.test.ts
-//
 // DeviceFingerprintUtil: hash estable de dispositivo (SHA-256 del User-Agent normalizado,
 // sin IP), nombre legible, parseo de UA (ua-parser-js real) y geolocalización (geoip-lite,
 // mockeado para no depender de su base offline). Foco: determinismo y sensibilidad del hash.

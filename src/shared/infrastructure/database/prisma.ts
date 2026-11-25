@@ -1,5 +1,3 @@
-// shared/database/prisma.ts
-//
 // Cliente único de Prisma para toda la app. Usa el driver adapter de Postgres (`@prisma/adapter-pg`,
 // requerido en Prisma 7) con las variables DB_*, el esquema DB_SCHEMA y TLS salvo en localhost (con el
 // bundle CA de RDS si está configurado).

@@ -1,5 +1,3 @@
-// shared/observability/audit-hook.ts
-//
 // shared/ no conoce el módulo de auditoría (shared nunca importa de modules/), pero hay eventos de
 // infraestructura que sí se auditan: un ciclo de worker que falla, Redis que se cae, un acceso
 // denegado. Esos eventos se publican acá y la app conecta el módulo de auditoría al arrancar

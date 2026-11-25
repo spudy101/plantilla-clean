@@ -19,7 +19,8 @@ import CircuitBreaker from './circuit-breaker.util';
 import txContext from '../database/transaction-context';
 import { callProvider, CircuitOpenError } from './provider-call.util';
 import { isTransientError, providerFailure } from './provider-errors';
-import AppError from '../../presentation/http/app-error.util';
+import { NotFoundError } from '../../domain/errors/domain-error';
+import { ServiceUnavailableError } from '../../application/errors';
 
 const awsError = (name: string, httpStatusCode: number, extra: object = {}) =>
   Object.assign(new Error(name), { name, $metadata: { httpStatusCode }, ...extra });
@@ -42,9 +43,9 @@ describe('isTransientError', () => {
   });
 });
 
-describe('providerFailure: qué responder cuando falló una llamada a un proveedor', () => {
-  it('un AppError (circuito abierto, o un 4xx de negocio) sale tal cual', () => {
-    const notFound = AppError.notFound('no está');
+describe('providerFailure: qué error lanzar cuando falló una llamada a un proveedor', () => {
+  it('uno que ya dice qué responder (circuito abierto, o uno de negocio) sale tal cual', () => {
+    const notFound = new NotFoundError('no está', 'NOT_FOUND');
     expect(providerFailure(notFound, 'x')).toBe(notFound);
     const open = new CircuitOpenError('s3', 3000);
     expect(providerFailure(open, 'x')).toBe(open);
@@ -55,15 +56,17 @@ describe('providerFailure: qué responder cuando falló una llamada a un proveed
     ['throttling', awsError('ThrottlingException', 400)],
     ['timeout', Object.assign(new Error('t'), { name: 'TimeoutError' })],
     ['red', Object.assign(new Error('r'), { code: 'ECONNRESET' })]
-  ])('%s → 503 temporal', (_label, error) => {
-    expect(providerFailure(error, 'Error al subir')).toMatchObject({ statusCode: 503, retryable: true, message: 'Error al subir' });
+  ])('%s → no disponible, reintentable (503)', (_label, error) => {
+    const failure = providerFailure(error, 'Error al subir');
+    expect(failure).toBeInstanceOf(ServiceUnavailableError);
+    expect(failure).toMatchObject({ retryable: true, message: 'Error al subir' });
   });
 
   it.each([
     ['4xx: el proveedor rechazó la petición', awsError('AccessDenied', 403)],
     ['un bug nuestro (no vino del proveedor)', new TypeError('x is undefined')]
-  ])('%s → 500 permanente', (_label, error) => {
-    expect(providerFailure(error, 'Error al subir')).toMatchObject({ statusCode: 500, retryable: false });
+  ])('%s → error interno (500, permanente)', (_label, error) => {
+    expect(providerFailure(error, 'Error al subir')).toMatchObject({ kind: 'internal', code: 'INTERNAL_ERROR', message: 'Error al subir' });
   });
 });
 

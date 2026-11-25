@@ -9,7 +9,7 @@
 //   x-timestamp (unix ms en texto plano), x-signature (hex), x-device-id (la huella del dispositivo).
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import AppError from '../../../../shared/presentation/http/app-error.util';
-import { DomainError } from '../../../../shared/domain/errors/domain-error';
+import { isExpectedError } from '../../../../shared/application/errors';
 import type { Logger } from '../../../../shared/application/ports/logger.port';
 import errorMessageModule from '../../../../shared/kernel/error-message.util';
 import type {
@@ -28,7 +28,7 @@ const API_KEY_LOG_LENGTH = 24;
 const headerValue = (value: string | string[] | undefined): string | undefined => (Array.isArray(value) ? value[0] : value);
 
 /** ¿El error ya dice qué responder? (si no, la autenticación responde un 401 genérico). */
-const isKnown = (error: unknown) => error instanceof AppError || error instanceof DomainError;
+const isKnown = (error: unknown) => error instanceof AppError || isExpectedError(error);
 
 export interface AuthGuardUseCases {
   authenticate: AuthenticateRequest;

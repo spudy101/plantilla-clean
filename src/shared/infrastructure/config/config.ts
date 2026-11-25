@@ -1,4 +1,3 @@
-// shared/constants/config.ts
 /**
  * Configuration module
  *

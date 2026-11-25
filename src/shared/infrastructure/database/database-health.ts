@@ -1,5 +1,3 @@
-// shared/database/database-health.ts
-//
 // Chequeo de la base para el arranque y /health, y cierre del pool en el shutdown. No lanza hacia
 // arriba un detalle de conexión: el llamador decide qué exponer.
 import prisma from './prisma';

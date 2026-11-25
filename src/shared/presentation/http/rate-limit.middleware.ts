@@ -1,5 +1,3 @@
-// shared/middlewares/rate-limit.middleware.ts
-
 import { interopDefault } from '../../kernel/interop.util';
 import type { Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';

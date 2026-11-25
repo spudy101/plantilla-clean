@@ -1,5 +1,3 @@
-// tests/unit/shared/app-response.util.test.ts
-//
 // ApiResponse: capa central de respuestas HTTP. Cada helper arma el sobre estándar
 // { success, statusCode, message, data, metadata, timestamp } y lo escribe en `res`.
 // Mockeamos las constantes HTTP_STATUS y el middleware de enmascaramiento PII (aquí lo

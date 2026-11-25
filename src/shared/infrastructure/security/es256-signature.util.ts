@@ -1,5 +1,3 @@
-// shared/utils/es256-signature.util.ts
-//
 // Verificación de firmas ES256 (ECDSA P-256 + SHA-256) para credenciales biométricas.
 // Puro: sin BD ni estado. Extraído de AuthBiometricService (SOLID: S) — la criptografía
 // cambia por razones distintas que el flujo de enrolamiento/login.

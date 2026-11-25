@@ -1,7 +1,8 @@
 // Cómo leer el error de un proveedor externo. Lógica pura, sin dependencias de infraestructura:
 //   isTransientError → ¿el proveedor está mal? Decide si reintentar y si cuenta para el circuit breaker.
-//   providerFailure  → qué responderle al cliente cuando la llamada falló: 503 temporal o 500.
-import AppError from '../../presentation/http/app-error.util';
+//   providerFailure  → qué error lanzar cuando la llamada falló: no disponible (temporal) o interno.
+import { InternalError } from '../../domain/errors/domain-error';
+import { isExpectedError, ServiceUnavailableError, type ExpectedError } from '../../application/errors';
 
 const HTTP_TOO_MANY_REQUESTS = 429;
 const HTTP_REQUEST_TIMEOUT = 408;
@@ -64,16 +65,16 @@ function cameFromProvider(error: unknown): boolean {
 }
 
 /**
- * El error para responder cuando falló una llamada a un proveedor. Un AppError (CircuitOpenError incluido,
- * o uno de negocio) sale tal cual. Si el proveedor estaba mal (transitorio: caído, throttling, timeout,
- * red) es un 503 temporal; si no (petición rechazada, o un bug nuestro), un 500. Antes todo era 500 y el
- * cliente no reintentaba algo que sí podía funcionar.
+ * El error a lanzar cuando falló una llamada a un proveedor. Uno que ya dice qué responder (CircuitOpenError
+ * incluido, o uno de negocio) sale tal cual. Si el proveedor estaba mal (transitorio: caído, throttling, timeout,
+ * red) no está disponible y vale reintentar (la presentación responde 503); si no (petición rechazada, o un bug
+ * nuestro), es un error interno (500). Antes todo era 500 y el cliente no reintentaba algo que sí podía funcionar.
  */
-function providerFailure(error: unknown, message: string): AppError {
-  if (error instanceof AppError) {
+function providerFailure(error: unknown, message: string): ExpectedError {
+  if (isExpectedError(error)) {
     return error;
   }
-  return cameFromProvider(error) && isTransientError(error) ? AppError.serviceUnavailable(message) : AppError.internal(message);
+  return cameFromProvider(error) && isTransientError(error) ? new ServiceUnavailableError(message) : new InternalError(message, 'INTERNAL_ERROR');
 }
 
 export { isTransientError, providerFailure };

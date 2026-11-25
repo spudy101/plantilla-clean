@@ -1,5 +1,3 @@
-// tests/unit/shared/utils/es256-signature.util.test.ts
-//
 // Verificación ES256 REAL con node:crypto (sin mocks): DER, raw r||s, PEM y casos inválidos.
 
 jest.mock('../observability/logger.util', () => ({ logger: { info: jest.fn() } }));

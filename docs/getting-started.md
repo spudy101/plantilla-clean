@@ -98,14 +98,16 @@ La base es funcional con nombre neutro. Para adaptarla a tu proyecto, revisa cad
 
 ## 6. Cómo extender con tu dominio
 
-- **Nuevo módulo de negocio:** crea tu carpeta bajo `modules/<client|admin|schemas>/...` siguiendo
-  la convención existente (model → repository → service → controller → routes → dto). Ver
-  [`implementation-patterns.md`](./implementation-patterns.md).
+- **Nuevo módulo de negocio:** crea `src/modules/<dominio>/` con sus cuatro capas (`domain/`, `application/`,
+  `infrastructure/`, `presentation/`) y `<dominio>.module.ts`, y regístralo en `src/main/container.ts` (sus routers
+  se montan en `src/main/app.ts`). Plantillas de cada pieza: [`implementation-patterns.md`](./implementation-patterns.md);
+  reglas: [`CLEAN-ARCHITECTURE.md`](./CLEAN-ARCHITECTURE.md). El guard de arquitectura cubre el módulo nuevo solo.
 - **Trazabilidad por sesión:** si tu entidad debe registrar quién/qué sesión la creó, declara la
   columna `origin_session_id` (la extensión del cliente de Prisma la rellena sola al crear) y súmala al
   `ENTITY_REGISTRY` del session-trace. Ver [`origin-session-tracking.md`](./origin-session-tracking.md).
 - **Consentimientos:** agrega nuevos `scope` a la tabla `consent_types` (y su CHECK) para gatear
-  operaciones de tu dominio; usa `ConsentMiddleware.requireConsent(code)` en la ruta.
+  operaciones de tu dominio; usa en la ruta `requireConsent(code)`, que `legal.module.ts` entrega armado (pásalo a
+  tu módulo desde `src/main/container.ts`).
 - **Doble aprobación (maker-checker):** engancha operaciones sensibles al flujo de
   `approval-request`. Ver [`dual-approval-global.md`](./dual-approval-global.md).
 - **RBAC:** define permisos y asígnalos a roles. Ver [`rbac/rbac.md`](./rbac/rbac.md).

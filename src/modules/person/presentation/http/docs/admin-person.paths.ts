@@ -1,5 +1,3 @@
-// config/swagger/modules/admin/kyc/person/person.paths.ts
-
 import commonResponses from '../../../../../shared/presentation/openapi/common.responses';
 import { jsonBody, toOpenApi, toParameters } from '../../../../../shared/presentation/validation/openapi';
 import {

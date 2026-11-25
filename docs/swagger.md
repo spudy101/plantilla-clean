@@ -117,7 +117,7 @@ Al agregar uno nuevo, seguir el patrón del módulo hermano más cercano.
    prueba de conformidad (`*.response.test.ts`).
 3. **Todas las keys camelCase** (excepto valores de enum de BD).
 4. **Status codes**: documentar 200/201/202, 400, 401, 403, 404, 409, 422, 500 cuando apliquen, con el código
-   que de verdad devuelve el service (`AppError.badRequest` es 400, no 409).
+   que de verdad responde (un `InvalidInputError` del dominio es 400, no 409).
 5. **PII enmascarada**: en el esquema de **salida**, los campos con documento, correo, teléfono, TIN o cuenta llevan
    la `description` de `shared/presentation/validation/pii-masking.doc.ts` y un `example` enmascarado. ⚠️ **Nunca en los
    requests**: la entrada va completa. Ver `docs/pii-masking.md`.

@@ -43,11 +43,11 @@ No dejan fila: `/health`, `/` y los assets de Swagger.
 
 ## Auditoría (`src/modules/audit`)
 
-```ts
-import auditModule from '../../audit';
-const { audit } = auditModule;
+Un caso de uso recibe el puerto `AuditTrail` (`shared/application/ports/audit-trail.port.ts`) por constructor;
+`src/main/container.ts` le pasa el `trail` de audit. Ningún módulo importa audit:
 
-await audit.record('PERSON_ROLE_CHANGED', {
+```ts
+await this.audit.record('PERSON_ROLE_CHANGED', {
   actorId: adminUserId,
   entityType: 'User',
   entityTable: 'users',

@@ -1,5 +1,3 @@
-// shared/middlewares/pii-masking.middleware.ts
-
 import type { NextFunction, Request, Response } from 'express';
 import MaskingUtil from '../../domain/pii/masking.util';
 

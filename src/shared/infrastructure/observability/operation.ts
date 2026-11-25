@@ -1,5 +1,3 @@
-// shared/observability/operation.ts
-//
 // ÚNICO punto de entrada de una operación, sea cual sea su origen:
 //   - HTTP / webhook → operationMiddleware (el primero de la app)
 //   - worker / sistema → runOperation({ source, name }, fn)

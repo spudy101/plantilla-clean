@@ -1,5 +1,3 @@
-// src/utils/cache.util.ts
-
 import NodeCache from 'node-cache';
 import loggerUtilModule from '../observability/logger.util';
 const { logger } = loggerUtilModule;

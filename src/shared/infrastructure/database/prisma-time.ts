@@ -1,5 +1,3 @@
-// shared/database/prisma-time.ts
-//
 // Columnas `TIME` (horario de no molestar). Sequelize las devolvía como texto 'HH:MM:SS' y así las
 // usan los services (comparación de horas) y la API. Prisma las mapea a `Date` (1970-01-01, hora en
 // UTC), así que los repositorios convierten en el borde y hacia afuera siguen siendo texto.

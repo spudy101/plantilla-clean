@@ -18,8 +18,8 @@
 
 import loggerUtilModule from '../observability/logger.util';
 const { logger } = loggerUtilModule;
-import AppError from '../../presentation/http/app-error.util';
-import { retryAfterSeconds } from '../../presentation/http/retryable';
+import { ServiceUnavailableError } from '../../application/errors';
+import { retryAfterSeconds } from '../../kernel/retry-after';
 import redisClient from '../cache/redis.util';
 import ResilienceConfig from './resilience-config.util';
 import errorMessageModule from '../../kernel/error-message.util';
@@ -39,15 +39,18 @@ interface OpenState {
 type BreakerCallback = (product: string, openedAt: number) => unknown;
 
 /**
- * Llamada rechazada sin intentar: el circuito del producto está abierto. 503 temporal, con
- * Retry-After = cuánto falta para la próxima llamada de prueba.
+ * Llamada rechazada sin intentar: el circuito del producto está abierto. Temporal (la presentación responde 503),
+ * con Retry-After = cuánto falta para la próxima llamada de prueba. Es un incidente de operación: se loguea como error.
  */
-class CircuitOpenError extends AppError {
+class CircuitOpenError extends ServiceUnavailableError {
   readonly product: string;
   constructor(product: string, retryInMs: number) {
-    super(`Servicio externo no disponible temporalmente (${product})`, 503, 'CIRCUIT_OPEN', null, true);
+    super(`Servicio externo no disponible temporalmente (${product})`, {
+      code: 'CIRCUIT_OPEN',
+      retryAfterSeconds: retryAfterSeconds(retryInMs),
+      incident: true
+    });
     this.product = product;
-    this.retryAfter = retryAfterSeconds(retryInMs);
   }
 }
 

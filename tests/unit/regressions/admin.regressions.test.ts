@@ -1,5 +1,3 @@
-// tests/unit/modules/admin/admin.regressions.test.ts
-//
 // Regresiones de bugs que destapó el tipado de modules/admin (fase 4 de la migración a TS).
 
 import { fixture } from 'tests/helpers/mock';

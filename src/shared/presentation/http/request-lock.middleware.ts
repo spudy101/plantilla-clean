@@ -1,5 +1,3 @@
-// src/middlewares/request-lock.middleware.ts
-
 import { interopDefault } from '../../kernel/interop.util';
 import type { NextFunction, Request, Response } from 'express';
 import redisClient from '../../infrastructure/cache/redis.util';

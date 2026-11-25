@@ -1,5 +1,3 @@
-// shared/types/db-rows.ts
-//
 // Formas mínimas de las filas/instancias de BD que leen los DTOs (solo tipos; no genera código).
 // Son estructurales: cuando los modelos Sequelize queden tipados (fase 3 de la migración), sus
 // instancias encajan aquí sin cambios porque tienen al menos estos campos.

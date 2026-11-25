@@ -1,5 +1,3 @@
-// shared/constants/dual-approval.ts
-//
 // Registro declarativo del framework de doble aprobación (maker-checker / cuatro ojos).
 // Agregar una operación = agregar una entrada aquí (parte declarativa estilo audit-alert-triggers).
 // El "quién/cuándo" del segundo aprobador vive en la tabla genérica `approval_requests`.

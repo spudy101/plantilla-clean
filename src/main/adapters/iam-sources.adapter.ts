@@ -10,21 +10,16 @@
 //   errors                            qué errores inesperados se re-lanzan tal cual
 import type { IamModuleDeps } from '../../modules/iam/iam.module';
 import { securePasswordGenerator } from '../../modules/person/infrastructure/security/secure-password.generator';
-import { DomainError } from '../../shared/domain/errors/domain-error';
-import { isDatabaseUnavailable, isTransactionConflict } from '../../shared/infrastructure/database/database-errors';
-import AppError from '../../shared/presentation/http/app-error.util';
+import { shouldPropagate } from '../../shared/presentation/http/error-propagation';
 import type { ModuleRegistry } from './module-registry';
 
 type IamSources = Omit<IamModuleDeps, 'policy' | 'audit' | 'logger' | 'notifier' | 'unitOfWork'>;
 
 export function iamSourcesAdapter(modules: ModuleRegistry): IamSources {
   return {
-    // Se propagan los errores que ya dicen qué responder (del dominio o HTTP) y los temporales de la base (caída,
-    // conflicto de transacción), que el manejador de errores responde 503 / 409 temporal.
-    errors: {
-      shouldPropagate: error =>
-        error instanceof DomainError || error instanceof AppError || isDatabaseUnavailable(error) || isTransactionConflict(error)
-    },
+    // Se propagan los errores que ya dicen qué responder (de negocio, técnicos o HTTP) y los temporales de la base
+    // (caída, conflicto de transacción), que el manejador de errores responde 503 / 409 temporal.
+    errors: { shouldPropagate },
 
     // ── person ──
     holders: {

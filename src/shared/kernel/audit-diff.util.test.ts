@@ -1,5 +1,3 @@
-// tests/unit/shared/audit-diff.util.test.ts
-//
 // buildAuditDiff: calcula el diff (before/after) entre el estado actual de una entidad (snake_case)
 // y los datos entrantes del request (camelCase), según un fieldMap. Lógica pura, sin dependencias.
 

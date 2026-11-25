@@ -1,5 +1,3 @@
-// shared/types/express.d.ts
-//
 // Propiedades que los middlewares del proyecto agregan a `req`. Al ampliar el tipo Request de
 // Express (declaration merging) el resto del código las ve tipadas sin casts.
 

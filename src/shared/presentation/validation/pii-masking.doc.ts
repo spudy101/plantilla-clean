@@ -1,5 +1,3 @@
-// shared/validation/pii-masking.doc.ts
-
 /**
  * [RF-USR-01] | CA-06 | Textos compartidos para documentar el enmascaramiento PII en Swagger.
  *

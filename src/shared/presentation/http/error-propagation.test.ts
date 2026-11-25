@@ -1,12 +1,19 @@
 // shouldPropagate: qué errores re-lanza un catch tal cual en vez de envolverlos en un 500 genérico.
 import AppError from './app-error.util';
 import { shouldPropagate } from './error-propagation';
+import { NotFoundError } from '../../domain/errors/domain-error';
+import { ServiceUnavailableError } from '../../application/errors';
 
 describe('shouldPropagate', () => {
   it('cualquier AppError, también los 4xx de negocio (antes isOperationalError los dejaba pasar a 500)', () => {
     expect(shouldPropagate(AppError.notFound('x'))).toBe(true);
     expect(shouldPropagate(AppError.badRequest('x'))).toBe(true);
     expect(shouldPropagate(AppError.internal('x'))).toBe(true);
+  });
+
+  it('los que ya dicen qué responder sin ser HTTP: del dominio y técnicos de la aplicación', () => {
+    expect(shouldPropagate(new NotFoundError('x', 'NOT_FOUND'))).toBe(true);
+    expect(shouldPropagate(new ServiceUnavailableError('x'))).toBe(true);
   });
 
   it('los errores temporales de la base: base caída y conflicto de transacción', () => {

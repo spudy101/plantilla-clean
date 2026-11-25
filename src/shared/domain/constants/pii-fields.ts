@@ -1,5 +1,3 @@
-// shared/constants/pii-fields.ts
-
 /**
  * [RF-USR-01] | CA-06 | Catálogo único de campos PII que se enmascaran en las respuestas.
  *

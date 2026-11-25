@@ -1,5 +1,3 @@
-// config/swagger/modules/shared-endpoints/notification/notification.paths.ts
-
 import commonResponses from '../../../../../shared/presentation/openapi/common.responses';
 import { NotificationCreatedSchema } from '../responses/notification.response';
 import { jsonBody, toOpenApi, toParameters } from '../../../../../shared/presentation/validation/openapi';

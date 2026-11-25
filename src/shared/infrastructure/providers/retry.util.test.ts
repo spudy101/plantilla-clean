@@ -1,5 +1,3 @@
-// tests/unit/shared/retry.util.test.ts
-//
 // withRetry: ejecuta una fn async con reintentos y backoff exponencial (baseDelayMs * 2^(intento-1)).
 // Solo reintenta si la fn LANZA; un valor resuelto (aunque sea un error de negocio) se retorna tal cual.
 // Usamos fake timers para no esperar los delays reales, avanzándolos con las variantes *Async

@@ -1,5 +1,3 @@
-// shared/utils/hash.util.ts
-//
 // Utilidad de hash determinístico para búsquedas en BD de campos cifrados.
 //
 // PROBLEMA que resuelve:

@@ -1,5 +1,3 @@
-// shared/database/unit-of-work.ts
-//
 // ============================================================
 // UNIT OF WORK — puerto de transacciones (SOLID: D, Dependency Inversion)
 // ============================================================

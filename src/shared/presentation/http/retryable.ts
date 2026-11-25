@@ -7,17 +7,19 @@
 //
 // Por defecto se decide por el status; un error puede declararlo distinto (p. ej. un 409 de "la misma
 // petición sigue en curso" es temporal). Ver docs/errors-and-retries.md.
+import { retryAfterSeconds } from '../../kernel/retry-after';
 
-/** 408 Request Timeout, 429 Too Many Requests, 502/503/504 (gateway, no disponible, timeout). */
-const RETRYABLE_STATUSES = new Set([408, 429, 502, 503, 504]);
+const REQUEST_TIMEOUT = 408;
+const TOO_MANY_REQUESTS = 429;
+const BAD_GATEWAY = 502;
+const SERVICE_UNAVAILABLE = 503;
+const GATEWAY_TIMEOUT = 504;
+
+/** Los status temporales: el servidor (o algo detrás de él) no pudo atender ahora, no la petición en sí. */
+const RETRYABLE_STATUSES = new Set([REQUEST_TIMEOUT, TOO_MANY_REQUESTS, BAD_GATEWAY, SERVICE_UNAVAILABLE, GATEWAY_TIMEOUT]);
 
 function isRetryableStatus(statusCode: number): boolean {
   return RETRYABLE_STATUSES.has(statusCode);
-}
-
-/** Segundos enteros (≥ 1) para el header Retry-After a partir de milisegundos. */
-function retryAfterSeconds(ms: number): number {
-  return Math.max(1, Math.ceil(ms / 1000));
 }
 
 export { isRetryableStatus, retryAfterSeconds };

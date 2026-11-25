@@ -1,296 +1,456 @@
 # Patrones de implementación — plantillas de código
 
-> Plantillas canónicas por capa. **Leer esta guía antes de crear los archivos de un feature.**
-> Todo es TypeScript estricto con imports/exports nativos (ver [`typescript-migration.md`](typescript-migration.md)):
-> los módulos del proyecto exportan por defecto (`export default`) y se importan con `import X from '…'`.
+> Plantillas canónicas por capa para un feature nuevo, en **Clean Architecture** (ver
+> [`CLEAN-ARCHITECTURE.md`](CLEAN-ARCHITECTURE.md)). Salen del módulo `settings`, el molde: cuando dudes, abrí el
+> archivo real que cita cada sección. Todo es TypeScript estricto; `tests/unit/guards/clean-architecture.test.ts`
+> falla si una capa importa lo que no debe.
 
-## Controller
+El ejemplo es un módulo `catalog` con productos. Archivos de un feature, de adentro hacia afuera:
 
-```ts
-import MyService from '../services/my.service';
-import ApiResponse from '../../../shared/presentation/http/app-response.util';
-import errorMiddlewareModule from '../../../shared/presentation/http/error.middleware';
-const { asyncHandler } = errorMiddlewareModule;
-import routeParamUtilModule from '../../../shared/presentation/http/route-param.util';
-const { routeParam } = routeParamUtilModule;
-import authUserUtilModule from '../../iam/utils/auth-user.util';
-const { requireAuthUser } = authUserUtilModule;
-import adminAuditContextUtilModule from '../../../shared/presentation/http/admin-audit-context.util';
-const { adminAuditContext } = adminAuditContextUtilModule;
-
-class MyController {
-  list = asyncHandler(async (req, res) => {
-    const result = await MyService.list(req.query, requireAuthUser(req).userId);
-    return ApiResponse.success(res, 'Listado obtenido exitosamente', result);
-  });
-
-  getById = asyncHandler(async (req, res) => {
-    const result = await MyService.getById(routeParam(req, 'id'), requireAuthUser(req).userId);
-    return ApiResponse.success(res, 'Recurso obtenido correctamente', result);
-  });
-
-  create = asyncHandler(async (req, res) => {
-    const result = await MyService.create(req.body, adminAuditContext(req, res));
-    return ApiResponse.success(res, 'Recurso creado exitosamente', result, 201);
-  });
-}
-
-export default new MyController();
+```
+src/modules/catalog/
+  domain/product.ts                              entidad + reglas            (TypeScript puro)
+  domain/errors.ts                               errores del dominio
+  application/ports/product-repository.port.ts   lo que el caso de uso NECESITA (interfaz)
+  application/dto/product.output.ts              lo que devuelve el caso de uso (datos planos)
+  application/use-cases/create-product.use-case.ts
+  infrastructure/persistence/product.mapper.ts   fila de Prisma ↔ entidad
+  infrastructure/persistence/prisma-product.repository.ts
+  presentation/http/requests/product.request.ts  entrada (Zod)
+  presentation/http/responses/product.response.ts salida (Zod, documenta Swagger)
+  presentation/http/product.controller.ts
+  presentation/http/product.routes.ts            factory: recibe controller + guardas
+  presentation/http/docs/product.paths.ts        OpenAPI
+  catalog.module.ts                              composición (el único que conoce todas las capas)
+tests/doubles/catalog.doubles.ts                 dobles en memoria de los puertos
 ```
 
-> ✅ `ApiResponse.success` detecta automáticamente si el resultado tiene `{ data, metadata }` y lo aplana.
-> ❌ No desestructurar `{ data, metadata }` en el controller — pasar el resultado directo.
-> ✅ `requireAuthUser(req)` (usuario autenticado tipado, o 401), `routeParam(req, 'id')` (string o 400) y
-> `adminAuditContext(req, res)` (quién hace la acción admin): no leer `req.user` / `req.params` a mano.
+## Dominio — entidad y errores
 
-## Service (con paginación)
+Molde: `src/modules/settings/domain/system-global-config.ts`, `domain/errors.ts`.
 
 ```ts
-import type { AdminAuditContext } from '../../../shared/application/audit-context';
-import AppError from '../../../shared/presentation/http/app-error.util';
-import { pageMetadata, pageRequest } from '../../../shared/application/pagination';
-import type { MyListQuery } from '../requests/my.request';
-import auditModule from '../../audit';
-const { audit } = auditModule;
-import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
-import myRepository from '../repositories/my.repository';
-import myResponse from '../responses/my.response';
-const { MyListResponseDTO, MyDetailResponseDTO } = myResponse;
+// domain/product.ts — no importa Prisma, Express ni paquetes npm
+import { InvalidPriceError } from './errors';
 
-class MyService {
-  unitOfWork: typeof unitOfWork;
-  myRepository: typeof myRepository;
+export interface ProductProps {
+  id: string;
+  name: string;
+  priceCents: number;
+  isActive: boolean;
+}
 
-  // SOLID (D): dependencias por constructor, con la implementación real como default.
-  constructor(deps: MyService.Deps = {}) {
-    this.unitOfWork = deps.unitOfWork ?? unitOfWork;
-    this.myRepository = deps.myRepository ?? myRepository;
-  }
+export class Product {
+  private constructor(private readonly props: Readonly<ProductProps>) {}
 
-  // query: la ya validada por el esquema de la ruta (el controller la pasa con validQuery(req, MyListQuery))
-  async list(query: MyListQuery, adminUserId: string) {
-    const page = pageRequest(query); // page, limit, offset, sortBy, order
-    const filters = { status: query.status ?? undefined, isActive: query.isActive ?? undefined };
-
-    const { rows, count } = await this.myRepository.findAllPaginated(filters, page, query.search ?? null);
-
-    await audit.record('MY_RESOURCE_LIST_VIEWED', {
-      actorId: adminUserId,
-      details: { totalItems: count, page: page.page },
-      entityType: 'MyResource',
-      entityTable: 'my_resources'
-    });
-
-    // la metadata informa el orden y los filtros aplicados (pageOf(data, page, count, filters) si el DTO es trivial)
-    return MyListResponseDTO(rows, pageMetadata(page, count, { search: query.search, ...filters }));
-  }
-
-  async getById(id: string, adminUserId: string) {
-    const record = await this.myRepository.findById(id);
-    if (!record) {
-      throw AppError.notFound('Recurso no encontrado');
+  /** Un producto nuevo: acá viven las reglas de creación. */
+  static create(props: Omit<ProductProps, 'isActive'>): Product {
+    if (props.priceCents <= 0) {
+      throw new InvalidPriceError();
     }
-    await audit.record('MY_RESOURCE_VIEWED', { actorId: adminUserId, entityId: id, entityType: 'MyResource', entityTable: 'my_resources' });
-    return MyDetailResponseDTO(record);
+    return new Product({ ...props, isActive: true });
   }
 
-  async create(payload: MyService.CreateInput, auditContext: AdminAuditContext) {
-    // …
+  /** Reconstruye desde lo guardado (lo usa el mapper): no revalida. */
+  static restore(props: ProductProps): Product {
+    return new Product({ ...props });
+  }
+
+  get id() {
+    return this.props.id;
+  }
+  get name() {
+    return this.props.name;
+  }
+  get priceCents() {
+    return this.props.priceCents;
+  }
+  get isActive() {
+    return this.props.isActive;
   }
 }
-
-// Tipos asociados: namespace con el mismo nombre que la clase (fusión de declaraciones)
-// eslint-disable-next-line @typescript-eslint/no-namespace
-namespace MyService {
-  export interface Deps {
-    unitOfWork?: typeof unitOfWork;
-    myRepository?: typeof myRepository;
-  }
-  export interface CreateInput {
-    name: string;
-  }
-}
-
-// Instancia por defecto (controllers) + la clase (tests con fakes, composición)
-export default Object.assign(new MyService(), { MyService });
 ```
 
-> ✅ **SOLID** (ver [`solid.md`](solid.md)): repos vía `this.`, transacciones con `this.unitOfWork.run(async () => …)`
-> (los repositorios toman la transacción solos), y **nunca** el cliente de Prisma en un service — si necesitas
-> un filtro, crea un método con nombre de negocio en el repositorio (`findByNames`, `findActive`,
-> `searchPaginated`…). Los tipos de las filas sí: `import type { User } from '…/generated/prisma/client'`.
-> ✅ Si el service usa pocos métodos de un repositorio, declara el puerto con `Pick<XRepositoryPort, 'a' | 'b'>`
-> (`src/modules/repository-ports.ts`).
-> ✅ Listados: el contrato completo está en `src/shared/application/pagination.ts`. La query llega **ya validada y
-> tipada** (`MyListQuery`): el service no vuelve a interpretar strings. La metadata sale **siempre** de
-> `pageMetadata` / `pageOf`: `{ pagination, sort, filters? }`, con el orden y los filtros aplicados.
-> ✅ El service retorna directamente el resultado del DTO (que tiene `{ data, metadata }`).
-> ❌ No armar el objeto de metadata a mano ni repetir en él lo que pidió el cliente si no se aplicó.
-> ❌ `export default new MyService()` sin la clase: la guarda de arquitectura lo rechaza (los tests no
-> podrían inyectar dependencias).
-
-## Respuesta (salida, Zod)
-
 ```ts
-// responses/my.response.ts
-import { z } from '../../../shared/presentation/validation/z';
-import { dateTime } from '../../../shared/presentation/validation/output';
-import type { PageMetadata } from '../../../shared/application/pagination';
-import type { MyEntity } from '../../../shared/infrastructure/database/generated/prisma/client';
+// domain/errors.ts — dicen QUÉ regla se rompió; el status HTTP lo decide la presentación
+import { ConflictError, RuleViolationError } from '../../../shared/domain/errors/domain-error';
 
-function MyItemDTO(row: MyEntity) {
-  return { myEntityId: row.myEntityId, name: row.name, createdAt: row.createdAt }; // campo a campo
+export class InvalidPriceError extends RuleViolationError {
+  constructor() {
+    super('El precio debe ser mayor a cero', 'UNPROCESSABLE_ENTITY'); // → 422
+  }
 }
 
-function MyListResponseDTO(rows: MyEntity[], metadata: PageMetadata) {
-  return { data: Array.isArray(rows) ? rows.map(MyItemDTO) : [], metadata };
+export class ProductNameTakenError extends ConflictError {
+  constructor() {
+    super('Ya existe un producto con ese nombre', 'CONFLICT'); // → 409
+  }
 }
-
-export const MyItemSchema = z.object({ myEntityId: z.uuid(), name: z.string(), createdAt: dateTime() });
-
-export default { MyItemDTO, MyListResponseDTO };
-
-// responses/my.response.test.ts — conformidad: la salida cumple su esquema
-it('ítem', () => expect(MyItemSchema.safeParse(dto.MyItemDTO(fixture)).error?.issues ?? []).toEqual([]));
 ```
 
-> ✅ Siempre `Array.isArray(rows) ? rows.map(...) : []`: nunca asumir que rows es array.
->
-> ✅ **PII:** todo campo PII sale por `EncryptionUtil.safeDecrypt` + `MaskingUtil.maskXxx`, y los JSON
-> propios por `MaskingUtil.redactPayload`. Campo nuevo → declararlo en `src/shared/domain/constants/pii-fields.ts`.
-> Ver `docs/pii-masking.md` y `docs/dtos.md`.
+> ✅ Familias (`shared/domain/errors/domain-error.ts`): `NotFoundError` 404 · `ConflictError` 409 ·
+> `RuleViolationError` 422 · `InvalidInputError` 400 · `ForbiddenError` 403 · `UnauthorizedError` 401 ·
+> `TooManyRequestsError` 429 · `InternalError` 500. El código (`'CONFLICT'`…) es el contrato con el front.
+> ✅ Algo de lo que dependemos no está (un proveedor caído): `ServiceUnavailableError` de
+> `shared/application/errors.ts` (503, con `retryAfterSeconds`). No es una regla de negocio.
+> ❌ `AppError` es HTTP: solo existe en `presentation/`.
 
-## Repository
+## Puerto
+
+Molde: `src/modules/settings/application/ports/system-global-config-repository.port.ts`.
 
 ```ts
-import PrismaRepository from '../../../shared/infrastructure/database/prisma.repository';
-import type { PageRequest } from '../../../shared/application/pagination';
-import type { MyEntity, Prisma } from '../../../shared/infrastructure/database/generated/prisma/client';
+// application/ports/product-repository.port.ts — habla de entidades, no de filas
+import type { PageRequest } from '../../../../shared/application/pagination';
+import type { Product } from '../../domain/product';
 
-const SEARCH_FIELDS = ['name', 'description'] as const;
+export interface ProductRepository {
+  findByName(name: string): Promise<Product | null>;
+  list(filters: { isActive?: boolean }, page: PageRequest, search: string | null): Promise<{ rows: Product[]; count: number }>;
+  save(product: Product): Promise<void>;
+}
+```
 
-class MyRepository extends PrismaRepository {
-  // `await this.db()`: el cliente de la transacción si hay un unitOfWork.run() activo, si no el único
-  async findActiveByName(name: string): Promise<MyEntity | null> {
-    return (await this.db()).myEntity.findFirst({ where: { name, isActive: true } });
+> ✅ Solo lo que el caso de uso usa (I de SOLID), con nombres de negocio. Un archivo `*.port.ts` por puerto,
+> sin implementación (el guard lo verifica).
+> ✅ Lo que viene de OTRO módulo (un usuario, una notificación) también es un puerto propio: el módulo no
+> importa al otro; un adaptador de `src/main/adapters/` lo implementa.
+
+## Caso de uso
+
+Molde: `src/modules/settings/application/use-cases/update-system-global-config.use-case.ts`.
+
+```ts
+// application/use-cases/create-product.use-case.ts
+import type { AuditTrail } from '../../../../shared/application/ports/audit-trail.port';
+import type { IdGenerator } from '../../../../shared/application/ports/id-generator.port';
+import type { ProductRepository } from '../ports/product-repository.port';
+import { Product } from '../../domain/product';
+import { ProductNameTakenError } from '../../domain/errors';
+import { toProductOutput, type ProductOutput } from '../dto/product.output';
+
+export interface CreateProductInput {
+  actorId: string;
+  name: string;
+  priceCents: number;
+}
+
+export class CreateProduct {
+  // Dependencias por constructor y obligatorias: el caso de uso no crea nada (`new XRepository()` lo prohíbe el guard)
+  constructor(
+    private readonly products: ProductRepository,
+    private readonly ids: IdGenerator,
+    private readonly audit: AuditTrail
+  ) {}
+
+  async execute({ actorId, name, priceCents }: CreateProductInput): Promise<ProductOutput> {
+    if (await this.products.findByName(name)) {
+      throw new ProductNameTakenError();
+    }
+    const product = Product.create({ id: this.ids.next(), name, priceCents }); // la regla del precio, en el dominio
+    await this.products.save(product);
+
+    await this.audit.record('PRODUCT_CREATED', {
+      actorId,
+      details: { name, priceCents },
+      entityId: product.id,
+      entityType: 'Product',
+      entityTable: 'products'
+    });
+    return toProductOutput(product);
+  }
+}
+```
+
+> ✅ Una clase por acción, con `execute()`. Orquesta: lee por puertos, deja las reglas a la entidad, guarda,
+> audita, avisa. Atomicidad: `UnitOfWork` (`await this.unitOfWork.run(async () => { … })`).
+> ✅ Un aviso que no debe bloquear la respuesta: `notifier.notify(...).catch(err => logger.warn(...))`.
+> ✅ Listados: `const page = pageRequest(query)` y `return pageOf(rows.map(toProductOutput), page, count, filtros)`
+> (`shared/application/pagination.ts`): la metadata informa el orden y los filtros **aplicados**.
+
+## DTO de salida
+
+Molde: `src/modules/settings/application/dto/system-global-config.output.ts`.
+
+```ts
+// application/dto/product.output.ts — datos planos: la entidad puede cambiar por dentro sin romper la API
+import type { Product } from '../../domain/product';
+
+export interface ProductOutput {
+  productId: string;
+  name: string;
+  priceCents: number;
+  isActive: boolean;
+}
+
+export const toProductOutput = (product: Product): ProductOutput => ({
+  productId: product.id,
+  name: product.name,
+  priceCents: product.priceCents,
+  isActive: product.isActive
+});
+```
+
+> ✅ Campo a campo, nunca un spread de la entidad o de una fila. PII: ver `docs/pii-masking.md` y `docs/dtos.md`.
+
+## Infraestructura — mapper y repositorio
+
+Molde: `src/modules/settings/infrastructure/persistence/`.
+
+```ts
+// infrastructure/persistence/product.mapper.ts — el único que conoce la forma de la fila
+import type { Prisma } from '../../../../shared/infrastructure/database/generated/prisma/client';
+import { Product } from '../../domain/product';
+
+export const PRODUCT_COLUMNS = { productId: true, name: true, priceCents: true, isActive: true } satisfies Prisma.ProductSelect;
+type ProductRow = Prisma.ProductGetPayload<{ select: typeof PRODUCT_COLUMNS }>;
+
+export const ProductMapper = {
+  toDomain: (row: ProductRow) => Product.restore({ id: row.productId, name: row.name, priceCents: row.priceCents, isActive: row.isActive }),
+  toCreate: (product: Product): Prisma.ProductCreateInput => ({
+    productId: product.id,
+    name: product.name,
+    priceCents: product.priceCents,
+    isActive: product.isActive
+  })
+};
+```
+
+```ts
+// infrastructure/persistence/prisma-product.repository.ts — implementa el puerto
+import PrismaRepository from '../../../../shared/infrastructure/database/prisma.repository';
+import type { PageRequest } from '../../../../shared/application/pagination';
+import type { ProductRepository } from '../../application/ports/product-repository.port';
+import type { Product } from '../../domain/product';
+import { ProductMapper, PRODUCT_COLUMNS } from './product.mapper';
+
+export class PrismaProductRepository extends PrismaRepository implements ProductRepository {
+  async findByName(name: string) {
+    const row = await (await this.db()).product.findFirst({ where: { name }, select: PRODUCT_COLUMNS });
+    return row ? ProductMapper.toDomain(row) : null;
   }
 
-  async findAllPaginated(
-    filters: PrismaRepository.Filters = {},
-    page: PageRequest,
-    searchTerm: string | null = null
-  ): Promise<{ rows: MyEntity[]; count: number }> {
-    const where: Prisma.MyEntityWhereInput = {
-      ...(filters.isActive !== undefined ? { isActive: filters.isActive } : {}),
-      ...this.searchWhere(searchTerm, SEARCH_FIELDS)
-    };
+  async list(filters: { isActive?: boolean }, page: PageRequest, search: string | null) {
+    const where = { ...(filters.isActive !== undefined ? { isActive: filters.isActive } : {}), ...this.searchWhere(search, ['name']) };
     const db = await this.db();
     const [rows, count] = await Promise.all([
-      db.myEntity.findMany({ where, ...this.paginationArgs(page, 'myEntityId') }), // desempate por la PK
-      db.myEntity.count({ where })
+      db.product.findMany({ where, select: PRODUCT_COLUMNS, ...this.paginationArgs(page, 'productId') }), // desempate por la PK
+      db.product.count({ where })
     ]);
-    return { rows, count };
+    return { rows: rows.map(ProductMapper.toDomain), count };
+  }
+
+  async save(product: Product) {
+    await (await this.db()).product.create({ data: ProductMapper.toCreate(product) });
   }
 }
-
-export default new MyRepository();
 ```
 
-> ✅ Extiende `PrismaRepository` y expone **solo** las operaciones que su tabla admite (una bitácora
-> append-only no tiene `update`/`delete`) — SOLID: L/I.
-> ✅ Repositorio nuevo → `node scripts/ts-migration/gen-repository-ports.js` (agrega su `XRepositoryPort`).
-> ✅ Filtros, `include` y `select` viven aquí, detrás de métodos con nombre de negocio:
-> `findByNames(names, { exclude })`, `findPaginatedWithDeviceAndUser(where, pagination)`. El service no
-> arma `where` de Prisma.
-> ✅ PII: se lee y escribe en claro (la extensión de `src/shared/infrastructure/database/prisma.ts` cifra y hashea); para buscar
-> por un campo cifrado se filtra por su hash (`hashValue()` de `src/shared/infrastructure/database/pii-fields`).
-> ✅ Escrituras que deben quedar aunque el flujo se revierta (bitácoras) → `this.independentDb()`.
-> ✅ `paginationArgs(page, pk)` aplica el `sortBy` tal cual (ya lo validó el esquema del request) y desempata
-> por la clave primaria: sin desempate, filas con el mismo valor pueden repetirse o faltar entre páginas.
-> ✅ Los enums de dominio (estados, catálogos cerrados) se leen de `src/shared/infrastructure/database/domain-enums.ts`.
+> ✅ `await this.db()` toma la transacción si hay un `unitOfWork.run()` activo. Escrituras que deben quedar aunque
+> el flujo se revierta (bitácoras) → `this.independentDb()`.
+> ✅ Filtros, `select` e `include` viven acá. La PII se lee y escribe en claro: la extensión de
+> `shared/infrastructure/database/prisma.ts` cifra y hashea; para buscar por un campo cifrado se filtra por su hash.
+> ✅ Un error de un proveedor externo se traduce con `providerFailure(error, mensaje)`
+> (`shared/infrastructure/providers/provider-errors.ts`): no disponible (503, reintentable) o interno (500).
+> ❌ La infraestructura no lanza `AppError` (el guard lo verifica): lanza errores del dominio o técnicos.
 
-## Routes (admin)
+## Presentación — request, response, controller, rutas
+
+Molde: `src/modules/settings/presentation/http/`.
 
 ```ts
+// presentation/http/requests/product.request.ts — valida, tipa y documenta la entrada
+import { z } from '../../../../../shared/presentation/validation/z';
+import { optionalBool, pageQuery, searchQuery, text } from '../../../../../shared/presentation/validation/fields';
+
+export const CreateProductBody = z.object({ name: text('El nombre', { max: 120 }), priceCents: z.number().int() });
+export type CreateProductBody = z.infer<typeof CreateProductBody>;
+
+// Listado: los campos por los que se ordena (un sortBy fuera de la lista es un 422) y los filtros, ya tipados
+export const ProductListQuery = z.object({ ...pageQuery(['createdAt', 'name'], { sortBy: 'createdAt' }), ...searchQuery, isActive: optionalBool('El estado') });
+export type ProductListQuery = z.output<typeof ProductListQuery>;
+```
+
+```ts
+// presentation/http/responses/product.response.ts — describe la salida del caso de uso (y Swagger)
+import { z } from '../../../../../shared/presentation/validation/z';
+
+export const ProductSchema = z.object({ productId: z.uuid(), name: z.string(), priceCents: z.number().int(), isActive: z.boolean() });
+
+// responses/product.response.test.ts — conformidad: la salida del caso de uso cumple el esquema
+// expect(ProductSchema.safeParse(toProductOutput(producto)).error?.issues ?? []).toEqual([]);
+```
+
+```ts
+// presentation/http/product.controller.ts — HTTP ↔ caso de uso, sin reglas
+import type { Request, Response } from 'express';
+import ApiResponse from '../../../../shared/presentation/http/app-response.util';
+import errorMiddlewareModule from '../../../../shared/presentation/http/error.middleware';
+import authUserUtilModule from '../../../../shared/presentation/http/auth-user.util';
+import type { CreateProduct } from '../../application/use-cases/create-product.use-case';
+import type { CreateProductBody } from './requests/product.request';
+
+const { asyncHandler } = errorMiddlewareModule;
+const { requireAuthUser } = authUserUtilModule;
+
+export class ProductController {
+  constructor(private readonly createProduct: CreateProduct) {}
+
+  create = asyncHandler(async (req: Request, res: Response) => {
+    const body = req.body as CreateProductBody; // ya validado por validate({ body }) en la ruta
+    const data = await this.createProduct.execute({ actorId: requireAuthUser(req).userId, ...body });
+    return ApiResponse.success(res, 'Producto creado exitosamente', data, 201);
+  });
+}
+```
+
+```ts
+// presentation/http/product.routes.ts — factory: no importa iam ni crea el controller
 import express from 'express';
-import { validate } from '../../../shared/presentation/validation/validate';
-import { MyListQuery } from '../requests/my.request';
-const router = express.Router();
-import MyController from '../controllers/my.controller';
-import iamModule from '../../iam';
-const { AuthMiddleware, RbacMiddleware } = iamModule;
-import RateLimitMiddleware from '../../../shared/presentation/http/rate-limit.middleware';
-import RequestLockMiddleware from '../../../shared/presentation/http/request-lock.middleware';
-import rbacModule from '../../../shared/domain/constants/rbac';
+import type { Router } from 'express';
+import { validate } from '../../../../shared/presentation/validation/validate';
+import RateLimitMiddleware from '../../../../shared/presentation/http/rate-limit.middleware';
+import RequestLockMiddleware from '../../../../shared/presentation/http/request-lock.middleware';
+import type { RouteGuards } from '../../../../shared/presentation/http/route-guards';
+import rbacModule from '../../../../shared/domain/constants/rbac';
+import { CreateProductBody } from './requests/product.request';
+import type { ProductController } from './product.controller';
+
 const { RBAC_MODULES, RBAC_ACTIONS } = rbacModule;
 
-router.get(
-  '/',
-  AuthMiddleware.authenticate,
-  RbacMiddleware.requirePermission(RBAC_MODULES.ADMIN, RBAC_ACTIONS.READ),
-  RateLimitMiddleware.apiLimiter(),
-  RequestLockMiddleware.forAuthenticatedUsers(),
-  // DualApprovalMiddleware.require('OP_KEY', {...}),  ← SOLO en operaciones sensibles (write)
-  validate({ query: MyListQuery }),
-  MyController.list
-);
-
-export default router;
+export function createProductRouter(controller: ProductController, guards: RouteGuards): Router {
+  const router = express.Router();
+  router.post(
+    '/products',
+    guards.authenticate, // 1. quién llama (antes que RBAC)
+    guards.requirePermission(RBAC_MODULES.PROMOTIONAL_CONTENT, RBAC_ACTIONS.CREATE), // 2. qué puede hacer
+    RateLimitMiddleware.apiLimiter(),
+    RequestLockMiddleware.forAuthenticatedUsers(),
+    validate({ body: CreateProductBody }), // 422 con el detalle por campo
+    controller.create
+  );
+  return router;
+}
 ```
 
-> ✅ En rutas admin siempre usar `RbacMiddleware.requirePermission(RBAC_MODULE, RBAC_ACTION)`.
-> ✅ El módulo y la acción deben calzar semánticamente con lo que hace el endpoint.
-> ❌ No usar `AuthMiddleware.requireRole` en rutas admin nuevas — usar RBAC.
+> ✅ No hay try/catch en el controller: `asyncHandler` lleva el error al manejador global, que traduce los del
+> dominio y los técnicos (`shared/presentation/http/domain-error.mapper.ts`).
+> ✅ `ApiResponse.success` aplana un `{ data, metadata }` (listado): pasar el resultado del caso de uso tal cual.
+> ✅ `requireAuthUser(req)`, `routeParam(req, 'id')` y `adminAuditContext(req, res)`: no leer `req.user` /
+> `req.params` a mano.
 
-## Request (entrada, Zod)
+## Composición — `<módulo>.module.ts` y el container
+
+Molde: `src/modules/settings/settings.module.ts` y `src/main/container.ts`.
 
 ```ts
-// requests/my.request.ts
-import { z } from '../../../shared/presentation/validation/z';
-import { input, optionalBool, optionalInList, pageQuery, searchQuery, text, uuid } from '../../../shared/presentation/validation/fields';
+// catalog.module.ts — el ÚNICO archivo del módulo que conoce todas sus capas
+import type { Router } from 'express';
+import type { AuditTrail } from '../../shared/application/ports/audit-trail.port';
+import type { IdGenerator } from '../../shared/application/ports/id-generator.port';
+import type { RouteGuards } from '../../shared/presentation/http/route-guards';
+import { PrismaProductRepository } from './infrastructure/persistence/prisma-product.repository';
+import { CreateProduct } from './application/use-cases/create-product.use-case';
+import { ProductController } from './presentation/http/product.controller';
+import { createProductRouter } from './presentation/http/product.routes';
 
-// Listado: por qué campos se ordena (pocos, con índice) y su orden por defecto; un sortBy fuera de la lista
-// es un 422. Los filtros, tipados acá (el service no los vuelve a interpretar). z.object: lo no declarado
-// se descarta. Orden fijo → `pagingQuery` (solo page/limit: no se acepta un sortBy que no se aplicaría).
-export const MyListQuery = z.object({
-  ...pageQuery(['createdAt', 'name'], { sortBy: 'createdAt' }),
-  ...searchQuery,
-  status: optionalInList(['draft', 'published'], { message: 'status inválido', hint: 'Indicá draft o published' }),
-  isActive: optionalBool('El estado')
-});
-export type MyListQuery = z.output<typeof MyListQuery>; // lo que recibe el service
-export const MyIdParams = input({ categoryId: uuid('La categoría') });
+export interface CatalogModuleDeps {
+  audit: AuditTrail;
+  ids: IdGenerator;
+  guards: RouteGuards;
+}
 
-// z.object descarta lo que no está declarado (lista blanca)
-export const CreateMyBody = z.object({ name: text('El nombre', { max: 120 }) });
-export type CreateMyBody = z.infer<typeof CreateMyBody>; // lo que recibe el service
-
-// en la ruta: validate({ params: MyIdParams, body: CreateMyBody })
+export function createCatalogModule({ audit, ids, guards }: CatalogModuleDeps) {
+  const products = new PrismaProductRepository();
+  const createProduct = new CreateProduct(products, ids, audit);
+  return {
+    adminRouter: createProductRouter(new ProductController(createProduct), guards),
+    useCases: { createProduct } // lo que otros módulos pueden usar (por un adaptador de src/main/)
+  };
+}
 ```
+
+```ts
+// src/main/container.ts — crea el módulo con lo que viene de afuera
+const catalog = createCatalogModule({ audit, ids: uuidGenerator, guards });
+
+// src/main/app.ts — monta el router
+router.use('/api/v1/core', container.catalog.adminRouter);
+```
+
+> ✅ El módulo no importa ningún otro: lo que necesita (auditoría, avisos, un usuario) llega por `deps`.
+> ✅ Si otro módulo necesita algo de este, lo expone en `useCases` y un adaptador de `src/main/adapters/` lo conecta
+> con el puerto del otro, leyendo el registro de módulos (`module-registry.ts`).
+
+## Tests
+
+Molde: `src/modules/settings/**/*.test.ts` y `tests/doubles/settings.doubles.ts`.
+
+```ts
+// tests/doubles/catalog.doubles.ts — implementación en memoria del puerto
+export class InMemoryProducts implements ProductRepository {
+  constructor(public products: Product[] = []) {}
+  async findByName(name: string) {
+    return this.products.find(p => p.name === name) ?? null;
+  }
+  async list() {
+    return { rows: this.products, count: this.products.length };
+  }
+  async save(product: Product) {
+    this.products.push(product);
+  }
+}
+```
+
+```ts
+// application/use-cases/create-product.use-case.test.ts — sin jest.mock, sin Prisma, sin Express
+it('crea el producto, lo guarda y audita', async () => {
+  const products = new InMemoryProducts();
+  const audit = new RecordingAuditTrail();
+  const result = await new CreateProduct(products, { next: () => 'p-1' }, audit).execute({ actorId: 'admin-1', name: 'Té', priceCents: 1500 });
+
+  expect(result).toEqual({ productId: 'p-1', name: 'Té', priceCents: 1500, isActive: true });
+  expect(audit.entries).toEqual([expect.objectContaining({ action: 'PRODUCT_CREATED', entityId: 'p-1' })]);
+});
+
+it('un nombre repetido es un conflicto', async () => {
+  const products = new InMemoryProducts([Product.create({ id: 'p-0', name: 'Té', priceCents: 100 })]);
+  await expect(new CreateProduct(products, { next: () => 'p-1' }, new RecordingAuditTrail()).execute({ actorId: 'a', name: 'Té', priceCents: 1 })).rejects.toBeInstanceOf(
+    ProductNameTakenError
+  );
+});
+```
+
+| Qué | Cómo |
+|---|---|
+| Dominio | TypeScript puro: `Product.create(...)` y sus reglas, sin dobles |
+| Caso de uso | Dobles en memoria de los puertos (`tests/doubles/`) |
+| Mapper | Fila de ejemplo ↔ entidad |
+| Repositorio | Contra Postgres real (`tests/integration/`) |
+| Respuesta | La salida del caso de uso cumple el esquema Zod |
+| Arquitectura | `tests/unit/guards/clean-architecture.test.ts` (no hay que escribir nada: ya cubre el módulo nuevo) |
 
 ## Modelo y migración
 
 No hay modelos en el código: la tabla se declara en `prisma/schema.prisma` (el cliente y sus tipos se
 generan con `npm run prisma:generate`, que corre solo antes de `dev`, `build`, `typecheck` y `test`) y la
-migración la genera Prisma (detalle en
-[`database.md`](database.md#cambiar-el-esquema)):
+migración la genera Prisma (detalle en [`database.md`](database.md#cambiar-el-esquema)):
 
 ```prisma
-model MyEntity {
-  myId      String   @id(map: "pk_my_table") @default(uuid()) @map("my_id") @db.Uuid
-  name      String   @db.VarChar(100)
-  otherId   String   @map("other_id") @db.Uuid
-  other     Other    @relation(fields: [otherId], references: [otherId], map: "fk_my_table_other_id")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+model Product {
+  productId  String   @id(map: "pk_products") @default(uuid()) @map("product_id") @db.Uuid
+  name       String   @unique(map: "uq_products_name") @db.VarChar(120)
+  priceCents Int      @map("price_cents")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@index([otherId], map: "idx_my_table_other_id")
-  @@map("my_table")
+  @@map("products")
 }
 ```
 
 ```bash
-npm run db:migrate:dev -- --name create-my-table   # genera prisma/migrations/<ts>_create-my-table/migration.sql
+npm run db:migrate:dev -- --name create-products   # genera prisma/migrations/<ts>_create-products/migration.sql
 ```
 
 > ✅ Revisá el `migration.sql` generado antes de commitearlo; triggers, CHECK y comentarios se agregan a mano

@@ -1,4 +1,4 @@
-// shared/validation/z.ts — Zod configurado para el proyecto: mensajes en español.
+// Zod configurado para el proyecto: mensajes en español.
 // Importar SIEMPRE `z` desde acá (no desde 'zod'), así todo esquema hereda la configuración.
 import { z } from 'zod';
 

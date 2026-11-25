@@ -64,6 +64,9 @@ const UNAVAILABLE_MESSAGES = /timeout exceeded when trying to connect|Connection
 
 type DatabaseErrorKind = 'unavailable' | 'transaction-conflict';
 
+/** Cuántos niveles de `cause` se recorren buscando el error de la base (un error envuelto en otro…). */
+const MAX_CAUSE_DEPTH = 3;
+
 interface ErrorShape {
   name?: string;
   code?: unknown;
@@ -74,7 +77,7 @@ interface ErrorShape {
 }
 
 function classify(error: unknown, depth = 0): DatabaseErrorKind | null {
-  if (!error || typeof error !== 'object' || depth > 3) {
+  if (!error || typeof error !== 'object' || depth > MAX_CAUSE_DEPTH) {
     return null;
   }
   const e = error as ErrorShape;

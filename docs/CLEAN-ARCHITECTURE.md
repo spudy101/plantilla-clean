@@ -59,7 +59,8 @@ src/
   shared/                  lo transversal, también en capas
     kernel/                  helpers puros sin dependencias (mensajes de error, concurrencia, interop)
     domain/                  DomainError y sus tipos; constantes de negocio (RBAC, doble aprobación, PII)
-    application/             puertos comunes (Logger, UnitOfWork, AuditTrail, Notifier, KeyValueCache), paginación
+    application/             puertos comunes (Logger, UnitOfWork, AuditTrail, Notifier, KeyValueCache), paginación,
+                             errores técnicos (ServiceUnavailableError)
     infrastructure/          Prisma, unit of work, Redis, S3, callProvider + circuit breaker, JWT, cifrado,
                              logger, contexto de la operación, configuración de entorno
     presentation/            middlewares HTTP, AppError, respuestas, validación Zod, OpenAPI, guardas de ruta
@@ -327,14 +328,28 @@ El dominio lanza errores que dicen **qué regla se rompió**, sin status HTTP:
 // shared/domain/errors/domain-error.ts
 NotFoundError · ConflictError · RuleViolationError · InvalidInputError · ForbiddenError · UnauthorizedError
 TooManyRequestsError   // con los segundos a esperar (sale como Retry-After)
+InternalError          // falta un dato de referencia o una escritura no se completó
 
 // modules/settings/domain/errors.ts
 export class ActiveConfigNotFoundError extends NotFoundError { … }
 ```
 
-`shared/presentation/http/domain-error.mapper.ts` los traduce (not_found → 404, conflict → 409,
-rule_violation → 422, invalid_input → 400, forbidden → 403, unauthorized → 401, rate_limited → 429) y el manejador de errores responde con el mismo
-contrato de siempre (docs/errors-and-retries.md). El mismo caso de uso sirve igual desde un worker o un CLI.
+Lo que no es una regla rota pero el que llama necesita distinguir (para reintentar) es un error **técnico** de la
+aplicación:
+
+```ts
+// shared/application/errors.ts
+ServiceUnavailableError  // algo de lo que dependemos no está: retryAfterSeconds, retryable, incident
+// shared/infrastructure/providers/circuit-breaker.util.ts
+class CircuitOpenError extends ServiceUnavailableError { … }   // el circuito de un proveedor, abierto
+```
+
+`shared/presentation/http/domain-error.mapper.ts` traduce los dos (not_found → 404, conflict → 409,
+rule_violation → 422, invalid_input → 400, forbidden → 403, unauthorized → 401, rate_limited → 429, internal → 500;
+ServiceUnavailableError → 503 con Retry-After) y el manejador de errores responde con el mismo contrato de siempre
+(docs/errors-and-retries.md). `AppError`, el error HTTP, solo existe en `presentation/`: ni el dominio, ni los casos
+de uso, ni la infraestructura (tampoco `shared/infrastructure`: JWT, S3, hCaptcha, el circuit breaker) lo conocen, y el
+guard lo verifica. El mismo caso de uso sirve igual desde un worker o un CLI.
 
 ## Tests
 
@@ -351,9 +366,11 @@ Cada capa se prueba con lo mínimo:
 
 ## Cómo migrar un módulo (receta)
 
+Así se migró cada módulo de la plantilla en capas (sirve para traer código de plantilla-base). Para un módulo o
+feature **nuevo**, las plantillas de cada pieza están en [`implementation-patterns.md`](implementation-patterns.md).
 Usar `settings` como molde. Por cada módulo:
 
-1. **Dominio.** Identificar las entidades y sus reglas (lo que hoy está en `services/` y no es orquestación:
+1. **Dominio.** Identificar las entidades y sus reglas (lo que estaba en `services/` y no era orquestación:
    validaciones, cálculos, transiciones de estado). Crear `domain/` con clases que NO conozcan Prisma.
    Los errores de negocio pasan de `AppError.xxx()` a subclases de `DomainError`.
 2. **Puertos.** Por cada repositorio que usa un servicio, una interfaz en `application/ports/*.port.ts` con
@@ -389,7 +406,7 @@ Usar `settings` como molde. Por cada módulo:
 | `approvals` | ✅ migrado (el gate y la resolución como casos de uso; las reanudaciones de person e iam las registra el container; aprobadores de iam y umbrales de settings por puertos; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
 | `iam` | ✅ migrado (login, MFA, biometría, sesiones, dispositivos, usuarios internos y RBAC como casos de uso; cada detalle de seguridad detrás de un puerto; las guardas de todos; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
 | `index.ts` transitorios y `infrastructure/legacy/` de `catalogs`, `legal`, `audit`, `person`, `notification` y `approvals` | ✅ borrados: lo que otros usan sale de `useCases` y lo conectan los adaptadores de `src/main/` |
-| Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` |
+| Utilidades de `shared/infrastructure` (JWT, S3, hCaptcha, circuit breaker, errores de proveedores) | ✅ lanzan errores del dominio o técnicos (`ServiceUnavailableError`); la presentación los traduce. El guard ya no tiene lista de deuda |
 
 Todos los módulos siguen estas reglas: `clean-architecture.test.ts` falla si alguno vuelve a la estructura en capas
 o tiene un `index.ts`. `solid-architecture.test.ts` quedó con lo que no es de capas: que `shared/` no importe módulos

@@ -1,5 +1,3 @@
-// src/constants/index.ts
-
 /**
  * Application constants
  *

@@ -5,7 +5,7 @@
 > `/api/v1/records`.
 
 Cliente y admin **comparten** login, MFA y perfil (rutas compartidas, montadas bajo `/admin` y `/client`). El portal se
-discrimina por `req.serverContext` (`client`/`admin`). El admin añade `RbacMiddleware.requirePermission` en
+discrimina por `req.serverContext` (`client`/`admin`). El admin añade `guards.requirePermission` en
 sus rutas propias.
 
 ---

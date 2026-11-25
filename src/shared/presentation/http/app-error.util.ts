@@ -1,4 +1,3 @@
-// shared/http/app-error.util.ts
 import { isRetryableStatus } from './retryable';
 
 /**

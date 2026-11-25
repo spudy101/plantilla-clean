@@ -1,4 +1,3 @@
-// src/utils/redis.util.ts
 import { Redis } from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 import loggerUtilModule from '../observability/logger.util';
@@ -35,7 +34,7 @@ class RedisClient {
   }
 
   _registerClientEvents(): void {
-    const client = this.client;
+    const { client } = this;
     if (!client) {
       return;
     }

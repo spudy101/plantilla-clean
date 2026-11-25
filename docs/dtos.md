@@ -33,21 +33,24 @@ const ConsentTypeListDTO = (record: ConsentTypeRow) => ({ id: record.consentType
 > **Esquema siempre. Función DTO solo cuando mapeás una fila de la base o hay datos personales.**
 
 La función existe para elegir campo a campo qué sale de una fila (que no se filtren hashes ni columnas internas) y
-para enmascarar PII. Si el service devuelve una confirmación armada a mano (`{ sessionId, status }`,
+para enmascarar PII. Si el caso de uso devuelve una confirmación armada a mano (`{ sessionId, status }`,
 `{ closedCount }`, `{ userId, deleted: true }`), no hay nada que filtrar: una función `XxxDTO()` solo agregaría una
-vuelta. Ahí basta con el esquema en `responses/` y que el caso de uso lo use para tipar su resultado:
+vuelta. Ahí basta con el tipo de salida en `application/dto/` (el caso de uso no conoce la presentación) y su esquema
+en `responses/`, que la prueba de conformidad mantiene alineados:
 
 ```ts
-// responses/auth-login.response.ts
-export const SessionClosedSchema = z.object({ sessionId: z.uuid(), status: z.literal('closed') });
-export type SessionClosed = z.infer<typeof SessionClosedSchema>;
+// application/dto/auth-login.output.ts
+export interface SessionClosed { sessionId: string; status: 'closed' }
 
 // application/use-cases/sessions.ts (SessionControl)
 return { sessionId, status: 'closed' } satisfies SessionClosed;
+
+// presentation/http/responses/auth-login.response.ts (describe la salida y Swagger)
+export const SessionClosedSchema = z.object({ sessionId: z.uuid(), status: z.literal('closed') });
 ```
 
-`satisfies` hace que TypeScript falle si el service se aparta del esquema, y la documentación sale del mismo
-esquema. Así el contrato existe una sola vez.
+`satisfies` hace que TypeScript falle si el caso de uso se aparta de su tipo, la prueba de conformidad
+(`*.response.test.ts`) falla si el esquema se aparta de lo que devuelve, y la documentación sale del esquema.
 
 ## Componentes
 

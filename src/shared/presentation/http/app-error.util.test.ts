@@ -1,5 +1,3 @@
-// tests/unit/shared/app-error.util.test.ts
-//
 // AppError: clase de error operacional que extiende Error nativo y expone factory methods
 // por código HTTP. Es lógica pura (sin dependencias externas): verificamos statusCode, code,
 // details, isOperational y retryAfter de cada factory, más el contrato del constructor.

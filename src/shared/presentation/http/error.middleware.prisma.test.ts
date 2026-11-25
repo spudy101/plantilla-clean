@@ -1,5 +1,3 @@
-// tests/unit/shared/middlewares/error.middleware.prisma.test.ts
-//
 // Errores de la base que llegan desde Prisma: las restricciones (409 UNIQUE con la etiqueta del campo,
 // 400 FK, 404) y lo temporal (base no disponible → 503, conflicto de transacción → 409 temporal).
 

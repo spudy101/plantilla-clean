@@ -1,4 +1,3 @@
-// src/utils/encryption.util.ts
 // ACTUALIZADO: correcciones de seguridad importantes
 //
 // Cambios:

@@ -1,5 +1,3 @@
-// shared/utils/interop.util.ts
-//
 // `require()` diferido con la misma semántica que `import x from 'm'`.
 //
 // Algunos módulos se cargan dentro de una función y no arriba (para cortar un ciclo de imports o no

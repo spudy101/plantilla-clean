@@ -1,5 +1,3 @@
-// shared/utils/error-message.util.ts
-//
 // Con `useUnknownInCatchVariables` (strict) el error de un `catch` es `unknown`: no se puede leer
 // `.message` sin comprobar el tipo. Este helper centraliza esa comprobación para los logs.
 

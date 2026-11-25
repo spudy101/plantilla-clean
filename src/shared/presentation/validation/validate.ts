@@ -1,4 +1,4 @@
-// shared/validation/validate.ts — middleware de validación de la entrada con esquemas Zod.
+// Middleware de validación de la entrada con esquemas Zod.
 //
 //   router.put('/x', ..., validate({ body: ReplaceXBody }), XController.replace);
 //
@@ -41,7 +41,7 @@ function schemaAt(schema: z.ZodType, path: readonly PropertyKey[]): z.ZodType | 
 function unwrap(schema: z.ZodType | undefined): z.ZodType | undefined {
   let current = schema;
   for (let i = 0; i < 10 && current; i++) {
-    const def = (current as { def?: { type?: string; innerType?: z.ZodType; in?: z.ZodType } }).def;
+    const { def } = current as { def?: { type?: string; innerType?: z.ZodType; in?: z.ZodType } };
     if (def?.innerType) {
       current = def.innerType;
     } else if (def?.type === 'pipe' && def.in) {

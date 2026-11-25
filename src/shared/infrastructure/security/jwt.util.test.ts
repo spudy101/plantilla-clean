@@ -1,5 +1,3 @@
-// tests/unit/shared/jwt.util.test.ts
-//
 // JwtUtil: emisión y verificación de JWT RS256 propios (access, refresh y reto MFA) sobre `jose`.
 // Cripto pura: generamos un par RSA real en el test y mockeamos shared/constants para inyectar las
 // claves PEM y AUTH_ERROR_CODES sin arrancar la validación de .env (que haría process.exit).
@@ -88,7 +86,7 @@ describe('JwtUtil', () => {
         .sign(crypto.createPrivateKey(otra.privateKey));
 
       await expect(JwtUtil.verifyAccessToken(intruso)).rejects.toMatchObject({
-        statusCode: 401,
+        kind: 'unauthorized',
         details: { code: 'TOKEN_INVALID' }
       });
     });
@@ -103,13 +101,13 @@ describe('JwtUtil', () => {
         .sign(crypto.createPrivateKey(mockJwtKeys.privateKey));
 
       await expect(JwtUtil.verifyAccessToken(vencido)).rejects.toMatchObject({
-        statusCode: 401,
+        kind: 'unauthorized',
         details: { code: 'TOKEN_EXPIRED' }
       });
     });
 
     it('verifyAccessToken rechaza un token basura', async () => {
-      await expect(JwtUtil.verifyAccessToken('no-es-un-jwt')).rejects.toMatchObject({ statusCode: 401 });
+      await expect(JwtUtil.verifyAccessToken('no-es-un-jwt')).rejects.toMatchObject({ kind: 'unauthorized' });
     });
   });
 
@@ -127,14 +125,16 @@ describe('JwtUtil', () => {
     it('verifyRefreshToken rechaza un token que no es de tipo refresh (ej: access)', async () => {
       const access = await JwtUtil.generateAccessToken(buildUser(), 'session-uuid-1');
       await expect(JwtUtil.verifyRefreshToken(access)).rejects.toMatchObject({
-        statusCode: 401,
+        kind: 'unauthorized',
+        code: 'UNAUTHORIZED',
+        message: 'Refresh token inválido',
         details: { code: 'REFRESH_TOKEN_INVALID' }
       });
     });
 
     it('verifyRefreshToken rechaza firma inválida con REFRESH_TOKEN_INVALID', async () => {
       await expect(JwtUtil.verifyRefreshToken('basura.no.valida')).rejects.toMatchObject({
-        statusCode: 401,
+        kind: 'unauthorized',
         details: { code: 'REFRESH_TOKEN_INVALID' }
       });
     });
@@ -165,11 +165,11 @@ describe('JwtUtil', () => {
 
     it('verifyMfaChallengeToken rechaza un token de otro tipo (ej: access)', async () => {
       const access = await JwtUtil.generateAccessToken(buildUser(), 'session-uuid-1');
-      await expect(JwtUtil.verifyMfaChallengeToken(access)).rejects.toMatchObject({ statusCode: 401 });
+      await expect(JwtUtil.verifyMfaChallengeToken(access)).rejects.toMatchObject({ kind: 'unauthorized' });
     });
 
     it('verifyMfaChallengeToken rechaza un token basura', async () => {
-      await expect(JwtUtil.verifyMfaChallengeToken('xxx')).rejects.toMatchObject({ statusCode: 401 });
+      await expect(JwtUtil.verifyMfaChallengeToken('xxx')).rejects.toMatchObject({ kind: 'unauthorized' });
     });
   });
 });

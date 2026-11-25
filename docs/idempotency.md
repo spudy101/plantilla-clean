@@ -106,10 +106,10 @@ import { idempotent } from '../../../shared/presentation/http/idempotency/idempo
 
 router.post(
   '/payments',
-  AuthMiddleware.authenticate,            // 1. quién llama (define el scope)
+  guards.authenticate,                    // 1. quién llama (define el scope)
   validate({ body: CreatePaymentBody }),  // 2. validar: un body inválido no gasta la clave
   idempotent(),                           // 3. reclamar la clave
-  PaymentController.create
+  controller.create
 );
 ```
 

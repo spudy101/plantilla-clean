@@ -1,5 +1,3 @@
-// shared/repositories/prisma.repository.ts
-//
 // Base de todos los repositorios. Los services dependen del repositorio, nunca del cliente de Prisma
 // (SOLID: D): el ORM no sale de esta capa.
 //

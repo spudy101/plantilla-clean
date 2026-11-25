@@ -1,5 +1,3 @@
-// shared/database/prisma-extensions.ts
-//
 // Lo que en Sequelize hacían los hooks de los modelos, como extensión de consulta de Prisma
 // (docs/prisma-migration.md, fase 4). Se aplica a TODA operación de modelo del cliente único y de las
 // transacciones del Unit of Work:

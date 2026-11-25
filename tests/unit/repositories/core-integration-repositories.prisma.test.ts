@@ -1,5 +1,3 @@
-// tests/unit/modules/schemas/core/repositories/core-integration-repositories.prisma.test.ts
-//
 // Repositorios del grupo 4 (integraciones y config) sobre Prisma (docs/prisma-migration.md, fase 5):
 // se mockea el cliente único. Incluye los casos que antes cubría orm-encapsulation con Sequelize
 // (resolve/markExpired de la doble aprobación).

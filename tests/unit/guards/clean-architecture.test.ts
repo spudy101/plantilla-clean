@@ -124,34 +124,15 @@ describe('Clean Architecture — regla de dependencias', () => {
       expect(offenders).toEqual([]);
     });
 
-    // DEUDA CONOCIDA (fase 2 de la migración): estas utilidades de infraestructura lanzan AppError, que es
-    // un error HTTP. Lo correcto es que lancen errores técnicos de shared/application (p. ej. "dependencia no
-    // disponible") y que la presentación los traduzca, como ya pasa con los errores del dominio. Las usan los
-    // módulos sin migrar, así que se corrigen junto con ellos. Esta lista solo puede ACHICARSE: si un archivo
-    // deja de violar la regla, el segundo test exige sacarlo de acá.
-    const INFRASTRUCTURE_TO_PRESENTATION_DEBT = [
-      'src/shared/infrastructure/providers/circuit-breaker.util.ts → ../../presentation/http/app-error.util',
-      'src/shared/infrastructure/providers/circuit-breaker.util.ts → ../../presentation/http/retryable',
-      'src/shared/infrastructure/providers/provider-errors.ts → ../../presentation/http/app-error.util',
-      'src/shared/infrastructure/security/hcaptcha.util.ts → ../../presentation/http/app-error.util',
-      'src/shared/infrastructure/security/jwt.util.ts → ../../presentation/http/app-error.util',
-      'src/shared/infrastructure/storage/s3.util.ts → ../../presentation/http/app-error.util',
-      'src/shared/infrastructure/storage/s3.util.ts → ../../presentation/http/error-propagation'
-    ];
-    const infrastructureToPresentation = () =>
-      walk(path.join(SHARED, 'infrastructure')).flatMap(file =>
+    // La infraestructura no lanza errores HTTP (AppError): lanza los de shared/domain o los técnicos de
+    // shared/application, y la presentación los traduce (domain-error.mapper.ts).
+    it('shared/infrastructure no conoce la presentación', () => {
+      const offenders = walk(path.join(SHARED, 'infrastructure')).flatMap(file =>
         importsOf(file)
           .filter(({ target }) => target && within(target, path.join(SHARED, 'presentation')))
           .map(({ spec }) => `${rel(file)} → ${spec}`)
       );
-
-    it('shared/infrastructure no conoce la presentación (salvo la deuda conocida)', () => {
-      expect(infrastructureToPresentation().filter(v => !INFRASTRUCTURE_TO_PRESENTATION_DEBT.includes(v))).toEqual([]);
-    });
-
-    it('la deuda conocida solo se achica: lo que ya se corrigió sale de la lista', () => {
-      const current = infrastructureToPresentation();
-      expect(INFRASTRUCTURE_TO_PRESENTATION_DEBT.filter(v => !current.includes(v))).toEqual([]);
+      expect(offenders).toEqual([]);
     });
   });
 

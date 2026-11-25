@@ -1,5 +1,3 @@
-// tests/unit/shared/encryption.util.test.ts
-//
 // EncryptionUtil: cifrado AES-256-GCM con IV aleatorio (formato self-contained iv:authTag:ciphertext),
 // descifrado con detección de formato legado (AES-256-CBC), HMAC de requests mobile y utilidades hash.
 // Mockeamos shared/constants para no arrancar la validación real de .env (que haría process.exit),

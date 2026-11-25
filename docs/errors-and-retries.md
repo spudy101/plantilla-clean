@@ -81,15 +81,19 @@ CORS expone `Retry-After`, `RateLimit-*` e `Idempotent-Replayed`: sin eso el nav
 
 ## Al escribir código
 
-- **Un error temporal se declara**: `AppError.serviceUnavailable(msg, details, retryAfter)`,
-  `AppError.tooManyRequests(msg, details, retryAfter)`, `AppError.requestInProgress(msg, retryAfter)`. Si un
-  503 no es temporal para el cliente (p. ej. falta configuración), `err.retryable = false`.
-- **Un `catch` no envuelve en 500 lo que ya tiene respuesta**: `if (shouldPropagate(error)) throw error;`
-  (`shared/presentation/http/error-propagation.ts`) deja pasar cualquier `AppError` y los errores temporales de la base.
-  El helper anterior (`isOperationalError`) solo dejaba pasar los AppError 5xx: un 404 lanzado adentro del
-  `try` salía como 500.
+- **Un error temporal se declara** con su tipo, sin HTTP: `new ServiceUnavailableError(msg, { retryAfterSeconds })`
+  (`shared/application/errors.ts`) cuando algo de lo que dependemos no está, y `TooManyRequestsError` (del dominio)
+  cuando hay que esperar. Si un 503 no es temporal para el cliente (p. ej. falta configuración),
+  `{ retryable: false }`. La presentación los traduce (`shared/presentation/http/domain-error.mapper.ts`); solo ella
+  usa `AppError` (`AppError.requestInProgress(msg, retryAfter)` es del request lock, que ya es HTTP).
+- **Un `catch` no envuelve en 500 lo que ya tiene respuesta**: fuera de la presentación,
+  `if (isExpectedError(error)) throw error;` (`shared/application/errors.ts`: errores del dominio y técnicos); en la
+  presentación, `shouldPropagate(error)` (`shared/presentation/http/error-propagation.ts`), que además deja pasar
+  cualquier `AppError` y los errores temporales de la base. El helper anterior (`isOperationalError`) solo dejaba
+  pasar los AppError 5xx: un 404 lanzado adentro del `try` salía como 500.
 - **Cuando falla una llamada a un proveedor**: `throw providerFailure(error, 'Error al subir el documento')`
-  (`shared/infrastructure/providers/provider-errors.ts`) responde 503 temporal si el proveedor estaba mal y 500 si no.
+  (`shared/infrastructure/providers/provider-errors.ts`): `ServiceUnavailableError` (503 temporal) si el proveedor
+  estaba mal, `InternalError` (500) si no.
 
 Todo esto está probado contra Postgres real en `tests/integration/database-errors.test.ts` (base
 inalcanzable, pool agotado, deadlock resuelto por el Unit of Work) y por HTTP en

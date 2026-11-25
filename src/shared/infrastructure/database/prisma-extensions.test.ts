@@ -1,5 +1,3 @@
-// tests/unit/shared/database/prisma-extensions.test.ts
-//
 // Transformaciones de la extensión de Prisma (fase 4 de docs/prisma-migration.md), sin base: cifrado y
 // hash al escribir (también anidado), descifrado al leer (también en include), guarda de `where` sobre
 // campos cifrados y estampado de origen de sesión. EncryptionUtil y HashUtil son los reales (claves

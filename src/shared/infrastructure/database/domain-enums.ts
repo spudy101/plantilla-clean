@@ -1,5 +1,3 @@
-// shared/constants/domain-enums.ts
-//
 // Enums de dominio (estados, catálogos cerrados). La fuente de verdad es el schema de Prisma
 // (`enum GlobalNotificationStatus`, `enum ApprovalRequestStatus`…, que en la base son tipos ENUM):
 // acá se reexponen con las claves UPPER_SNAKE_CASE que usan los services, tomando los valores del

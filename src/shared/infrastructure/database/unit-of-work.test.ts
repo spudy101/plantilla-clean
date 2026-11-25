@@ -1,5 +1,3 @@
-// tests/unit/shared/database/unit-of-work.test.ts
-//
 // Unit of Work (SOLID: D): los services piden unidades de trabajo a este puerto y no al ORM. run() abre
 // una transacción interactiva de Prisma y la publica en transaction-context para los repositorios.
 

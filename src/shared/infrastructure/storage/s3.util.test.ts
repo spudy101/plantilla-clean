@@ -1,5 +1,6 @@
-// S3Util: qué responde cuando algo falla. Regresiones: un 4xx lanzado dentro del try (key vacía, archivo
-// sin contenido) terminaba como 500, y una falla transitoria de S3 también (ahora 503 temporal).
+// S3Util: qué error lanza cuando algo falla (la presentación lo traduce: domain-error.mapper.test.ts). Regresiones:
+// un error de entrada lanzado dentro del try (key vacía, archivo sin contenido) terminaba como interno, y una falla
+// transitoria de S3 también (ahora "no disponible", reintentable).
 
 jest.mock('../providers/provider-call.util', () => ({ callProvider: jest.fn(), AWS_CLIENT_OPTIONS: {} }));
 jest.mock('../observability/logger.util', () => ({
@@ -14,6 +15,7 @@ import { mocked } from 'tests/helpers/mock';
 import providerCallModule from '../providers/provider-call.util';
 const { callProvider } = mocked(providerCallModule);
 import S3Util from './s3.util';
+import { ServiceUnavailableError } from '../../application/errors';
 
 const awsError = (name: string, httpStatusCode: number) =>
   Object.assign(new Error(name), { name, $metadata: { httpStatusCode } });
@@ -21,28 +23,30 @@ const awsError = (name: string, httpStatusCode: number) =>
 describe('S3Util — errores', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('key vacía → 400 (no 500)', async () => {
-    await expect(S3Util.deleteFile('')).rejects.toMatchObject({ statusCode: 400 });
-    await expect(S3Util.deletePublicFile('')).rejects.toMatchObject({ statusCode: 400 });
+  it('key vacía → dato inválido (400, no 500)', async () => {
+    await expect(S3Util.deleteFile('')).rejects.toMatchObject({ kind: 'invalid_input', code: 'BAD_REQUEST', message: 'S3 key requerida' });
+    await expect(S3Util.deletePublicFile('')).rejects.toMatchObject({ kind: 'invalid_input' });
   });
 
-  it('descarga sin contenido → 404 (no 500)', async () => {
+  it('descarga sin contenido → no encontrado (404, no 500)', async () => {
     callProvider.mockResolvedValue({ Body: undefined });
-    await expect(S3Util.downloadDocument('k')).rejects.toMatchObject({ statusCode: 404 });
+    await expect(S3Util.downloadDocument('k')).rejects.toMatchObject({ kind: 'not_found', code: 'NOT_FOUND', message: 'Archivo no encontrado en S3' });
   });
 
-  it('NoSuchKey → 404', async () => {
+  it('NoSuchKey → no encontrado', async () => {
     callProvider.mockRejectedValue(awsError('NoSuchKey', 404));
-    await expect(S3Util.deleteFile('k')).rejects.toMatchObject({ statusCode: 404 });
+    await expect(S3Util.deleteFile('k')).rejects.toMatchObject({ kind: 'not_found', message: 'Archivo no encontrado' });
   });
 
-  it('S3 caído (5xx tras los reintentos) → 503 temporal', async () => {
+  it('S3 caído (5xx tras los reintentos) → no disponible, reintentable (503)', async () => {
     callProvider.mockRejectedValue(awsError('InternalError', 500));
-    await expect(S3Util.uploadDocument(Buffer.from('x'), 'a.pdf')).rejects.toMatchObject({ statusCode: 503, retryable: true });
+    const error = await S3Util.uploadDocument(Buffer.from('x'), 'a.pdf').catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ServiceUnavailableError);
+    expect(error).toMatchObject({ message: 'Error al subir el documento', retryable: true });
   });
 
-  it('S3 rechazó la petición (403) → 500 permanente', async () => {
+  it('S3 rechazó la petición (403) → error interno (500, permanente)', async () => {
     callProvider.mockRejectedValue(awsError('AccessDenied', 403));
-    await expect(S3Util.uploadDocument(Buffer.from('x'), 'a.pdf')).rejects.toMatchObject({ statusCode: 500, retryable: false });
+    await expect(S3Util.uploadDocument(Buffer.from('x'), 'a.pdf')).rejects.toMatchObject({ kind: 'internal', code: 'INTERNAL_ERROR' });
   });
 });

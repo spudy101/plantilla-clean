@@ -1,4 +1,4 @@
-// shared/validation/output.ts — piezas para los esquemas de SALIDA (responses/): describen lo que devuelve la
+// Piezas para los esquemas de SALIDA (responses/): describen lo que devuelve la
 // API para tipar y documentar (no validan la entrada).
 import { z } from './z';
 

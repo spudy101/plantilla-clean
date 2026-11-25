@@ -1,4 +1,4 @@
-// shared/validation/fields.ts — campos genéricos reutilizables (sin negocio), con los mismos mensajes y
+// Campos genéricos reutilizables (sin negocio), con los mismos mensajes y
 // pistas que tenía BaseValidator. Los campos de un dominio (documento, nombres, contraseña…) viven en su
 // módulo. Los de query/params aceptan el valor como texto y lo convierten (número, fecha, booleano).
 import { z, withHint } from './z';

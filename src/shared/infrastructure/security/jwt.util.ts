@@ -1,5 +1,3 @@
-// shared/utils/jwt.util.ts
-//
 // === RF-AUTH-02: Login, Gestión de Sesión Segura y Recuperación de Contraseña ===
 //
 // Generación y verificación de JWT RS256 propios.
@@ -28,7 +26,7 @@ import cryptoModule from 'node:crypto';
 const { createPrivateKey, createPublicKey } = cryptoModule;
 import type { KeyObject } from 'node:crypto';
 import type { JWTPayload } from 'jose';
-import AppError from '../../presentation/http/app-error.util';
+import { UnauthorizedError } from '../../domain/errors/domain-error';
 import loggerUtilModule from '../observability/logger.util';
 const { logger } = loggerUtilModule;
 import constantsModule from '../config';
@@ -81,9 +79,11 @@ interface RefreshTokenClaims extends JWTPayload {
   type: 'refresh';
 }
 
-/** Error de jose / AppError: solo se leen estos campos para decidir la respuesta. */
-const errorInfo = (error: unknown): { code?: string; isOperational?: boolean } =>
-  error && typeof error === 'object' ? (error as { code?: string; isOperational?: boolean }) : {};
+/** ¿jose rechazó el token por vencido? (el resto de los rechazos son firma, formato o algoritmo inválidos) */
+const isExpired = (error: unknown): boolean =>
+  Boolean(error && typeof error === 'object' && (error as { code?: unknown }).code === 'ERR_JWT_EXPIRED');
+
+const unauthorized = (message: string, code?: string) => new UnauthorizedError(message, 'UNAUTHORIZED', code ? { code } : null);
 
 class JwtUtil {
   private static __privateKey: KeyObject | undefined;
@@ -179,29 +179,31 @@ class JwtUtil {
   // ============================================================
 
   /**
+   * Verifica la firma RS256 propia y la expiración. Si jose lo rechaza, lo loguea y lanza `rejection(expired)`.
+   */
+  private static async _verifySignature(token: string, logMessage: string, rejection: (expired: boolean) => Error): Promise<JWTPayload> {
+    try {
+      const { payload } = await jwtVerify(token, JwtUtil._publicKey, { algorithms: [ALGORITHM] });
+      return payload;
+    } catch (error) {
+      logger.warn(logMessage, { error: errorMessage(error) });
+      throw rejection(isExpired(error));
+    }
+  }
+
+  /**
    * Verifica un access token RS256 y retorna el payload decodificado.
-   * Lanza AppError.unauthorized si la firma es inválida o el token expiró.
-   *
-   * @param {string} token
-   * @returns {Promise<Object>} payload con userId, personId, roleId, etc.
+   * Lanza UnauthorizedError (401) si la firma es inválida o el token expiró.
    */
   // [RF-AUTH-02] | CA-01, CA-02 | Verifica firma RS256; usado en middleware para validar blacklist
   static async verifyAccessToken(token: string): Promise<AccessTokenClaims> {
-    try {
-      const { payload } = await jwtVerify(token, JwtUtil._publicKey, {
-        algorithms: [ALGORITHM]
-      });
-      // La firma RS256 propia ya se verificó: las claims son las que emitió generateAccessToken.
-      return payload as AccessTokenClaims;
-    } catch (error) {
-      logger.warn('JWT access token inválido', { error: errorMessage(error) });
-      if (errorInfo(error).code === 'ERR_JWT_EXPIRED') {
-        // Único 401 recuperable: el front debe renovar con /auth/refresh y reintentar,
-        // no desloguear. Ver AUTH_ERROR_CODES en shared/constants.
-        throw AppError.unauthorized('Token expirado', { code: AUTH_ERROR_CODES.TOKEN_EXPIRED });
-      }
-      throw AppError.unauthorized('Token inválido', { code: AUTH_ERROR_CODES.TOKEN_INVALID });
-    }
+    const payload = await JwtUtil._verifySignature(token, 'JWT access token inválido', expired =>
+      // TOKEN_EXPIRED es el único 401 recuperable: el front debe renovar con /auth/refresh y reintentar, no
+      // desloguear. Ver shared/domain/constants/auth-error-codes.
+      expired ? unauthorized('Token expirado', AUTH_ERROR_CODES.TOKEN_EXPIRED) : unauthorized('Token inválido', AUTH_ERROR_CODES.TOKEN_INVALID)
+    );
+    // La firma RS256 propia ya se verificó: las claims son las que emitió generateAccessToken.
+    return payload as AccessTokenClaims;
   }
 
   /**
@@ -228,45 +230,28 @@ class JwtUtil {
 
   /**
    * Verifica un refresh token RS256 y retorna el payload decodificado.
-   * Lanza AppError.unauthorized si la firma es inválida o el token expiró.
-   *
-   * @param {string} token
-   * @returns {Promise<Object>} payload con userId, jti, type
+   * Lanza UnauthorizedError (401, REFRESH_TOKEN_INVALID) si la firma es inválida, expiró o no es un refresh.
    */
   // [RF-AUTH-02] | CA-01 | Verifica tipo 'refresh' y firma RS256
   static async verifyRefreshToken(token: string): Promise<RefreshTokenClaims> {
-    try {
-      const { payload } = await jwtVerify(token, JwtUtil._publicKey, {
-        algorithms: [ALGORITHM]
-      });
+    const invalid = () => unauthorized('Refresh token inválido', AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID);
+    const payload = await JwtUtil._verifySignature(token, 'JWT refresh token inválido', expired =>
+      expired ? unauthorized('Refresh token expirado. Por favor inicia sesión nuevamente.', AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID) : invalid()
+    );
 
-      if (payload.type !== 'refresh') {
-        throw AppError.unauthorized('Token de tipo incorrecto', { code: AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID });
-      }
-      // Firma válida pero sin los claims que usa la rotación → inválido (no seguir con undefined)
-      if (typeof payload.userId !== 'string' || typeof payload.jti !== 'string') {
-        throw AppError.unauthorized('Refresh token inválido', { code: AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID });
-      }
-
-      return {
-        ...payload,
-        userId: payload.userId,
-        jti: payload.jti,
-        sessionId: typeof payload.sessionId === 'string' ? payload.sessionId : null,
-        type: 'refresh'
-      };
-    } catch (error) {
-      if (errorInfo(error).isOperational) {
-        throw error;
-      }
-      logger.warn('JWT refresh token inválido', { error: errorMessage(error) });
-      if (errorInfo(error).code === 'ERR_JWT_EXPIRED') {
-        throw AppError.unauthorized('Refresh token expirado. Por favor inicia sesión nuevamente.', {
-          code: AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID
-        });
-      }
-      throw AppError.unauthorized('Refresh token inválido', { code: AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID });
+    // Firma válida pero no es un refresh, o le faltan los claims que usa la rotación → inválido (no seguir con undefined)
+    if (payload.type !== 'refresh' || typeof payload.userId !== 'string' || typeof payload.jti !== 'string') {
+      logger.warn('JWT refresh token inválido', { error: 'tipo o claims incorrectos' });
+      throw invalid();
     }
+
+    return {
+      ...payload,
+      userId: payload.userId,
+      jti: payload.jti,
+      sessionId: typeof payload.sessionId === 'string' ? payload.sessionId : null,
+      type: 'refresh'
+    };
   }
 
   // ============================================================
@@ -295,31 +280,19 @@ class JwtUtil {
   }
 
   /**
-   * Verifica el token de reto MFA. Lanza 401 si la firma es inválida, expiró o el
-   * tipo no corresponde. Retorna el payload con `userId`.
-   *
-   * @param {string} token
-   * @returns {Promise<{ userId: string }>}
+   * Verifica el token de reto MFA. Lanza UnauthorizedError (401) si la firma es inválida, expiró o el tipo no
+   * corresponde. Retorna el payload con `userId`.
    */
   static async verifyMfaChallengeToken(token: string): Promise<JWTPayload> {
-    try {
-      const { payload } = await jwtVerify(token, JwtUtil._publicKey, {
-        algorithms: [ALGORITHM]
-      });
-      if (payload.type !== MFA_CHALLENGE_TYPE) {
-        throw AppError.unauthorized('Token de reto MFA inválido');
-      }
-      return payload;
-    } catch (error) {
-      if (errorInfo(error).isOperational) {
-        throw error;
-      }
-      logger.warn('JWT reto MFA inválido', { error: errorMessage(error) });
-      if (errorInfo(error).code === 'ERR_JWT_EXPIRED') {
-        throw AppError.unauthorized('El reto MFA expiró. Vuelve a iniciar sesión.');
-      }
-      throw AppError.unauthorized('Token de reto MFA inválido');
+    const invalid = () => unauthorized('Token de reto MFA inválido');
+    const payload = await JwtUtil._verifySignature(token, 'JWT reto MFA inválido', expired =>
+      expired ? unauthorized('El reto MFA expiró. Vuelve a iniciar sesión.') : invalid()
+    );
+    if (payload.type !== MFA_CHALLENGE_TYPE) {
+      logger.warn('JWT reto MFA inválido', { error: 'tipo incorrecto' });
+      throw invalid();
     }
+    return payload;
   }
 }
 

@@ -1,6 +1,4 @@
 import type { Request, Response, Router } from 'express';
-// config/swagger.admin.ts
-
 import swaggerUi from 'swagger-ui-express';
 import getAllSchemas from './schemas';
 import constantsModule from '../../shared/infrastructure/config';

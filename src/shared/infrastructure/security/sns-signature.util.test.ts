@@ -1,5 +1,3 @@
-// tests/unit/shared/sns-signature.util.test.ts
-//
 // verifySnsSignature / confirmSnsSubscription: verificación de la firma canónica de AWS SNS
 // (webhook de bounces de SES) con guard anti-SSRF del host y caché de certificado.
 //

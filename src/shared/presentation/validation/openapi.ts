@@ -1,4 +1,4 @@
-// shared/validation/openapi.ts — los mismos esquemas Zod que validan (requests/) y que describen las
+// Los mismos esquemas Zod que validan (requests/) y que describen las
 // respuestas (responses/), convertidos a OpenAPI 3.0 para Swagger. La documentación de los datos no se
 // escribe a mano: no puede desalinearse de lo que la API valida y devuelve.
 import { z } from './z';

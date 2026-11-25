@@ -1,5 +1,3 @@
-// tests/unit/shared/hash.util.test.ts
-//
 // HashUtil: HMAC-SHA256 determinístico con PEPPER para poblar columnas _hash y buscar campos
 // cifrados. Cripto pura, sin BD. El PEPPER se lee de process.env.HASH_PEPPER al CARGAR el módulo,
 // así que lo fijamos antes de requerirlo (y probamos la ausencia con isolateModules).

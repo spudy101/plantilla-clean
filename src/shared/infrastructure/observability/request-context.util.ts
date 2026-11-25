@@ -1,5 +1,3 @@
-// shared/observability/request-context.util.ts
-//
 // Contexto de la operación en curso (petición HTTP, webhook, ciclo de worker o tarea de sistema) en
 // AsyncLocalStorage: logger, auditoría y llamadas externas lo leen solos, sin pasarlo por parámetro.
 // Lo abre SIEMPRE runOperation / operationMiddleware (shared/observability/operation.ts).
@@ -31,6 +29,9 @@ export interface RequestContext {
 
 const storage = new AsyncLocalStorage<RequestContext>();
 
+/** Largo del sufijo aleatorio del correlationId de lo que corre fuera de toda operación. */
+const INTERNAL_ID_LENGTH = 8;
+
 export default {
   /** Ejecuta fn con ctx como operación en curso (solo lo usa operation.ts). */
   run: <T>(context: RequestContext, fn: () => T): T => storage.run(context, fn),
@@ -57,7 +58,7 @@ export default {
    */
   getSafe: (): RequestContext =>
     storage.getStore() ?? {
-      correlationId: `internal-${crypto.randomUUID().slice(0, 8)}`,
+      correlationId: `internal-${crypto.randomUUID().slice(0, INTERNAL_ID_LENGTH)}`,
       source: 'unknown',
       name: 'unknown',
       ip: 'internal',

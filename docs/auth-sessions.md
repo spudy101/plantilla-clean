@@ -92,7 +92,7 @@ usuarios que se consumían el cupo entre sí y se quedaban sin poder renovar.
 | `RequestLockMiddleware.forRefresh()`   | `sessionId` hasheado                    | dedupe `TTL.REQUEST_LOCK_PUBLIC` (3 s)   |
 
 El `sessionId` sale de `JwtUtil.decodeUnverified(token)` — decodifica **sin verificar firma**, solo
-para agrupar. Nunca usar ese payload para autorizar: el token se valida en el service.
+para agrupar. Nunca usar ese payload para autorizar: el token se valida en el caso de uso (`RefreshTokens`).
 
 > ❌ **No usar `authLimiter()` ni `forPublicEndpoints()` en el refresh.** Su `keyGenerator` cae a
 > `ip:` cuando el body no trae `email`/`username` — y el refresh manda el token por cookie, jamás en

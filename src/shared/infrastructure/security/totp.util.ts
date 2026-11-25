@@ -1,5 +1,3 @@
-// shared/utils/totp.util.ts
-//
 // TOTP propio (RFC 6238) — reemplazo del MFA que antes delegábamos en Cognito.
 //
 // Envuelve otplib (`authenticator`): secreto base32 compatible con Google

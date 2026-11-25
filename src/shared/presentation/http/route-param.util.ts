@@ -1,5 +1,3 @@
-// shared/utils/route-param.util.ts
-//
 // Parámetro de ruta (/users/:userId) como string. Express lo garantiza cuando la ruta matchea, pero
 // el tipo es `string | undefined` (índice de ParamsDictionary). Si falta, la ruta está mal
 // declarada: 400 explícito en vez de seguir con undefined hasta la BD.

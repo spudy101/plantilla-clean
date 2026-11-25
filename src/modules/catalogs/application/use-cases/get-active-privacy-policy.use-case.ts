@@ -9,7 +9,9 @@ import { ActivePrivacyPolicyNotFoundError } from '../../domain/errors';
 import { toActivePrivacyPolicyOutput, type ActivePrivacyPolicyOutput } from '../dto/catalog.output';
 
 export const PRIVACY_POLICY_CACHE_KEY = 'cache:privacy-policy:active';
-export const PRIVACY_POLICY_CACHE_TTL_SECONDS = 12 * 60 * 60;
+/** La política vigente cambia poco y legal invalida la caché al publicar una versión nueva. */
+const PRIVACY_POLICY_CACHE_HOURS = 12;
+export const PRIVACY_POLICY_CACHE_TTL_SECONDS = PRIVACY_POLICY_CACHE_HOURS * 60 * 60;
 
 export class GetActivePrivacyPolicy {
   constructor(

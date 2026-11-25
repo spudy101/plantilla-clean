@@ -1,5 +1,3 @@
-// shared/utils/hcaptcha.util.ts
-//
 // Utilidad para verificar tokens CAPTCHA usando hCaptcha.
 //
 // hCaptcha es el CAPTCHA más adoptado en el sector fintech por:
@@ -25,7 +23,8 @@ import loggerUtilModule from '../observability/logger.util';
 const { logger } = loggerUtilModule;
 import constantsModule from '../config';
 const { hcaptcha } = constantsModule;
-import AppError from '../../presentation/http/app-error.util';
+import { InvalidInputError } from '../../domain/errors/domain-error';
+import { isExpectedError, ServiceUnavailableError } from '../../application/errors';
 import errorMessageModule from '../../kernel/error-message.util';
 
 const { errorMessage } = errorMessageModule;
@@ -53,25 +52,23 @@ class HCaptchaUtil {
    *
    * @example
    * const ok = await HCaptchaUtil.verify(req.body.captchaToken, req.ip);
-   * if (!ok) throw AppError.badRequest('Verificación CAPTCHA fallida');
+   * (si no es válido lanza InvalidInputError: la presentación responde 400)
    */
   static async verify(token: string | null | undefined, ip: string | null = null): Promise<true> {
     const { secretKey } = hcaptcha;
 
-    // [RF-LP-04] | CA-04 | Fail-closed: sin clave configurada se lanza 503, no se permite el envío
+    // [RF-LP-04] | CA-04 | Fail-closed: sin clave configurada no se permite el envío (503)
     if (!secretKey) {
       logger.warn('[HCaptcha] HCAPTCHA_SECRET_KEY no configurada — no se puede verificar el CAPTCHA');
-      const err = AppError.serviceUnavailable(
-        'Verificación CAPTCHA no disponible: falta configuración del servidor (HCAPTCHA_SECRET_KEY)'
-      );
       // Reintentar no lo arregla hasta que se configure la clave: no es temporal para el cliente
-      err.retryable = false;
-      throw err;
+      throw new ServiceUnavailableError('Verificación CAPTCHA no disponible: falta configuración del servidor (HCAPTCHA_SECRET_KEY)', {
+        retryable: false
+      });
     }
 
     if (!token) {
       logger.info('[HCaptcha] Token vacío recibido');
-      throw AppError.badRequest('Verificación CAPTCHA fallida: token no proporcionado');
+      throw new InvalidInputError('Verificación CAPTCHA fallida: token no proporcionado', 'BAD_REQUEST');
     }
 
     let data: HCaptchaVerifyResponse;
@@ -90,27 +87,27 @@ class HCaptchaUtil {
 
       if (!response.ok) {
         logger.warn('[HCaptcha] Error HTTP de la API', { status: response.status });
-        throw AppError.serviceUnavailable('No se pudo verificar el CAPTCHA con el proveedor');
+        throw new ServiceUnavailableError('No se pudo verificar el CAPTCHA con el proveedor');
       }
 
       data = (await response.json()) as HCaptchaVerifyResponse;
     } catch (error) {
-      // [RF-LP-04] | CA-04 | Fail-closed: ante fallo de red o API se lanza 503, no se permite el envío
-      // fail-closed: si el AppError ya viene tipado (ej. response.ok=false), se re-lanza;
-      // cualquier otro fallo (timeout, red caída, JSON inválido) se traduce a 503.
-      if (error instanceof AppError) {
+      // [RF-LP-04] | CA-04 | Fail-closed: ante fallo de red o API no se permite el envío (503).
+      // Si el error ya viene tipado (ej. response.ok=false), se re-lanza; cualquier otro fallo (timeout, red
+      // caída, JSON inválido) se traduce a no disponible.
+      if (isExpectedError(error)) {
         throw error;
       }
       logger.warn('[HCaptcha] Error al verificar token — fail-closed', { error: errorMessage(error) });
-      throw AppError.serviceUnavailable('No se pudo verificar el CAPTCHA. Intente de nuevo.');
+      throw new ServiceUnavailableError('No se pudo verificar el CAPTCHA. Intente de nuevo.');
     }
 
-    // [RF-LP-04] | CA-04 | Token inválido según hCaptcha — lanza 400
+    // [RF-LP-04] | CA-04 | Token inválido según hCaptcha (400)
     if (!data.success) {
       logger.warn('[HCaptcha] Token inválido', {
         errorCodes: data['error-codes'] || []
       });
-      throw AppError.badRequest('Verificación CAPTCHA fallida. Por favor intente de nuevo.');
+      throw new InvalidInputError('Verificación CAPTCHA fallida. Por favor intente de nuevo.', 'BAD_REQUEST');
     }
 
     logger.debug('[HCaptcha] Token verificado correctamente', {

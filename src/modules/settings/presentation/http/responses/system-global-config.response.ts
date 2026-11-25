@@ -5,14 +5,17 @@ import { z } from '../../../../../shared/presentation/validation/z';
 
 const int = (description: string, example: number) => z.number().int().nullable().meta({ description, example });
 
+/** Los valores de ejemplo de Swagger (los defaults de la resiliencia). */
+const EXAMPLE = { timeoutMs: 30000, maxRetries: 3, failureThreshold: 5, recoveryTimeMs: 60000, failuresTtlS: 300 };
+
 export const IntegrationResilience = z
   .object({
-    timeoutMs: int('Timeout de cada intento de una llamada a un proveedor externo (ms). Rango: 1000-120000.', 30000),
-    maxRetries: int('Intentos por llamada a un proveedor externo (solo ante errores transitorios). Rango: 0-10.', 3),
+    timeoutMs: int('Timeout de cada intento de una llamada a un proveedor externo (ms). Rango: 1000-120000.', EXAMPLE.timeoutMs),
+    maxRetries: int('Intentos por llamada a un proveedor externo (solo ante errores transitorios). Rango: 0-10.', EXAMPLE.maxRetries),
     circuitBreaker: z.object({
-      failureThreshold: int('Fallos para abrir el breaker. Rango: 1-100.', 5),
-      recoveryTimeMs: int('Tiempo antes de intentar recuperar tras abrir (ms). Rango: 1000-600000.', 60000),
-      failuresTtlS: int('TTL de la ventana de conteo de fallos (s). Rango: 10-3600.', 300)
+      failureThreshold: int('Fallos para abrir el breaker. Rango: 1-100.', EXAMPLE.failureThreshold),
+      recoveryTimeMs: int('Tiempo antes de intentar recuperar tras abrir (ms). Rango: 1000-600000.', EXAMPLE.recoveryTimeMs),
+      failuresTtlS: int('TTL de la ventana de conteo de fallos (s). Rango: 10-3600.', EXAMPLE.failuresTtlS)
     })
   })
   .partial()

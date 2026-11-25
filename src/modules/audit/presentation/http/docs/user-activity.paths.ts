@@ -1,5 +1,3 @@
-// config/swagger/modules/client/records/audit/user-activity.paths.ts
-
 import commonResponses from '../../../../../shared/presentation/openapi/common.responses';
 import { toOpenApi, toParameters } from '../../../../../shared/presentation/validation/openapi';
 import { RecentActivityQuery } from '../requests/audit.request';

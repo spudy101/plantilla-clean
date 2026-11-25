@@ -1,5 +1,3 @@
-// tests/unit/shared/masking.util.test.ts
-//
 // MaskingUtil: enmascaramiento de PII (documento, teléfono, correo, cuenta) + redactor profundo
 // por key sobre JSONB propios. Cripto/lógica pura: no toca red ni BD, así que usamos el catálogo
 // real de pii-fields (valores deterministas) sin mocks.

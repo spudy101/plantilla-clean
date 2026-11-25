@@ -1,5 +1,3 @@
-// shared/utils/concurrency.util.ts
-//
 // Ejecuta `task` sobre cada elemento con a lo sumo `limit` en curso a la vez (p. ej. envíos a un
 // proveedor: en paralelo para no ir de a uno, acotado para no saturarlo ni agotar el pool de la base).
 // `task` no debería lanzar; si lanza, el error se propaga cuando terminan las que ya estaban en curso.

@@ -504,12 +504,12 @@ module.exports = {
     },
 
     // -------------------------------------------------------------------------
-    // Archivos de configuración de BD y constants/config.js
-    // Se permite console porque estos archivos se ejecutan durante el arranque,
-    // antes de que Winston esté inicializado (el problema que arreglamos hoy).
+    // La validación de la configuración (shared/infrastructure/config/config.ts)
+    // Se permite console porque corre durante el arranque, antes de que exista el
+    // logger (Winston), que a su vez se configura con ella.
     // -------------------------------------------------------------------------
     {
-      files: ['**/config/database.{js,ts}', '**/constants/config.{js,ts}'],
+      files: ['**/shared/infrastructure/config/config.ts'],
       rules: {
         'no-console': 'off'
       }
@@ -585,6 +585,21 @@ module.exports = {
         ],
         // `import type { X } from 'm'` junto a `import { y } from 'm'` es el patrón normal en TS
         'no-duplicate-imports': 'off'
+      }
+    },
+    // Los archivos de configuración y la documentación OpenAPI, también para la versión TS de la regla (el override
+    // de **/*.ts de arriba la vuelve a activar): ahí es donde se nombran los valores (config) o son ejemplos de
+    // documentación (Swagger), no lógica.
+    {
+      files: [
+        '**/shared/infrastructure/config/**/*.ts',
+        'prisma.config.ts',
+        '**/shared/infrastructure/database/database-url.ts',
+        '**/swagger/**/*.ts',
+        '**/docs/*.paths.ts'
+      ],
+      rules: {
+        '@typescript-eslint/no-magic-numbers': 'off'
       }
     },
     {

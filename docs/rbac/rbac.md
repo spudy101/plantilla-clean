@@ -54,56 +54,63 @@ Formato por rol:
 > **Por qué la matriz base vive en código y no en BD:** los permisos base de un rol son *esquema* — solo
 > cambian cuando el negocio redefine el rol, y eso amerita deploy + revisión. En código quedan inmutables,
 > versionados en git e imposibles de corromper en caliente. La capa granular editable en runtime son los
-> **overrides** (abajo), que se fusionan sobre esta base dentro de `RbacService.can()`.
+> **overrides** (abajo), que se fusionan sobre esta base dentro de `PermissionResolver.can()`.
 
 ## Clasificación de roles (helpers exportados de `rbac.js`)
 
 - `EXTERNAL_ROLE_NAMES` = `[CLIENTE]` — externos.
 - `INTERNAL_ROLE_NAMES` = todos los que no son externos (`SUPERADMIN`, `ADMIN`, `AUDITOR`) — se usa para la
-  **inactividad de sesión de 15 min** y para el **gate de 2FA** (`MFA_REQUIRED_ROLES = [...INTERNAL_ROLE_NAMES]`).
+  **inactividad de sesión de 15 min** y para el **gate de 2FA** (`isInternalRole`, en `modules/iam/domain/user.ts`).
 - `CLIENT_ROLE_NAMES` = `[CLIENTE]` — a quiénes lista `admin-person.list` y a quiénes llega la notificación global.
 - `ADMIN_FULL_ACCESS_ROLES` = `[SUPERADMIN, ADMIN]` — acceso completo al panel.
 - `SUPERADMIN_ROLE_NAMES` = `[SUPERADMIN]` — fuente única del bypass de doble aprobación.
 - `ADMIN_NOTIFICATION_ROLE_NAMES` = `[SUPERADMIN, ADMIN]` — destinatarios de las notificaciones "al admin".
 
-## Resolución — `RbacService.can(roleName, module, action)`
+## Resolución — `PermissionResolver.can(roleName, module, action)`
+
+Las reglas son funciones puras de `modules/iam/domain/rbac.ts` (`grantedByBase`, `can`, `effectivePermissions`,
+`roleMatrixEntry`); `PermissionResolver` (`modules/iam/application/use-cases/rbac.use-cases.ts`) les agrega los
+overrides de la base, con su caché:
 
 1. Si el rol no existe en la matriz → `false`.
 2. Si su valor es `RBAC_WILDCARD` → `true`.
 3. Si la matriz base concede el `[module][action]` o el `['*'][action]` → `true`.
 4. Si no, consulta **overrides en runtime** (`RolePermissionOverride` en BD, cacheados en Redis 60 s,
-   key `rbac:overrides:{roleName}`) → `true` si existe `{ role_name, module_name, action }`.
+   key `rbac:overrides:v2:{roleName}`) → `true` si existe `{ role_name, module_name, action }`.
    Fail-open: si Redis no está, se consulta BD directo.
 
-Otros métodos: `canAccessModule`, `getEffectivePermissions` (matriz normalizada por módulo),
-`getRoleMatrix` (base vs added, para la UI), `listCatalog` (grupos + módulos + acciones para el front),
-`invalidateCache(roleName)` (llamar tras crear/borrar un override).
+Otros métodos: `effectivePermissions` (matriz normalizada por módulo), `matrix` (base vs added, para la UI) e
+`invalidate(roleName)` (lo llaman `GrantPermission` / `RevokePermission` al crear o borrar un override). El catálogo
+(grupos + módulos + acciones para el front) es `permissionCatalog()` del dominio.
 
-## Middleware — `RbacMiddleware.requirePermission(module, action)`
+## Guarda — `guards.requirePermission(module, action)`
 
-```js
+Las rutas reciben las guardas (`RouteGuards`) por parámetro; las implementa iam
+(`modules/iam/presentation/http/auth.guards.ts`, con el caso de uso `AuthorizePermission`):
+
+```ts
 router.post('/internal-users',
-  AuthMiddleware.authenticate,                                          // primero (pobla req.user.roleName)
-  RbacMiddleware.requirePermission(RBAC_MODULES.INTERNAL_USERS, RBAC_ACTIONS.CREATE),
+  guards.authenticate,                                                  // primero (pobla req.user.roleName)
+  guards.requirePermission(RBAC_MODULES.INTERNAL_USERS, RBAC_ACTIONS.CREATE),
   ...);
 ```
 
-- Verifica `req.user.roleName`; llama `RbacService.can(...)`; si `false` → `AppError.forbidden` (403).
-- **Gate de 2FA:** si el rol está en `MFA_REQUIRED_ROLES` (= todos los internos) y no tiene MFA activo
-  (`isMfaActive`) → `AppError.forbidden({ code: 'MFA_REQUIRED' })` — el front debe redirigir a setup de
-  MFA, no tratarlo como "sin permiso".
-- ❌ En rutas admin usar SIEMPRE RBAC (no `AuthMiddleware.requireRole`).
+- Verifica `req.user.roleName`; llama `PermissionResolver.can(...)`; si `false` → `IamForbiddenError` (403).
+- **Gate de 2FA:** si el rol es interno (`isInternalRole`) y no tiene MFA activo (`hasActiveMfa`) →
+  `MfaRequiredError` (403, `details: { code: 'MFA_REQUIRED' }`) — el front debe redirigir a setup de MFA, no
+  tratarlo como "sin permiso".
+- ❌ En rutas admin usar SIEMPRE RBAC (no `guards.requireRole`).
 - ✅ El (módulo, acción) debe calzar semánticamente con lo que hace el endpoint.
 
 ## Overrides en runtime — `RolePermissionOverride`
 
 Tabla `role_permission_overrides` (`role_name`, `module_name`, `action`, `granted_by_user_id`). Permite que
 el Superadmin **agregue** permisos sobre la base en runtime, sin tocar código. **Solo suma; nunca reduce**
-la base (mínimo privilegio). Al modificarlos, invalidar la caché del rol (`invalidateCache`).
+la base (mínimo privilegio). Al modificarlos se invalida la caché del rol (`PermissionResolver.invalidate`).
 
 ## Agrupaciones (`RBAC_MODULE_GROUPS`) — árbol para el front
 
-`listCatalog()` devuelve los grupos tal cual. Cada grupo: `{ key, label, description, modules: [{ id, label,
+`permissionCatalog()` devuelve los grupos tal cual. Cada grupo: `{ key, label, description, modules: [{ id, label,
 description }] }`. Algunos grupos declaran `parent: 'administration'` para colgar de un contenedor de menú.
 
 **Top-level:** `clients`, `integrations`, `audit`, `notifications`, `consents` y el contenedor
@@ -115,7 +122,7 @@ de permisos siempre lee los ids de módulo planos.
 
 1. **Módulo:** agregar el id a `RBAC_MODULES` (camelCase, en inglés) y mapearlo en su grupo de
    `RBAC_MODULE_GROUPS` (`{ id, label, description }`). Usarlo en la ruta con
-   `RbacMiddleware.requirePermission(RBAC_MODULES.X, RBAC_ACTIONS.Y)`.
+   `guards.requirePermission(RBAC_MODULES.X, RBAC_ACTIONS.Y)`.
 2. **Rol:** agregar el `name` a `RBAC_ROLES`, su entrada en `ROLE_PERMISSIONS` (mínimo privilegio: conceder
    solo los módulos/acciones que necesita) y, si es interno, se sumará solo a `INTERNAL_ROLE_NAMES`
    (inactividad + 2FA) por el `filter` de externos.

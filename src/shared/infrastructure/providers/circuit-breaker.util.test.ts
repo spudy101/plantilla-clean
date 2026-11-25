@@ -69,14 +69,14 @@ describe('CircuitBreaker', () => {
     expect((await breaker.getStatus(P)).status).toBe('CLOSED');
   });
 
-  it('al llegar al umbral abre y rechaza sin llamar al proveedor (503)', async () => {
+  it('al llegar al umbral abre y rechaza sin llamar al proveedor (no disponible, con Retry-After)', async () => {
     await failTimes(3);
     expect(await breaker.getStatus(P)).toMatchObject({ status: 'OPEN', openedAt: 0 });
 
     const fn = jest.fn(ok);
     const err = await breaker.execute(P, fn).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(CircuitOpenError);
-    expect(err).toMatchObject({ statusCode: 503, code: 'CIRCUIT_OPEN', product: P });
+    expect(err).toMatchObject({ code: 'CIRCUIT_OPEN', product: P, retryable: true, incident: true, retryAfterSeconds: expect.any(Number) });
     expect(fn).not.toHaveBeenCalled();
   });
 

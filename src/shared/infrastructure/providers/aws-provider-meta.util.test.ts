@@ -1,5 +1,3 @@
-// tests/unit/shared/aws-provider-meta.util.test.ts
-//
 // awsErrorCode normaliza el error del SDK v3 a su `name` o, en su defecto, al status HTTP del $metadata.
 
 import awsProviderMetaUtilModule from './aws-provider-meta.util';

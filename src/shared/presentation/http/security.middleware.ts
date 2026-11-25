@@ -1,5 +1,3 @@
-// shared/middlewares/security.middleware.ts
-
 import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';

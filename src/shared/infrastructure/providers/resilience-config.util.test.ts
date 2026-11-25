@@ -1,5 +1,3 @@
-// tests/unit/shared/resilience-config.util.test.ts
-//
 // ResilienceConfig: resuelve la config de resiliencia de integraciones desde
 // SystemGlobalConfig.integration_resilience (snake_case), la mapea a camelCase,
 // la cachea 60s y NUNCA lanza (fallback duro / último valor ante error de BD).

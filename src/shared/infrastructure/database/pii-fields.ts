@@ -1,5 +1,3 @@
-// shared/database/pii-fields.ts
-//
 // Columnas cifradas en reposo (AES-256-GCM, EncryptionUtil) y, las que se buscan, con su hash
 // determinístico (HMAC-SHA256 con pepper, HashUtil) en una columna aparte. Nombres de los campos de
 // Prisma. Es lo mismo que hacen hoy los hooks de los modelos de Sequelize (person, person-contact,

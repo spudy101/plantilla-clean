@@ -1,5 +1,3 @@
-// tests/unit/shared/totp.util.test.ts
-//
 // TotpUtil (RFC 6238 sobre otplib). Cripto pura: no toca BD ni cifrado en reposo.
 // Cargamos el módulo con isolateModules para poder alternar el flag MOCKS.EXTERNAL_PROVIDERS
 // (que en modo mock acepta el código fijo 123456, paridad con el OTP de SMS).

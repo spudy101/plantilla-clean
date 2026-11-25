@@ -1,5 +1,3 @@
-// shared/types/swagger-ui-express.d.ts
-//
 // swagger-ui-express no trae tipos y no se agrega @types solo por esto: se declara lo que usa
 // config/swagger.{admin,client}.ts (HTML con el spec embebido + assets atados a ese spec).
 
