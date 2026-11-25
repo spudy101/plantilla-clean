@@ -65,10 +65,10 @@ src/modules/iam/services/
     ├── internal-user-deletion.service.ts ← eliminación (re-auth + doble aprobación + ofuscación)
     └── internal-user-guards.ts           ← interno / superadmin / eliminado / invalidar sesiones
 
-src/modules/approvals/services/
-├── dual-approval.service.ts              ← motor: register / gate / resolve
-└── dual-approval/
-    └── dual-approval-notifier.service.ts ← avisos a aprobadores y al solicitante
+src/modules/approvals/                    ← ya en Clean Architecture: el gate (GateOperation), la resolución
+                                            (ResolveApprovalRequest), las reanudaciones (ApprovalHandlers) y
+                                            los avisos a aprobadores y al solicitante (ApprovalNotices), cada uno
+                                            en su archivo de application/use-cases/
 
 src/shared/infrastructure/security/es256-signature.util.ts      ← verificación ES256 (pura), extraída de auth-biometric
 ```

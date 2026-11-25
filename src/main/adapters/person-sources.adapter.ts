@@ -5,20 +5,20 @@
 //   profileCatalogsAdapter       ProfileCatalogs con catalogs (avatar, género, tipo de documento, departamento, ciudad)
 //   contactVerificationsAdapter  ContactVerifications con los códigos OTP de notification
 //   profileConsentsAdapter       ProfileConsents con legal (catálogo de consentimientos del perfil, revocación)
-//   dualApprovalGateAdapter      DualApprovalGate con approvals
+//   dualApprovalGateAdapter      DualApprovalGate con el gate de approvals (que ya está en Clean)
 //
-// Cuando iam, notification y approvals se migren, estos adaptadores llamarán a sus casos de uso en vez de a sus
+// Cuando iam y notification se migren, estos adaptadores llamarán a sus casos de uso en vez de a sus
 // repositorios y servicios; person no cambia.
 import iamModule from '../../modules/iam';
 import catalogsModule from '../../modules/catalogs';
 import notificationModule from '../../modules/notification';
 import legalModule from '../../modules/legal';
-import approvalsModule from '../../modules/approvals';
 import type { ClientAccounts, RoleDirectory } from '../../modules/person/application/ports/client-accounts.port';
 import type { ProfileCatalogs } from '../../modules/person/application/ports/profile-catalogs.port';
 import type { ContactVerifications } from '../../modules/person/application/ports/contact-verifications.port';
 import type { ProfileConsents } from '../../modules/person/application/ports/profile-consents.port';
 import type { DualApprovalGate } from '../../modules/person/application/ports/dual-approval.port';
+import type { GateOperation } from '../../modules/approvals/application/use-cases/gate-operation.use-case';
 
 export const clientAccountsAdapter: ClientAccounts = {
   findProfile: userId => iamModule.userRepository.findByUserId(userId, 'full'),
@@ -111,9 +111,9 @@ export const profileConsentsAdapter: ProfileConsents = {
   }
 };
 
-export const dualApprovalGateAdapter: DualApprovalGate = {
+export const dualApprovalGateAdapter = (gate: GateOperation): DualApprovalGate => ({
   async gate(operationKey, args) {
-    const result = await approvalsModule.DualApprovalService.gate(operationKey, args);
+    const result = await gate.execute(operationKey, args);
     return result.pending ? { pending: true, request: result.request } : { pending: false };
   }
-};
+});

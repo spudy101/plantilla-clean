@@ -13,47 +13,55 @@ El maker-checker **no se puede apagar**. No hay env var ni flag de configuració
 registro se gatea según su `condition` (`ALWAYS`, o `THRESHOLD` sobre un campo del payload), y una
 operación que califica **siempre** responde `202` y crea su `approval_request`.
 
-> ❌ Nunca "comentar" `src/shared/domain/constants/dual-approval.ts` para desactivar: el middleware y el bootstrap
-> lo requieren al arrancar y el server no levantaría.
+> ❌ Nunca "comentar" `src/shared/domain/constants/dual-approval.ts` para desactivar: el dominio de approvals y las
+> rutas lo requieren al arrancar y el server no levantaría.
 
-## Las 3 piezas
+## Las piezas
 
-| Pieza                                                                     | Archivo                                                                                                                                                                                        |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Registro declarativo (`DUAL_APPROVAL_OPS`, `WILDCARD_ROLES`, `CONDITION`) | `src/shared/domain/constants/dual-approval.ts`                                                                                                                                                            |
-| Tabla + capa de datos + core + worker + bootstrap                         | `src/modules/approvals/` (`models/approval-request.model.ts`, `repositories/approval-request.repository.ts`, `services/dual-approval.service.ts`, `workers/dual-approval-expiration.worker.ts`, `dual-approval.bootstrap.ts`) |
-| Endpoints admin                                                           | `src/modules/approvals/routes/approval-request.routes.ts` (+ controller)                                                                                                                          |
+El módulo `src/modules/approvals/` está en Clean Architecture (ver `docs/CLEAN-ARCHITECTURE.md`):
 
-Componentes shared: `src/modules/approvals/middlewares/dual-approval.middleware.ts`,
-`src/modules/approvals/responses/approval-components.response.ts` (`ApprovalRequestComponent`, `PendingApprovalComponent`).
-El schema Swagger `PendingApproval` vive en `src/main/swagger/schemas/core.schema.ts` (compartido admin+client).
+| Pieza | Archivo |
+| --- | --- |
+| Registro declarativo (`DUAL_APPROVAL_OPS`, `WILDCARD_ROLES`, `CONDITION`) | `src/shared/domain/constants/dual-approval.ts` |
+| Reglas: condición, umbral, vencimiento en horas hábiles, quién resuelve, bypass de super_admin; la solicitud | `domain/dual-approval-operation.ts`, `domain/approval-request.ts`, `domain/business-hours.ts` |
+| Casos de uso | `application/use-cases/` (`GateOperation`, `ResolveApprovalRequest`, `ListApprovalRequests`, `GetApprovalRequest`, `GetApprovalPolicy`, `FindPendingApprovals`, `ExpireApprovalRequests`) |
+| Reanudaciones (IoC) | `application/use-cases/approval-handlers.ts` (`ApprovalHandlers`) |
+| Tabla + worker | `infrastructure/persistence/prisma-approval-request.repository.ts`, `infrastructure/workers/dual-approval-expiration.worker.ts` |
+| Endpoints admin + middleware de ruta | `presentation/http/` (`approval-request.routes.ts`, controller, `dual-approval.middleware.ts`) |
+| Composición | `approvals.module.ts` (`createApprovalsModule`); lo conecta `src/main/container.ts` |
 
-## API del core · `DualApprovalService`
+Los aprobadores (usuarios activos con un rol, de iam) y el umbral configurado (settings) llegan por los puertos
+`ApproverDirectory` y `ApprovalThresholds`: `src/main/adapters/approval-sources.adapter.ts`. El schema Swagger
+`PendingApproval` vive en `src/main/swagger/schemas/core.schema.ts` (compartido admin+client).
 
-```js
-register(opKey, onApprove, onReject?)   // bootstrap: handler IoC que ejecuta la acción real al resolver
-requiresApproval(opKey, payload)        // 'always' ⇒ true; 'threshold' ⇒ payload[thresholdField] > umbral(BD||default)
-async gate(opKey, { entityType, entityId, payload, ctx })
-   // -> { pending:false } si no requiere (ejecuta directo)
+## API del módulo
+
+```ts
+handlers.register(opKey, onApprove, onReject?)   // container: la acción real al aprobar (IoC)
+useCases.gate.execute(opKey, { entityType, entityId, payload, ctx })
+   // -> { pending:false } si no requiere (ejecuta directo). 'always' ⇒ requiere; 'threshold' ⇒ payload[thresholdField] > umbral
    // -> { pending:true, request } si requiere: crea approval_request, calcula expires_at (horas
-   //    hábiles), notifica approverRoles (setImmediate), audit.record('DUAL_APPROVAL_REQUESTED')
+   //    hábiles), avisa a los approverRoles (setImmediate), audita DUAL_APPROVAL_REQUESTED
    // -> 409 (DUAL_APPROVAL_ALREADY_PENDING) si ya hay una pendiente para (operation_key, entity_id)
    // -> super_admin: { pending:false, autoApproved:true, request } (ver bypass abajo)
-async resolve(requestId, { decision, notes }, approverCtx)
+ResolveApprovalRequest.execute({ approvalRequestId, decision, notes, ctx })      // POST .../resolve
    // valida status===pending, rol ∈ approverRoles ∪ WILDCARD_ROLES, approver !== requested_by
-   // approve -> invoca onApprove(payload, ctx); status=approved; result; audit.record('DUAL_APPROVAL_APPROVED')
-   // reject  -> invoca onReject(payload, ctx) si existe; status=rejected; audit.record('DUAL_APPROVAL_REJECTED')
-async annotatePending(entityType, rows, idField = null)  // anota cada row con .pendingApproval | null (1 query batch)
-async list(query) / async getById(id)    // listado paginado + detalle para los endpoints admin
-async getPolicy()                        // { enabled:true, operations:[...] } — `enabled` hardcodeado (no hay interruptor)
+   // approve -> onApprove(payload, ctx); status=approved; result; audita DUAL_APPROVAL_APPROVED
+   // reject  -> onReject(payload, ctx) si existe; status=rejected; audita DUAL_APPROVAL_REJECTED
+useCases.findPending.execute(entityType, ids)    // Map id → pendingApproval (1 query batch)
+requireDualApproval('OP_KEY', options)           // el gate como middleware de ruta
+expirationWorker.start()                         // cron diario: vence las pendientes (ExpireApprovalRequests)
 ```
+
+iam (todavía sin migrar) usa el gate y el badge por el `index.ts` transitorio de approvals:
+`dualApproval.gate(...)` y `dualApproval.annotatePending(entityType, rows, idField)`.
 
 ### Bypass por rol — `super_admin`
 
-Única excepción real a "cuatro ojos siempre": `gate()` detecta al superadmin (`isSuperAdmin`, contra
+Única excepción real a "cuatro ojos siempre": el gate detecta al superadmin (`isSuperAdmin`, contra
 `SUPERADMIN_ROLE_NAMES`), crea igual la solicitud pero ya **`approved` por el propio maker**
 (`requested_by === second_approver_id`, traza completa) y devuelve `{ pending:false, autoApproved:true,
-request }`, **sin** invocar el handler IoC — la acción corre inline en el mismo request (el flujo normal la
+request }`, **sin** invocar el handler — la acción corre inline en el mismo request (el flujo normal la
 ejecuta una sola vez). Audita `DUAL_APPROVAL_REQUESTED` + `DUAL_APPROVAL_AUTO_APPROVED`.
 
 > En el template base, `SUPERADMIN` omite el gate; `ADMIN` **sí** está sujeto a doble aprobación. Ver
@@ -61,31 +69,30 @@ ejecuta una sola vez). Audita `DUAL_APPROVAL_REQUESTED` + `DUAL_APPROVAL_AUTO_AP
 
 ## Dos formas de gatear (ambas terminan en el handler registrado)
 
-- **Middleware de ruta** `DualApprovalMiddleware.require('OP_KEY', { shouldGate?, extractPayload?, extractEntity? })`
-  → operaciones cuyo disparo se decide con `req.body`/`req.params`. Si la op queda pendiente responde
-  `202` y NO llama al controller. `shouldGate(req)` permite gatear solo el caso sensible en endpoints
-  multipropósito.
-- **Gate a nivel de servicio** `DualApprovalService.gate('OP_KEY', {...})` → cuando la condición se
-  calcula a mitad del flujo (p. ej. un umbral que depende de un valor ya validado). Las 3 operaciones del
-  template gatean **en el service**.
+- **Middleware de ruta** `requireDualApproval('OP_KEY', { shouldGate?, extractPayload?, extractEntity? })`
+  (lo entrega `approvals.module.ts`) → operaciones cuyo disparo se decide con `req.body`/`req.params`. Si la op
+  queda pendiente responde `202` y NO llama al controller. `shouldGate(req)` permite gatear solo el caso
+  sensible en endpoints multipropósito.
+- **Gate en el caso de uso** (`GateOperation`, por un puerto del módulo que gatea, p. ej. `DualApprovalGate` de
+  person) → cuando la condición se calcula a mitad del flujo. Las 3 operaciones del template gatean así.
 
 ## Reanudación = handler (IoC), no se re-ejecutan requests
 
-El handler y el controller "normal" delegan en **el mismo método de service** → la lógica no se
+El handler y el controller "normal" delegan en **el mismo caso de uso (o método de service)** → la lógica no se
 duplica; solo hay dos puntos de entrada (ejecución directa vs. tras aprobación). El handler debe ser
-**idempotente** (puede reintentarse). Se registran en `dual-approval.bootstrap.ts`, invocado una vez al
-arranque desde `src/main/server.ts` antes de arrancar los workers.
+**idempotente** (puede reintentarse). Los registra `src/main/container.ts` al armar los módulos
+(`approvals.handlers.register(...)`); los de iam están en `src/main/adapters/approval-sources.adapter.ts`.
 
 ## Operaciones gateadas (3)
 
 El registro (`DUAL_APPROVAL_OPS`) trae, en el template base, **tres** operaciones — todas `condition:
 always`, todas sobre la entidad `User`/`users`, con `approverRoles: ['ADMIN']` y `ttlHours: 72`:
 
-| `operation_key`        | Qué gatea                                    | Handler (service)                       | Gate       |
-| ---------------------- | -------------------------------------------- | --------------------------------------- | ---------- |
-| `RBAC_ROLE_CHANGE`     | Cambio de rol de un usuario interno          | `AdminUserService.executeChangeRole`    | servicio   |
-| `CLIENT_ACCOUNT_DELETE`| Eliminación de cuenta de cliente (irreversible) | `PersonService.executeDeleteAccount` | servicio   |
-| `INTERNAL_USER_DELETE` | Eliminación de usuario interno (irreversible)| `AdminUserService.executeDeleteUser`    | servicio   |
+| `operation_key`        | Qué gatea                                    | Handler                                          | Gate       |
+| ---------------------- | -------------------------------------------- | ------------------------------------------------ | ---------- |
+| `RBAC_ROLE_CHANGE`     | Cambio de rol de un usuario interno          | `AdminUserService.executeChangeRole` (iam)       | servicio   |
+| `CLIENT_ACCOUNT_DELETE`| Eliminación de cuenta de cliente (irreversible) | `ExecuteClientAccountDeletion` (person)       | caso de uso |
+| `INTERNAL_USER_DELETE` | Eliminación de usuario interno (irreversible)| `AdminUserService.executeDeleteUser` (iam)       | servicio   |
 
 - Los tres avisan a los aprobadores con el tipo de notificación `RBAC_SECOND_APPROVER`; al resolverse,
   el maker recibe `DUAL_APPROVAL_RESOLVED`.
@@ -96,14 +103,14 @@ always`, todas sobre la entidad `User`/`users`, con `approverRoles: ['ADMIN']` y
   a sí mismo aunque tenga el rol.
 
 > El framework soporta `condition: threshold` (umbral sobre un campo del payload, con override en
-> `SystemGlobalConfig` vía `thresholdConfigKey` y `thresholdDefault`), pero **ninguna operación del
+> `SystemGlobalConfig` vía `thresholdConfigKey` —el puerto `ApprovalThresholds`— y `thresholdDefault`), pero **ninguna operación del
 > template lo usa** hoy. Es el gancho para cuando derives un dominio con montos/límites.
 
 ## Contrato con el front
 
 - Operación gateada pendiente → **`202 Accepted`** con el `approval_request` (usar `ApiResponse.accepted`).
 - `GET /api/v1/core/approval-requests/policy` → qué operaciones están gateadas + `enabled: true`.
-- En los **listados** de módulos gateados, el service llama `annotatePending(entityType, rows)` y el DTO
+- En los **listados** de módulos gateados se anotan las pendientes (`FindPendingApprovals`; iam: `annotatePending(entityType, rows, idField)`) y el DTO
   expone `pendingApproval: {...} | null` por item (camelCase) → el front pinta el badge. El objeto lleva
   `approvalRequestId` (para redirigir al detalle `/core/approval-requests/:id`) + `operationKey` +
   `status`/`requestedBy`/`requestedAt`/`expiresAt`. En el template, la entidad anotada es `User`.
@@ -116,25 +123,25 @@ always`, todas sobre la entidad `User`/`users`, con `approverRoles: ['ADMIN']` y
 | GET    | `/api/v1/core/approval-requests`             | `DUAL_APPROVAL` READ                                                               |
 | GET    | `/api/v1/core/approval-requests/policy`      | `DUAL_APPROVAL` READ                                                               |
 | GET    | `/api/v1/core/approval-requests/:id`         | `DUAL_APPROVAL` READ                                                               |
-| POST   | `/api/v1/core/approval-requests/:id/resolve` | `DUAL_APPROVAL` UPDATE + validación de `approverRoles` y segregación en el service |
+| POST   | `/api/v1/core/approval-requests/:id/resolve` | `DUAL_APPROVAL` UPDATE + validación de `approverRoles` y segregación en el caso de uso |
 
 ## Agregar una operación nueva
 
 1. Entrada en `DUAL_APPROVAL_OPS` (`src/shared/domain/constants/dual-approval.ts`): `label`, `approverRoles`,
    `notificationType`, `entityType`, `entityTable`, `condition` (`always`/`threshold`), `ttlHours`
    (y `thresholdField`/`thresholdConfigKey`/`thresholdDefault` si es condicional).
-2. Handler en `dual-approval.bootstrap.ts`: `DualApproval.register('OP_KEY', onApprove, onReject?)`
-   delegando en el método de service existente.
-3. Gatear: `gate('OP_KEY', {...})` en el service **o** middleware en la ruta (`require('OP_KEY', {...})`).
-4. `annotatePending` + `pendingApproval` en el DTO del listado correspondiente (si aplica).
+2. Handler en `src/main/container.ts`: `approvals.handlers.register('OP_KEY', onApprove, onReject?)`
+   delegando en el caso de uso (o método de service) existente.
+3. Gatear: `GateOperation` por un puerto del módulo que gatea **o** middleware en la ruta (`requireDualApproval('OP_KEY', {...})`).
+4. `FindPendingApprovals` + `pendingApproval` en el DTO del listado correspondiente (si aplica).
 5. Tipo de notificación (seeder), audit actions y, si aplica, trigger de alerta.
 6. RBAC: dar `RBAC_MODULES.DUAL_APPROVAL` (READ/UPDATE) al rol checker.
 
 ## Reglas
 
 - ❌ Nunca desactivar el framework: no hay flag, y comentar el registro rompe el arranque.
-- ✅ El handler `onApprove`/`onReject` delega en el método de service ya existente (sin duplicar lógica) y
+- ✅ El handler `onApprove`/`onReject` delega en el caso de uso ya existente (sin duplicar lógica) y
   es **idempotente**.
 - ✅ Segregación obligatoria: `second_approver_id !== requested_by`. Inmutabilidad: un request
   resuelto/expirado no se re-resuelve.
-- ✅ Worker de expiración registrado en `base.server.ts` (cron diario).
+- ✅ Worker de expiración (`container.approvals.expirationWorker`) iniciado por `src/main/server.ts` (cron diario).

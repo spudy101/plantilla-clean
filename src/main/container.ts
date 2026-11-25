@@ -29,7 +29,7 @@ import unitOfWork from '../shared/infrastructure/database/unit-of-work';
 import constantsModule from '../shared/infrastructure/config';
 import { createIntegrationModule } from '../modules/integration/integration.module';
 import { failedProcessCounterAdapter } from './adapters/failed-process-counter.adapter';
-import { createPersonModule } from '../modules/person/person.module';
+import { createPersonModule, type PersonModule } from '../modules/person/person.module';
 import {
   clientAccountsAdapter,
   contactVerificationsAdapter,
@@ -38,7 +38,8 @@ import {
   profileConsentsAdapter,
   roleDirectoryAdapter
 } from './adapters/person-sources.adapter';
-import approvalsModule from '../modules/approvals';
+import { createApprovalsModule, type ApprovalsModule } from '../modules/approvals/approvals.module';
+import { approvalThresholdsAdapter, approverDirectoryAdapter, iamApprovalHandlers } from './adapters/approval-sources.adapter';
 import { createNotificationModule } from '../modules/notification/notification.module';
 import { phonePrefixesAdapter, recipientDirectoryAdapter } from './adapters/notification-sources.adapter';
 
@@ -113,6 +114,17 @@ export function createContainer() {
     failedProcesses: failedProcessCounterAdapter
   });
 
+  // approvals antes que person: person gatea la baja de una cuenta con su gate
+  const approvals = createApprovalsModule({
+    audit: audit.trail,
+    notifier: notifierAdapter,
+    logger,
+    guards: routeGuardsAdapter,
+    approvers: approverDirectoryAdapter,
+    thresholds: approvalThresholdsAdapter,
+    notificationLogoUrl: constantsModule.notifications.ses.logoUrl
+  });
+
   const person = createPersonModule({
     audit: audit.trail,
     changeLog: { record: change => audit.recordAccountChange(change) },
@@ -126,17 +138,24 @@ export function createContainer() {
     catalogs: profileCatalogsAdapter,
     verifications: contactVerificationsAdapter,
     consents: profileConsentsAdapter,
-    approvals: dualApprovalGateAdapter,
+    approvals: dualApprovalGateAdapter(approvals.useCases.gate),
     notificationLogoUrl: constantsModule.notifications.ses.logoUrl
   });
-  // La baja de una cuenta de cliente queda pendiente de una segunda aprobación: approvals la reanuda con esto
-  approvalsModule.DualApprovalService.register('CLIENT_ACCOUNT_DELETE', (payload: { userId: string }, ctx) =>
-    person.useCases.executeClientAccountDeletion.execute({ userId: payload.userId, ctx })
-  );
+  registerApprovalHandlers(approvals, person);
 
   settingsModule = settings;
 
-  return { audit, notification, settings, catalogs, banners, legal, integration, person };
+  return { audit, notification, settings, catalogs, banners, legal, integration, approvals, person };
+}
+
+/** Las reanudaciones de las operaciones gateadas: lo que ejecuta approvals cuando el segundo funcionario aprueba. */
+function registerApprovalHandlers(approvals: ApprovalsModule, person: PersonModule) {
+  approvals.handlers.register('CLIENT_ACCOUNT_DELETE', (payload: { userId: string }, ctx) =>
+    person.useCases.executeClientAccountDeletion.execute({ userId: payload.userId, ctx })
+  );
+  for (const [operationKey, onApprove] of Object.entries(iamApprovalHandlers)) {
+    approvals.handlers.register(operationKey, onApprove);
+  }
 }
 
 export type Container = ReturnType<typeof createContainer>;

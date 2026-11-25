@@ -87,7 +87,7 @@ jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../approvals/services/dual-approval.service', () => ({
+jest.mock('../../approvals/infrastructure/legacy/dual-approval', () => ({
   annotatePending: jest.fn().mockResolvedValue(undefined),
   gate: jest.fn().mockResolvedValue({ pending: false })
 }));
@@ -134,8 +134,8 @@ import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder
 const logAudit = mocked(auditServiceModule).record;
 import NotificationCreationServiceModule from '../../notification/infrastructure/legacy/notifier';
 const notifier = mocked(NotificationCreationServiceModule);
-import DualApprovalServiceModule from '../../approvals/services/dual-approval.service';
-const DualApprovalService = mocked(DualApprovalServiceModule);
+import dualApprovalModule from '../../approvals/infrastructure/legacy/dual-approval';
+const dualApproval = mocked(dualApprovalModule);
 import service from './admin-user.service';
 
 // Helper de cuerpo de bloque para vaciar la cola de macrotareas (setImmediate en notificaciones).
@@ -162,8 +162,8 @@ describe('AdminUserService', () => {
     jest.clearAllMocks();
     roleRepository.findByNames.mockResolvedValue([{ roleId: 'role-auditor' }, { roleId: 'role-admin' }]);
     userRepository.findByUserId.mockResolvedValue(makeUser());
-    DualApprovalService.gate.mockResolvedValue({ pending: false });
-    DualApprovalService.annotatePending.mockResolvedValue(undefined);
+    dualApproval.gate.mockResolvedValue({ pending: false });
+    dualApproval.annotatePending.mockResolvedValue(undefined);
   });
 
   // ============================================================
@@ -182,7 +182,7 @@ describe('AdminUserService', () => {
         { page: 1, limit: 10, offset: 0, sortBy: 'createdAt', order: 'DESC' },
         'jua'
       );
-      expect(DualApprovalService.annotatePending).toHaveBeenCalledWith('User', expect.any(Array), 'userId');
+      expect(dualApproval.annotatePending).toHaveBeenCalledWith('User', expect.any(Array), 'userId');
       expect(logAudit).toHaveBeenCalledWith('INTERNAL_USER_LIST_VIEWED', expect.objectContaining({ actorId: 'admin-1', details: { totalItems: 1 } }));
       expect(result.data).toHaveLength(1);
       expect(result.metadata).toMatchObject({ pagination: { totalItems: 1 }, filters: { search: 'jua', roleId: 'role-admin', isActive: true } });
@@ -357,7 +357,7 @@ describe('AdminUserService', () => {
     });
 
     it('si la doble aprobación queda pendiente devuelve 202 sin ejecutar el cambio', async () => {
-      DualApprovalService.gate.mockResolvedValue({ pending: true, request: { id: 'ar-1' } });
+      dualApproval.gate.mockResolvedValue({ pending: true, request: { id: 'ar-1' } });
       const result = await service.changeRole('u-1', 'role-admin', AUDIT_CTX);
 
       expect(result).toEqual({ pending: true, approvalRequest: { id: 'ar-1' } });
@@ -454,7 +454,7 @@ describe('AdminUserService', () => {
     });
 
     it('si la doble aprobación queda pendiente devuelve 202 sin eliminar', async () => {
-      DualApprovalService.gate.mockResolvedValue({ pending: true, request: { id: 'ar-9' } });
+      dualApproval.gate.mockResolvedValue({ pending: true, request: { id: 'ar-9' } });
       const result = await service.deleteUser('u-1', 'pwd', AUDIT_CTX);
 
       expect(result).toEqual({ pending: true, approvalRequest: { id: 'ar-9' } });

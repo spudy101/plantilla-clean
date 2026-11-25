@@ -13,10 +13,11 @@ const mockDb = {
 jest.mock('../../../src/shared/infrastructure/database/prisma', () => mockDb);
 
 import { Prisma } from '../../../src/shared/infrastructure/database/generated/prisma/client';
-import approvalRequestRepository from '../../../src/modules/approvals/repositories/approval-request.repository';
+import { PrismaApprovalRequestRepository } from '../../../src/modules/approvals/infrastructure/persistence/prisma-approval-request.repository';
 import { PrismaFallbackEventRepository } from '../../../src/modules/integration/infrastructure/persistence/prisma-fallback-event.repository';
 
 const providerFallbackEventRepository = new PrismaFallbackEventRepository();
+const approvalRequestRepository = new PrismaApprovalRequestRepository();
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -26,11 +27,11 @@ beforeEach(() => {
 describe('ApprovalRequestRepository — cierre y vencimiento', () => {
   it('resolve() actualiza por id y devuelve la solicitud con requester y secondApprover', async () => {
     mockDb.approvalRequest.updateMany.mockResolvedValue({ count: 1 });
-    const withUsers = { approvalRequestId: 'req-1', status: 'approved', requester: {}, secondApprover: {} };
+    const withUsers = { approvalRequestId: 'req-1', status: 'approved', requester: { userId: 'm-1', username: 'ana', person: null }, secondApprover: null };
     mockDb.approvalRequest.findUnique.mockResolvedValue(withUsers);
     const changes = { status: 'approved' as const, secondApproverId: 'a-2', resolvedAt: new Date(), resolutionNotes: null, result: null };
 
-    await expect(approvalRequestRepository.resolve('req-1', changes)).resolves.toBe(withUsers);
+    await expect(approvalRequestRepository.resolve('req-1', changes)).resolves.toMatchObject({ approvalRequestId: 'req-1', status: 'approved', requester: { userId: 'm-1', username: 'ana', firstName: null } });
 
     expect(mockDb.approvalRequest.updateMany).toHaveBeenCalledWith({
       where: { approvalRequestId: 'req-1' },
@@ -43,7 +44,7 @@ describe('ApprovalRequestRepository — cierre y vencimiento', () => {
 
   it('resolve() devuelve null si la solicitud ya no existe', async () => {
     mockDb.approvalRequest.updateMany.mockResolvedValue({ count: 0 });
-    await expect(approvalRequestRepository.resolve('x', { status: 'rejected', secondApproverId: null, resolvedAt: null, resolutionNotes: null })).resolves.toBeNull();
+    await expect(approvalRequestRepository.resolve('x', { status: 'rejected', secondApproverId: 'a-2', resolvedAt: new Date(), resolutionNotes: null })).resolves.toBeNull();
     expect(mockDb.approvalRequest.findUnique).not.toHaveBeenCalled();
   });
 

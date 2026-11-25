@@ -51,7 +51,7 @@ import adminUserPaths from '../../modules/iam/docs/admin-user.paths';
 import adminRbacPaths from '../../modules/iam/docs/admin-rbac.paths';
 
 // ─── Módulos Admin — Doble aprobación global (maker-checker) ──
-import approvalRequestPaths from '../../modules/approvals/docs/approval-request.paths';
+import approvalRequestPaths from '../../modules/approvals/presentation/http/docs/approval-request.paths';
 
 // ─── Merge paths ──────────────────────────────────────────────
 

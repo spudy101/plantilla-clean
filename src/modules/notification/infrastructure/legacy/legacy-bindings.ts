@@ -1,4 +1,4 @@
-// @deprecated TRANSITORIO: los casos de uso de notification que iam y approvals (todavía sin migrar) usan por el
+// @deprecated TRANSITORIO: los casos de uso de notification que iam (todavía sin migrar) usa por el
 // index.ts: mandar notificaciones y SMS.
 //
 // Necesitan adaptadores de otros módulos (los destinatarios de iam, los prefijos de catalogs, la auditoría), que

@@ -1,4 +1,4 @@
-// @deprecated TRANSITORIO: mandar notificaciones desde iam y approvals (por el index.ts), con los casos de uso que
+// @deprecated TRANSITORIO: mandar notificaciones desde iam (por el index.ts), con los casos de uso que
 // dejó armados notification.module.ts. Lo de adentro (tipos, plantillas, canales, preferencias, reintentos) es
 // asunto de notification:
 //

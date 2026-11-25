@@ -263,7 +263,7 @@ export function createNotificationModule(deps: NotificationModuleDeps): Notifica
   const sending = createSending(deps, repos, unreadChannel);
   const { createNotification, sendDirectEmail, sms } = sending;
 
-  // Transitorio: lo que iam y approvals usan por el index.ts
+  // Transitorio: lo que iam usa por el index.ts
   bindLegacyNotification({ createNotification, sendDirectEmail, sms });
 
   return {

@@ -1,5 +1,5 @@
-// API pública del módulo notification para los módulos que todavía no están en Clean Architecture (iam,
-// approvals) y para los adaptadores de src/main/.
+// API pública del módulo notification para el módulo que todavía no está en Clean Architecture (iam) y para los
+// adaptadores de src/main/.
 //
 // En Clean, notification no se usa importando este index: src/main/container.ts arma el módulo
 // (createNotificationModule en notification.module.ts) y los módulos migrados avisan por el puerto Notifier. Lo
@@ -33,7 +33,7 @@ function lazy<T>(key: string, create: () => T): T {
 }
 
 export default {
-  /** @deprecated Transitorio para iam y approvals: notifier.notify({ type, userId, metadata }) / notifier.notifyEmail({ type, email }). */
+  /** @deprecated Transitorio para iam: notifier.notify({ type, userId, metadata }) / notifier.notifyEmail({ type, email }). */
   get notifier() {
     return interopDefault(require('./infrastructure/legacy/notifier') as typeof import('./infrastructure/legacy/notifier'));
   },

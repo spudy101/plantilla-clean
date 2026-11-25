@@ -23,13 +23,10 @@ import swaggerClientDocs from './swagger/swagger.client';
 import packageModule from '../../package.json';
 const { version } = packageModule;
 
-// ── Rutas compartidas (admin + client) ─────────────────────────────────────
+// ── Rutas de iam (sin migrar: se cablean solas) ────────────────────────────
 import iamModule from '../modules/iam';
 const { authLoginRoutes, mfaRoutes, adminAuthSessionRoutes, adminUserRoutes, adminRbacRoutes, authRegisterRoutes, authBiometricRoutes } = iamModule;
-// ── Rutas admin ────────────────────────────────────────────────────────────
-import approvalsModule from '../modules/approvals';
-const { adminApprovalRequestRoutes } = approvalsModule;
-// ── Rutas client ───────────────────────────────────────────────────────────
+
 type Audience = 'admin' | 'client';
 
 /** Router de una audiencia: marca req.serverContext (el login valida el rol contra ella) y monta su Swagger. */
@@ -61,7 +58,7 @@ function adminRouter(container: Container) {
   router.use('/api/v1/records', container.audit.adminRouter);
   router.use('/api/v1/core', container.settings.adminRouter);
   router.use('/api/v1/core', container.banners.adminRouter);
-  router.use('/api/v1/core', adminApprovalRequestRoutes);
+  router.use('/api/v1/core', container.approvals.adminRouter);
   router.use('/api/v1/integration', container.integration.adminRouter);
   return router;
 }

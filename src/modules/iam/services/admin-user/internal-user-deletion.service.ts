@@ -10,7 +10,7 @@ const { ProfileHelper } = personModule;
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
 import approvalsModule from '../../../approvals';
-const { DualApprovalService } = approvalsModule;
+const { dualApproval } = approvalsModule;
 import unitOfWork from '../../../../shared/infrastructure/database/unit-of-work';
 import AppError from '../../../../shared/presentation/http/app-error.util';
 import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
@@ -28,7 +28,7 @@ class InternalUserDeletionService {
   userRepository: typeof userRepository;
   profileHelper: typeof ProfileHelper;
   notifier: typeof notifier;
-  DualApprovalService: typeof DualApprovalService;
+  dualApproval: typeof dualApproval;
   guards: InstanceType<typeof InternalUserGuards>;
 
   /** @param {object} [deps] Dependencias inyectables (SOLID: D). Las provee la fachada AdminUserService. */
@@ -37,7 +37,7 @@ class InternalUserDeletionService {
     this.userRepository = deps.userRepository ?? userRepository;
     this.profileHelper = deps.profileHelper ?? ProfileHelper;
     this.notifier = deps.notifier ?? notifier;
-    this.DualApprovalService = deps.DualApprovalService ?? DualApprovalService;
+    this.dualApproval = deps.dualApproval ?? dualApproval;
     this.guards = deps.guards ?? new InternalUserGuards(deps);
   }
 
@@ -60,7 +60,7 @@ class InternalUserDeletionService {
 
     // Doble aprobación (maker-checker). Pendiente → 202 y la eliminación corre luego desde el
     // handler IoC (executeDeleteUser). Flag off / super_admin → se ejecuta inline.
-    const gate = await this.DualApprovalService.gate('INTERNAL_USER_DELETE', {
+    const gate = await this.dualApproval.gate('INTERNAL_USER_DELETE', {
       entityType: 'User',
       entityId: userId,
       payload: { userId },
@@ -133,7 +133,7 @@ namespace InternalUserDeletionService {
     userRepository?: typeof userRepository;
     profileHelper?: typeof ProfileHelper;
     notifier?: typeof notifier;
-    DualApprovalService?: typeof DualApprovalService;
+    dualApproval?: typeof dualApproval;
     guards?: InstanceType<typeof InternalUserGuards>;
   }
 }

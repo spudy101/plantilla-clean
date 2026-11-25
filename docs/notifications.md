@@ -4,7 +4,7 @@
 > Punto de entrada único: el puerto **`Notifier`** (`shared/application/ports/notifier.port.ts`): `notify({ type, userId, … })`
 > y `notifyEmail({ type, email, … })`. Lo implementa el caso de uso `CreateNotification`
 > (`src/modules/notification/application/use-cases/create-notification.use-case.ts`); `src/main/container.ts` lo
-> conecta a cada módulo. Los módulos sin migrar (iam, approvals) usan `notificationModule.notifier`.
+> conecta a cada módulo. El módulo sin migrar (iam) usa `notificationModule.notifier`.
 
 ## Idea general
 
@@ -103,7 +103,7 @@ src/modules/notification/
                    notification-catalog y admin-notifications (panel: categorías, tipos, avisos, entregas)
     ports/         repositorios, proveedores de cada canal, destinatarios (iam) y prefijos (catalogs)
   infrastructure/  persistence (Prisma) / providers (SES, SNS push y SMS, rate limit) / realtime (SSE) /
-                   workers (despachador + limpiezas) / legacy (lo que iam y approvals usan por el index.ts)
+                   workers (despachador + limpiezas) / legacy (lo que iam usa por el index.ts)
   presentation/http/  rutas, controllers, requests/responses Zod y docs OpenAPI
   notification.module.ts  composición
 ```

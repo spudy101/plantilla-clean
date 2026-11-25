@@ -21,8 +21,8 @@
 //     AUDITOR    → solo lectura en todos los módulos.
 //     CLIENTE    → rol externo (portal cliente); sin acceso al panel admin.
 //   La distinción SUPERADMIN vs ADMIN frente a la doble aprobación la resuelve
-//   DualApprovalService (SUPERADMIN_ROLE_NAMES omite el gate). Ver
-//   shared/constants/dual-approval.js.
+//   el módulo approvals (SUPERADMIN_ROLE_NAMES omite el gate). Ver
+//   shared/domain/constants/dual-approval.ts.
 
 // ============================================================================
 // COMODÍN — se usa tanto para "todos los módulos" como para "todas las acciones".
@@ -281,7 +281,7 @@ const INTERNAL_ROLE_NAMES = Object.values(RBAC_ROLES).filter(roleName => !EXTERN
 const ADMIN_FULL_ACCESS_ROLES = [RBAC_ROLES.SUPERADMIN, RBAC_ROLES.ADMIN];
 
 // Nombres de rol que identifican a un superadministrador. Fuente única para el bypass de doble
-// aprobación (DualApprovalService.isSuperAdmin) y userRepository.findActiveUsersByRoleNames().
+// aprobación (isSuperAdmin de approvals/domain) y userRepository.findActiveUsersByRoleNames().
 const SUPERADMIN_ROLE_NAMES = [RBAC_ROLES.SUPERADMIN];
 
 // Roles destinatarios de las notificaciones por correo dirigidas "al admin".

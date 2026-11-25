@@ -10,9 +10,6 @@ import errorMessageModule from '../shared/kernel/error-message.util';
 const { errorMessage } = errorMessageModule;
 import iamModule from '../modules/iam';
 const { SessionExpirationWorker } = iamModule;
-import approvalsModule from '../modules/approvals';
-const { DualApprovalExpirationWorker, dualApprovalBootstrap: dualApprovalBootstrapModule } = approvalsModule;
-const { registerDualApprovalHandlers } = dualApprovalBootstrapModule;
 import app, { container } from './app';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -39,7 +36,7 @@ function startWorkers() {
   container.notification.worker.start();
   SessionExpirationWorker.iniciar();
   container.audit.retentionWorker.start();
-  DualApprovalExpirationWorker.iniciar();
+  container.approvals.expirationWorker.start();
   logger.info('✅ Workers iniciados');
 }
 
@@ -98,7 +95,6 @@ async function start() {
   try {
     logger.info(`🚀 Iniciando API (${server.nodeEnv})`);
     await connectInfrastructure();
-    registerDualApprovalHandlers();
     startWorkers();
     const httpServer = await listen();
     setupShutdown(httpServer);

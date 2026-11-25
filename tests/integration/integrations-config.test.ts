@@ -10,11 +10,12 @@ import prisma from '../../src/shared/infrastructure/database/prisma';
 import ErrorMiddleware from '../../src/shared/presentation/http/error.middleware';
 import { PrismaSystemGlobalConfigRepository } from '../../src/modules/settings/infrastructure/persistence/prisma-system-global-config.repository';
 import { IntegrationResilience } from '../../src/modules/settings/domain/integration-resilience';
-import approvalRequestRepository from '../../src/modules/approvals/repositories/approval-request.repository';
+import { PrismaApprovalRequestRepository } from '../../src/modules/approvals/infrastructure/persistence/prisma-approval-request.repository';
 import { PrismaFallbackEventRepository } from '../../src/modules/integration/infrastructure/persistence/prisma-fallback-event.repository';
 import { page } from '../helpers/page';
 
 const providerFallbackEventRepository = new PrismaFallbackEventRepository();
+const approvalRequestRepository = new PrismaApprovalRequestRepository();
 const TAG = `g4-it-${randomUUID().slice(0, 8)}`;
 let roleId: string;
 const userIds: string[] = [];
@@ -79,9 +80,9 @@ describe('Integraciones y config · Prisma contra Postgres', () => {
       expiresAt: new Date(Date.now() - 1000)
     });
 
-    const { rows, count } = await approvalRequestRepository.findAllPaginatedWithUsers({ operationKey: TAG }, page(), TAG.toUpperCase());
+    const { rows, count } = await approvalRequestRepository.list({ operationKey: TAG }, page(), TAG.toUpperCase());
     expect(count).toBe(1);
-    expect(rows[0]?.requester).toEqual({ userId: maker, username: `${TAG}-maker`, person: { firstName: 'Ana-maker', lastName: TAG } });
+    expect(rows[0]?.requester).toEqual({ userId: maker, username: `${TAG}-maker`, firstName: 'Ana-maker', lastName: TAG });
 
     expect((await approvalRequestRepository.findPendingByEntityIds('User', [maker])).map(r => r.approvalRequestId)).toEqual([pending.approvalRequestId]);
     expect((await approvalRequestRepository.findExpired(new Date())).map(r => r.approvalRequestId)).toContain(pending.approvalRequestId);
@@ -93,14 +94,14 @@ describe('Integraciones y config · Prisma contra Postgres', () => {
       resolutionNotes: 'ok',
       result: { done: true }
     });
-    expect(resolved).toMatchObject({ status: 'approved', result: { done: true }, secondApprover: { userId: checker, person: { firstName: 'Ana-checker' } } });
+    expect(resolved).toMatchObject({ status: 'approved', result: { done: true }, secondApprover: { userId: checker, firstName: 'Ana-checker' } });
     // Ya no está pendiente: el worker de vencimiento no la pisa
     expect(await approvalRequestRepository.markExpired(pending.approvalRequestId, new Date())).toBe(false);
   });
 
   it('dos pendientes para la misma operación y entidad: la UNIQUE parcial responde 409 vía el middleware', async () => {
     const maker = await newUser('dup');
-    const data = { operationKey: TAG, entityType: 'User', entityId: maker, payload: {}, requestedBy: maker, requestedAt: new Date(), status: 'pending' as const };
+    const data = { operationKey: TAG, entityType: 'User', entityId: maker, payload: {}, requestedBy: maker, requestedAt: new Date(), status: 'pending' as const, expiresAt: null };
     await approvalRequestRepository.create(data);
 
     const error = await approvalRequestRepository.create(data).catch((e: unknown) => e);

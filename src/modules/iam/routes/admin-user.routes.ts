@@ -116,7 +116,7 @@ router.patch(
 
 // ── Eliminar usuario interno (ofuscación irreversible + doble aprobación) ─────
 // La contraseña del admin (maker) se valida en el service; la doble aprobación se
-// gatea a nivel de service (DualApprovalService.gate), no por middleware.
+// gatea a nivel de service (dualApproval.gate de approvals), no por middleware.
 router.delete(
   '/iam/users/:userId/delete-account',
   AuthMiddleware.authenticate,

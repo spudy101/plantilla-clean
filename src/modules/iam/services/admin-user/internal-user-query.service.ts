@@ -12,7 +12,7 @@ import userSessionRepository from '../../repositories/user-session.repository';
 import auditModule from '../../../audit';
 const { userChangeLogRepository, audit } = auditModule;
 import approvalsModule from '../../../approvals';
-const { DualApprovalService } = approvalsModule;
+const { dualApproval } = approvalsModule;
 import constantsModule from '../../../../shared/infrastructure/config';
 const { INTERNAL_ROLE_NAMES, SUPERADMIN_ROLE_NAMES } = constantsModule;
 import adminUserDtoModule from '../../responses/admin-user.response';
@@ -34,7 +34,7 @@ class InternalUserQueryService {
   roleRepository: typeof roleRepository;
   userSessionRepository: typeof userSessionRepository;
   userChangeLogRepository: typeof userChangeLogRepository;
-  DualApprovalService: typeof DualApprovalService;
+  dualApproval: typeof dualApproval;
   guards: InstanceType<typeof InternalUserGuards>;
 
   /** @param {object} [deps] Dependencias inyectables (SOLID: D). Las provee la fachada AdminUserService. */
@@ -43,7 +43,7 @@ class InternalUserQueryService {
     this.roleRepository = deps.roleRepository ?? roleRepository;
     this.userSessionRepository = deps.userSessionRepository ?? userSessionRepository;
     this.userChangeLogRepository = deps.userChangeLogRepository ?? userChangeLogRepository;
-    this.DualApprovalService = deps.DualApprovalService ?? DualApprovalService;
+    this.dualApproval = deps.dualApproval ?? dualApproval;
     this.guards = deps.guards ?? new InternalUserGuards(deps);
   }
 
@@ -61,7 +61,7 @@ class InternalUserQueryService {
 
     const { rows, count } = await this.userRepository.findAllPaginated(filters, page, query.search ?? null);
 
-    await this.DualApprovalService.annotatePending('User', rows, 'userId');
+    await this.dualApproval.annotatePending('User', rows, 'userId');
 
     await audit.record('INTERNAL_USER_LIST_VIEWED', {
       actorId: adminUserId,
@@ -155,7 +155,7 @@ namespace InternalUserQueryService {
     roleRepository?: typeof roleRepository;
     userSessionRepository?: typeof userSessionRepository;
     userChangeLogRepository?: typeof userChangeLogRepository;
-    DualApprovalService?: typeof DualApprovalService;
+    dualApproval?: typeof dualApproval;
     guards?: InstanceType<typeof InternalUserGuards>;
   }
 }

@@ -12,7 +12,7 @@ const { KycSharedUtil } = personModule;
 import notificationModule from '../../../notification';
 const { notifier } = notificationModule;
 import approvalsModule from '../../../approvals';
-const { DualApprovalService } = approvalsModule;
+const { dualApproval } = approvalsModule;
 import AppError from '../../../../shared/presentation/http/app-error.util';
 import loggerUtilModule from '../../../../shared/infrastructure/observability/logger.util';
 const { logger } = loggerUtilModule;
@@ -32,7 +32,7 @@ class InternalUserAccessService {
   userRepository: typeof userRepository;
   kycSharedUtil: typeof KycSharedUtil;
   notifier: typeof notifier;
-  DualApprovalService: typeof DualApprovalService;
+  dualApproval: typeof dualApproval;
   guards: InstanceType<typeof InternalUserGuards>;
 
   /** @param {object} [deps] Dependencias inyectables (SOLID: D). Las provee la fachada AdminUserService. */
@@ -40,7 +40,7 @@ class InternalUserAccessService {
     this.userRepository = deps.userRepository ?? userRepository;
     this.kycSharedUtil = deps.kycSharedUtil ?? KycSharedUtil;
     this.notifier = deps.notifier ?? notifier;
-    this.DualApprovalService = deps.DualApprovalService ?? DualApprovalService;
+    this.dualApproval = deps.dualApproval ?? dualApproval;
     this.guards = deps.guards ?? new InternalUserGuards(deps);
   }
 
@@ -65,7 +65,7 @@ class InternalUserAccessService {
     // Doble aprobación (maker-checker). Las validaciones de arriba corren ANTES del gate, así una
     // operación inviable nunca crea un approval_request. Pendiente → 202; inline en otro caso.
     // El handler IoC reanuda con executeChangeRole (no re-gatea).
-    const gate = await this.DualApprovalService.gate('RBAC_ROLE_CHANGE', {
+    const gate = await this.dualApproval.gate('RBAC_ROLE_CHANGE', {
       entityType: 'User',
       entityId: userId,
       payload: { userId, roleId: newRoleId },
@@ -243,7 +243,7 @@ namespace InternalUserAccessService {
     userRepository?: typeof userRepository;
     kycSharedUtil?: typeof KycSharedUtil;
     notifier?: typeof notifier;
-    DualApprovalService?: typeof DualApprovalService;
+    dualApproval?: typeof dualApproval;
     guards?: InstanceType<typeof InternalUserGuards>;
   }
 }

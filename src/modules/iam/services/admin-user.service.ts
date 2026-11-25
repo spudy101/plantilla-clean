@@ -30,7 +30,7 @@ import unitOfWork from '../../../shared/infrastructure/database/unit-of-work';
 import notificationModule from '../../notification';
 const { notifier } = notificationModule;
 import approvalsModule from '../../approvals';
-const { DualApprovalService } = approvalsModule;
+const { dualApproval } = approvalsModule;
 import internalUserGuardsModule from './admin-user/internal-user-guards';
 const { InternalUserGuards } = internalUserGuardsModule;
 import InternalUserQueryService from './admin-user/internal-user-query.service';
@@ -70,7 +70,7 @@ class AdminUserService {
       userSessionRepository: deps.userSessionRepository ?? userSessionRepository,
       userChangeLogRepository: deps.userChangeLogRepository ?? userChangeLogRepository,
       notifier: deps.notifier ?? notifier,
-      DualApprovalService: deps.DualApprovalService ?? DualApprovalService
+      dualApproval: deps.dualApproval ?? dualApproval
     };
     shared.guards = deps.guards ?? new InternalUserGuards(shared);
 

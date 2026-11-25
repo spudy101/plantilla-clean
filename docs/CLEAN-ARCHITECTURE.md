@@ -5,9 +5,10 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
 > **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners`, `legal`,
-> `integration`, `audit`, `person` y `notification` están migrados completos (moldes: escritura, solo lectura,
+> `integration`, `audit`, `person`, `notification` y `approvals` están migrados completos (moldes: escritura, solo lectura,
 > agregado + archivos en S3, un módulo que otros usan, uno que reacciona a eventos de infraestructura, uno del que
-> dependen todos, uno que trabaja sobre los datos de otro y uno que envía por proveedores externos en segundo plano).
+> dependen todos, uno que trabaja sobre los datos de otro, uno que envía por proveedores externos en segundo plano y
+> uno que reanuda casos de uso de otros módulos).
 > Los demás módulos siguen con
 > la estructura en capas de la plantilla original y se migran uno por uno. Ver
 > [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
@@ -200,7 +201,7 @@ cliente) y un worker de retención.
   (`shared/domain/pii/masking.util.ts`), `loadUserRefs` es infraestructura de base de datos
   (`shared/infrastructure/database/user-ref.ts`), `buildAuditDiff` es kernel y `adminAuditContext` es
   presentación HTTP.
-- **Transitorio:** iam y approvals todavía escriben con `audit.record` del `index.ts`
+- **Transitorio:** iam todavía escribe con `audit.record` del `index.ts`
   (el mismo caso de uso, armado en `infrastructure/legacy/audit-recorder.ts`), iam lee intentos de
   autenticación e historial de cambios por el index, y los intentos de login (que son de iam) viven en audit
   hasta migrar iam.
@@ -261,10 +262,35 @@ la suppression list de correo (rebotes de SES por un webhook de SNS) y tiene su 
   sistema, apikey del webhook) llegan con las demás (`externalGuardsAdapter`).
 - **Workers y tiempo real:** `infrastructure/workers/notification.worker.ts` programa el despachador y las limpiezas
   (`container.notification.worker`); `server.ts` conecta y cierra el canal del contador (`unreadCounts`).
-- **Transitorio:** iam y approvals mandan notificaciones y SMS por el `index.ts` (los casos de uso que deja armados
+- **Transitorio:** iam manda notificaciones y SMS por el `index.ts` (los casos de uso que deja armados
   `infrastructure/legacy/legacy-bindings.ts`), e iam usa los códigos OTP, la preferencia inicial del registro y el
   registro del dispositivo push del login. Los adaptadores de `src/main/` leen por el index los tipos (catalogs), las
   preferencias de la traza de sesión (audit), los códigos verificados (person) y los SMS fallidos (integration).
+
+## Un módulo que reanuda casos de uso de otros (approvals)
+
+`approvals` es la doble aprobación (maker-checker): una operación sensible de otro módulo queda pendiente hasta
+que un segundo funcionario la aprueba, y recién ahí se ejecuta. Tiene su panel admin (cola, detalle, política,
+resolución) y un worker que vence las solicitudes. Detalle funcional en `docs/dual-approval-global.md`.
+
+- **Reglas en el dominio:** si una operación del registro exige segunda aprobación (ALWAYS o THRESHOLD), su umbral,
+  su vencimiento en horas hábiles (`business-hours.ts`), quién puede resolverla y quién se salta los cuatro ojos
+  (`dual-approval-operation.ts`); la solicitud (`approval-request.ts`): solo una pendiente se resuelve, el checker no
+  es el maker, la de super_admin nace aprobada por él mismo y qué resultado se guarda.
+- **El gate es un caso de uso:** `GateOperation` lo usan los demás módulos por un puerto propio (person:
+  `DualApprovalGate`, que el container conecta con `approvals.useCases.gate`). `requireDualApproval` es el mismo gate
+  como middleware de ruta.
+- **Las reanudaciones se registran desde afuera:** `ApprovalHandlers` guarda, por operación, la función que ejecuta
+  la acción real al aprobar. `src/main/container.ts` registra la baja de cliente de person
+  (`ExecuteClientAccountDeletion`) y las de iam (`src/main/adapters/approval-sources.adapter.ts`); approvals no
+  importa a ninguno (antes lo hacía un bootstrap que importaba iam y person).
+- **Lo que es de otros módulos llega por puertos:** los usuarios activos con un rol aprobador (`ApproverDirectory`,
+  iam) y el umbral configurado de una operación THRESHOLD (`ApprovalThresholds`, la configuración global; ninguna
+  operación lo usa hoy, así que el adaptador no tiene valores y vale el default). Con esto se borró el acceso crudo a
+  `system_global_config` que settings dejaba en su `index.ts` para approvals.
+- **Transitorio:** iam gatea el cambio de rol y la baja de usuarios internos, y anota el badge `pendingApproval` de
+  su listado, por el `index.ts` (`dualApproval.gate` y `dualApproval.annotatePending`, con los casos de uso que deja
+  armados `infrastructure/legacy/dual-approval.ts`).
 
 ## Errores
 
@@ -333,8 +359,9 @@ Usar `settings` como molde. Por cada módulo:
 | `audit` | ✅ migrado (RecordAuditEvent detrás del AuditTrail de todos; sesiones, traza y retención por puertos; respuestas y Swagger verificados idénticos a plantilla-base, salvo el arreglo de la exportación CSV/XLSX) |
 | `person` | ✅ migrado (las cuentas de iam por el puerto ClientAccounts; la baja que reanuda la doble aprobación; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
 | `notification` | ✅ migrado (el puerto Notifier de todos; cada proveedor detrás de un puerto; destinatarios de iam y prefijos de catalogs por puertos; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
-| `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
-| `index.ts` transitorios de `settings`, `catalogs`, `legal`, `audit`, `person` y `notification` (lo que usan iam, approvals y los adaptadores de `src/main/`) | ⏳ se borran al migrar esos módulos |
+| `approvals` | ✅ migrado (el gate y la resolución como casos de uso; las reanudaciones de person e iam las registra el container; aprobadores de iam y umbrales de settings por puertos; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
+| `iam` | ⏳ estructura en capas (el último) |
+| `index.ts` transitorios de `catalogs`, `legal`, `audit`, `person`, `notification` y `approvals` (lo que usan iam y los adaptadores de `src/main/`) | ⏳ se borran al migrar iam |
 | Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
 
 Mientras dure la migración conviven las dos formas: los módulos con `domain/` siguen estas reglas y los
