@@ -13,12 +13,12 @@ import profilePaths from '../../modules/person/presentation/http/docs/profile.pa
 import mfaPaths from '../../modules/iam/docs/mfa.paths';
 
 // ─── Módulos Notification (compartidos con admin) ─────────────
-import notificationSharedPaths from '../../modules/notification/docs/notification.paths';
-import notificationPreferencePaths from '../../modules/notification/docs/notification-preference.paths';
+import notificationSharedPaths from '../../modules/notification/presentation/http/docs/notification.paths';
+import notificationPreferencePaths from '../../modules/notification/presentation/http/docs/notification-preference.paths';
 
 // ─── Módulos Client ───────────────────────────────────────────
 import authRegisterPaths from '../../modules/iam/docs/auth-register.paths';
-import sendVerificationPaths from '../../modules/notification/docs/send-verification.paths';
+import sendVerificationPaths from '../../modules/notification/presentation/http/docs/send-verification.paths';
 import authBiometricPaths from '../../modules/iam/docs/auth-biometric.paths';
 import personReferencePaths from '../../modules/person/presentation/http/docs/person-reference.paths';
 

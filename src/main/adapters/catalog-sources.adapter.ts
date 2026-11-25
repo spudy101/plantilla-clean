@@ -1,8 +1,8 @@
 // Adaptadores: los catálogos que catalogs muestra pero son de otros módulos, leídos de sus repositorios y
 // traducidos a las vistas de catalogs (domain/catalog-entries). Viven acá porque conectan dos módulos.
 //
-// Cuando iam, notification y legal se migren a Clean, estos adaptadores llamarán a sus casos de uso en
-// vez de a sus repositorios; catalogs no cambia.
+// Cuando iam se migre a Clean, su adaptador llamará a sus casos de uso en vez de a su repositorio; catalogs no
+// cambia.
 import iamModule from '../../modules/iam';
 import notificationModule from '../../modules/notification';
 import legalModule from '../../modules/legal';
@@ -28,7 +28,7 @@ export const roleCatalogAdapter: CatalogReader<RoleEntry> = {
 
 export const notificationTypeCatalogAdapter: CatalogReader<NotificationTypeEntry> = {
   async list(filters, page, search) {
-    const { rows, count } = await notificationModule.notificationTypeRepository.findAllPaginated(filters, page, search ?? null);
+    const { rows, count } = await notificationModule.notificationTypeRepository.list(filters, page, search ?? null);
     return {
       count,
       rows: rows.map(type => ({

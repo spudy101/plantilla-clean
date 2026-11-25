@@ -99,8 +99,9 @@ También se eliminó lógica **duplicada** entre los tres flujos de autenticaci�
 
 ## O — Open/Closed
 
-> Nota (2026-11-19): el envío se simplificó a `notification-delivery.service.ts` (una fila por canal en
-> `notification_deliveries`, docs/notifications.md); el ejemplo queda como ilustración del principio.
+> Nota (2026-11-19): el envío se simplificó a una fila por canal en `notification_deliveries`
+> (docs/notifications.md); desde la migración a Clean vive en
+> `modules/notification/application/use-cases/deliveries.use-cases.ts`. El ejemplo queda como ilustración del principio.
 
 **Antes:** `notification-sending.service.ts` repetía en tres lugares:
 
@@ -208,8 +209,9 @@ const { PersonReferenceService } = personReferenceServiceModule;
 const service = new PersonReferenceService({ personReferenceRepository: { findAllByPersonId: jest.fn() } });
 ```
 
-Ejemplos reales: `consent-recorder.service.test.ts`, `unit-of-work.test.ts` y el bloque
-`notification-delivery.service.test.ts`.
+Ejemplos reales: `consent-recorder.service.test.ts` y `unit-of-work.test.ts`. En los módulos ya migrados a Clean
+el mismo principio va más lejos: los casos de uso reciben puertos y se prueban con dobles en memoria
+(`tests/doubles/`).
 
 > Nota: los utils puros o transversales (`AppError`, `logger`, `pageMetadata`, DTOs) se siguen
 > importando directo. DIP apunta a las dependencias que **cambian o tocan infraestructura**.
@@ -247,8 +249,8 @@ generado (`import type { User } from '…/generated/prisma/client'`): son la for
 - **Código de `shared/`** que consulta la base (`auth.middleware`, `rbac.service`,
   `mfa-status.util`, `resilience-config.util`) pasa por repositorios cargados de forma diferida.
   `require` diferido porque esos módulos se cargan al arrancar y un import directo crearía un ciclo.
-- **Clientes de infraestructura** (SNS, S3) se inyectan: `new PushNotificationService({ snsClient })`,
-  `new SmsService({ snsClient })`, `fileStorage` en banners.
+- **Clientes de infraestructura** (SNS, S3) se inyectan: `new SnsPushGateway(snsClient)`,
+  `new SnsSmsGateway(attempts, snsClient)`, `fileStorage` en banners.
 
 **Excepciones deliberadas** (adaptadores de infraestructura, fuera de la regla):
 

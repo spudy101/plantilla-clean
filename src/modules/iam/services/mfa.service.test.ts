@@ -18,7 +18,7 @@ jest.mock('../repositories/user.repository', () => ({
   verifyPassword: jest.fn()
 }));
 
-jest.mock('../../notification/repositories/verification-code.repository', () => ({
+jest.mock('../../notification/infrastructure/persistence/prisma-verification-code.repository', () => ({
   secondsUntilNewCode: jest.fn(),
   create: jest.fn(),
   findActiveByContact: jest.fn(),
@@ -41,11 +41,11 @@ jest.mock('../../../shared/infrastructure/security/encryption.util', () => ({
   decrypt: jest.fn().mockReturnValue('SECRET123')
 }));
 
-jest.mock('../../notification/notify', () => ({
+jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../notification/services/sms.service', () => ({
+jest.mock('../../notification/infrastructure/legacy/sms-service', () => ({
   resolveE164: jest.fn().mockResolvedValue('+56911112222'),
   enviarSmsOtp: jest.fn().mockResolvedValue({ success: true })
 }));
@@ -77,15 +77,15 @@ import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import userRepoModule from '../repositories/user.repository';
 const userRepo = mocked(userRepoModule);
-import verificationCodeRepoModule from '../../notification/repositories/verification-code.repository';
+const verificationCodeRepoModule = jest.requireMock<import('../../notification/infrastructure/persistence/prisma-verification-code.repository').PrismaVerificationCodeRepository>('../../notification/infrastructure/persistence/prisma-verification-code.repository');
 const verificationCodeRepo = mocked(verificationCodeRepoModule);
 import KycSharedUtilModule from '../../person/infrastructure/legacy/kyc-shared.util';
 const KycSharedUtil = mocked(KycSharedUtilModule);
 import TotpUtilModule from '../../../shared/infrastructure/security/totp.util';
 const TotpUtil = mocked(TotpUtilModule);
-import NotificationUtilModule from '../../notification/notify';
+import NotificationUtilModule from '../../notification/infrastructure/legacy/notifier';
 const notifier = mocked(NotificationUtilModule);
-import SmsServiceModule from '../../notification/services/sms.service';
+import SmsServiceModule from '../../notification/infrastructure/legacy/sms-service';
 const SmsService = mocked(SmsServiceModule);
 import constantsModule from '../../../shared/infrastructure/config';
 const constants = mocked(constantsModule);

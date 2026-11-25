@@ -25,7 +25,7 @@ jest.mock('../utils/token-blacklist.util', () => ({
   blacklistSession: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../notification/notify', () => ({
+jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -54,7 +54,7 @@ import RefreshTokenStoreModule from '../utils/refresh-token-store.util';
 const RefreshTokenStore = mocked(RefreshTokenStoreModule);
 import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
-import NotificationCreationServiceModule from '../../notification/notify';
+import NotificationCreationServiceModule from '../../notification/infrastructure/legacy/notifier';
 const notifier = mocked(NotificationCreationServiceModule);
 import loggerUtilModule from '../../../shared/infrastructure/observability/logger.util';
 import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';

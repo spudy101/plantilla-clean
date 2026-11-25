@@ -19,11 +19,11 @@ function routeFiles(dir: string): string[] {
   });
 }
 
-/** Cada `router.<método>(...)` completo, con el archivo donde está. */
+/** Cada `router.<método>(...)` completo (en una línea o en varias, hasta el `);` que lo cierra), con su archivo. */
 function routeBlocks() {
   return routeFiles(path.join(ROOT, 'src/modules')).flatMap(file => {
     const src = fs.readFileSync(file, 'utf8');
-    return [...src.matchAll(/router\.(?:get|post|put|patch|delete)\(([\s\S]*?)\n\);/g)].map(m => ({
+    return [...src.matchAll(/router\.(?:get|post|put|patch|delete)\(([\s\S]*?)\);\s*$/gm)].map(m => ({
       file: path.relative(ROOT, file).split(path.sep).join('/'),
       block: m[1]!
     }));

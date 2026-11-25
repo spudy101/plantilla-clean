@@ -5,7 +5,14 @@
 // Así el mismo caso de uso sirve igual desde una ruta, un worker o un CLI.
 
 /** Familia del error. La presentación decide qué significa en su protocolo (en HTTP: el status). */
-export type DomainErrorKind = 'not_found' | 'conflict' | 'rule_violation' | 'invalid_input' | 'forbidden' | 'unauthorized';
+export type DomainErrorKind =
+  | 'not_found'
+  | 'conflict'
+  | 'rule_violation'
+  | 'invalid_input'
+  | 'forbidden'
+  | 'unauthorized'
+  | 'rate_limited';
 
 export abstract class DomainError extends Error {
   abstract readonly kind: DomainErrorKind;
@@ -53,4 +60,17 @@ export class ForbiddenError extends DomainError {
 /** No se sabe quién pide la operación (o sus credenciales no valen). */
 export class UnauthorizedError extends DomainError {
   readonly kind = 'unauthorized' as const;
+}
+
+/** Se pidió demasiadas veces seguidas: hay que esperar `retryAfterSeconds` antes de volver a pedirlo. */
+export class TooManyRequestsError extends DomainError {
+  readonly kind = 'rate_limited' as const;
+
+  constructor(
+    message: string,
+    code: string,
+    readonly retryAfterSeconds: number | null = null
+  ) {
+    super(message, code);
+  }
 }

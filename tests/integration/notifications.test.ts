@@ -7,18 +7,42 @@
 
 import { randomUUID } from 'node:crypto';
 import prisma from '../../src/shared/infrastructure/database/prisma';
-import notificationRepository from '../../src/modules/notification/repositories/notification.repository';
-import deliveryRepository from '../../src/modules/notification/repositories/notification-delivery.repository';
-import notificationTypeRepository from '../../src/modules/notification/repositories/notification-type.repository';
-import notificationCategoryRepository from '../../src/modules/notification/repositories/notification-category.repository';
-import globalNotificationRepository from '../../src/modules/notification/repositories/global-notification.repository';
-import globalNotificationReadRepository from '../../src/modules/notification/repositories/global-notification-read.repository';
-import preferenceRepository from '../../src/modules/notification/repositories/user-notification-preference.repository';
-import verificationCodeRepository from '../../src/modules/notification/repositories/verification-code.repository';
-import emailBounceSuppressionRepository from '../../src/modules/notification/repositories/email-bounce-suppression.repository';
+import {
+  PrismaGlobalNotificationRepository,
+  PrismaPersonalNotificationRepository
+} from '../../src/modules/notification/infrastructure/persistence/prisma-inbox.repositories';
+import { PrismaDeliveryRepository } from '../../src/modules/notification/infrastructure/persistence/prisma-delivery.repository';
+import {
+  PrismaNotificationCategoryRepository,
+  PrismaNotificationTypeRepository
+} from '../../src/modules/notification/infrastructure/persistence/prisma-notification-catalog.repositories';
+import { PrismaNotificationPreferenceRepository } from '../../src/modules/notification/infrastructure/persistence/prisma-preference.repository';
+import { PrismaVerificationCodeRepository } from '../../src/modules/notification/infrastructure/persistence/prisma-verification-code.repository';
+import { PrismaEmailSuppressionRepository } from '../../src/modules/notification/infrastructure/persistence/prisma-email-suppression.repository';
+import { PrismaPushTokenRepository } from '../../src/modules/notification/infrastructure/persistence/prisma-push-token.repository';
 import userRepository from '../../src/modules/iam/repositories/user.repository';
-import userPushTokenRepository from '../../src/modules/notification/repositories/user-push-token.repository';
 import { page as listPage } from '../helpers/page';
+
+const notificationRepository = new PrismaPersonalNotificationRepository();
+const deliveryRepository = new PrismaDeliveryRepository();
+const notificationTypeRepository = new PrismaNotificationTypeRepository();
+const notificationCategoryRepository = new PrismaNotificationCategoryRepository();
+const globalNotificationRepository = new PrismaGlobalNotificationRepository();
+const preferenceRepository = new PrismaNotificationPreferenceRepository();
+const verificationCodeRepository = new PrismaVerificationCodeRepository();
+const emailBounceSuppressionRepository = new PrismaEmailSuppressionRepository();
+const userPushTokenRepository = new PrismaPushTokenRepository();
+
+/** Una notificación personal mínima del usuario de prueba. */
+const personal = (title: string) => ({
+  userId,
+  notificationTypeId: typeId,
+  title,
+  body: 'B',
+  relatedEntityType: null,
+  relatedEntityId: null,
+  metadata: {}
+});
 
 const TAG = `notif-it-${randomUUID().slice(0, 8)}`;
 const CODE = TAG.toUpperCase().replace(/-/g, '_');
@@ -63,9 +87,9 @@ describe('Notificaciones · Prisma contra Postgres', () => {
   });
 
   it('categoría y tipo: el tipo trae su categoría', async () => {
-    expect(await notificationCategoryRepository.findByCode(CODE)).toMatchObject({ code: CODE, isCritical: false });
+    expect(await notificationCategoryRepository.findById(categoryId)).toMatchObject({ code: CODE, isCritical: false });
 
-    const type = await notificationTypeRepository.findByCode(CODE);
+    const type = await notificationTypeRepository.findActiveByCode(CODE);
     expect(type?.category).toMatchObject({ code: CODE });
     expect(await notificationTypeRepository.countByCategory(categoryId)).toBe(1);
   });
@@ -85,12 +109,12 @@ describe('Notificaciones · Prisma contra Postgres', () => {
   });
 
   it('entregas: el despachador toma solo las vencidas, las reserva y dos ciclos a la vez no toman la misma', async () => {
-    const n = await notificationRepository.create({ userId, notificationTypeId: typeId, title: 'T', body: 'B' });
+    const n = await notificationRepository.create(personal('T'));
     const past = new Date(Date.now() - 1000);
-    const [push, email] = await deliveryRepository.createForNotification(n.notificationId, ['push', 'email'], past);
+    const [push, email] = await deliveryRepository.createFor(n.notificationId, ['push', 'email'], past);
     // Una tercera, en el futuro (diferida por horario de silencio): no se toma
-    const n2 = await notificationRepository.create({ userId, notificationTypeId: typeId, title: 'T2', body: 'B' });
-    await deliveryRepository.createForNotification(n2.notificationId, ['email'], new Date(Date.now() + 3_600_000));
+    const n2 = await notificationRepository.create(personal('T2'));
+    await deliveryRepository.createFor(n2.notificationId, ['email'], new Date(Date.now() + 3_600_000));
 
     const [a, b] = await Promise.all([deliveryRepository.claimDue(10, 60_000), deliveryRepository.claimDue(10, 60_000)]);
     const mine = [...a, ...b].filter(d => d.notificationId === n.notificationId).map(d => d.notificationDeliveryId);
@@ -121,7 +145,7 @@ describe('Notificaciones · Prisma contra Postgres', () => {
       push!.notificationDeliveryId
     );
 
-    const admin = await deliveryRepository.findAllForAdmin({ userId, status: 'sent' }, listPage());
+    const admin = await deliveryRepository.list({ userId, status: 'sent', channel: null, from: null, to: null }, listPage());
     expect(admin.count).toBe(1);
     expect(admin.rows[0]?.notification.notificationType?.category).toMatchObject({ code: CODE });
 
@@ -131,25 +155,32 @@ describe('Notificaciones · Prisma contra Postgres', () => {
   });
 
   it('bandeja: marcar como leída una sola vez', async () => {
-    const n = await notificationRepository.create({ userId, notificationTypeId: typeId, title: 'T', body: 'B' });
-    expect(await notificationRepository.markAsReadByIds([n.notificationId])).toBe(1);
-    expect(await notificationRepository.markAsReadByIds([n.notificationId])).toBe(0);
+    const n = await notificationRepository.create(personal('T'));
+    expect(await notificationRepository.markAsRead([n.notificationId])).toBe(1);
+    expect(await notificationRepository.markAsRead([n.notificationId])).toBe(0);
   });
 
   it('global: leída una vez aunque se marque dos', async () => {
     const unreadBefore = await globalNotificationRepository.countUnreadByUser(userId);
-    const g = await globalNotificationRepository.create({ notificationTypeId: typeId, title: 'G', body: 'B', status: 'completed' });
+    const g = await prisma.globalNotification.create({ data: { notificationTypeId: typeId, title: 'G', body: 'B', status: 'completed' } });
     expect(await globalNotificationRepository.countUnreadByUser(userId)).toBe(unreadBefore + 1);
 
-    await globalNotificationReadRepository.bulkMarkAsRead([g.globalNotificationId], userId);
-    await globalNotificationReadRepository.bulkMarkAsRead([g.globalNotificationId], userId);
+    await globalNotificationRepository.markAsRead([g.globalNotificationId], userId);
+    await globalNotificationRepository.markAsRead([g.globalNotificationId], userId);
 
-    expect(await globalNotificationReadRepository.getReadIdsByUser(userId)).toEqual([g.globalNotificationId]);
+    expect(await globalNotificationRepository.readIdsOf(userId)).toEqual([g.globalNotificationId]);
     expect(await globalNotificationRepository.countUnreadByUser(userId)).toBe(unreadBefore);
   });
 
   it('global: el despachador la toma una sola vez, guarda el avance y no la retoma terminada', async () => {
-    const g = await globalNotificationRepository.create({ notificationTypeId: typeId, title: 'G2', body: 'B', sendPush: true });
+    const g = await globalNotificationRepository.create({
+      notificationTypeId: typeId,
+      title: 'G2',
+      body: 'B',
+      metadata: {},
+      sendPush: true,
+      sendEmail: false
+    });
     const id = g.globalNotificationId;
 
     // Dos ciclos a la vez: solo uno la toma, con su tipo y categoría
@@ -160,8 +191,8 @@ describe('Notificaciones · Prisma contra Postgres', () => {
     // Reservada: no se vuelve a tomar
     expect((await globalNotificationRepository.claimDue(60_000)).some(x => x.globalNotificationId === id)).toBe(false);
 
-    await globalNotificationRepository.recordPage(id, { cursorUserId: userId, pushSent: 5, emailSent: 1, leaseMs: 60_000 });
-    await globalNotificationRepository.recordPage(id, { cursorUserId: userId, pushSent: 2, emailSent: 0, leaseMs: 60_000 });
+    await globalNotificationRepository.recordProgress(id, { cursorUserId: userId, pushSent: 5, emailSent: 1, leaseMs: 60_000 });
+    await globalNotificationRepository.recordProgress(id, { cursorUserId: userId, pushSent: 2, emailSent: 0, leaseMs: 60_000 });
     expect(await prisma.globalNotification.findUnique({ where: { globalNotificationId: id } })).toMatchObject({
       cursorUserId: userId,
       pushSentCount: 7,
@@ -180,10 +211,10 @@ describe('Notificaciones · Prisma contra Postgres', () => {
   it('token push dado de baja: se desactiva y volver a registrar el dispositivo lo reactiva', async () => {
     const token = `arn:${TAG}`;
     await userPushTokenRepository.upsertToken(userId, token, 'android', `dev-${TAG}`);
-    expect(await userPushTokenRepository.deactivateTokens([token, 'arn:otro'])).toBe(1);
+    expect(await userPushTokenRepository.deactivate([token, 'arn:otro'])).toBe(1);
     expect(await userPushTokenRepository.findActiveByUser(userId)).toEqual([]);
     // ya inactivo: no cuenta de nuevo
-    expect(await userPushTokenRepository.deactivateTokens([token])).toBe(0);
+    expect(await userPushTokenRepository.deactivate([token])).toBe(0);
 
     await userPushTokenRepository.upsertToken(userId, token, 'android', `dev-${TAG}`);
     expect((await userPushTokenRepository.findActiveByUser(userId)).map(t => t.token)).toEqual([token]);
@@ -220,7 +251,7 @@ describe('Notificaciones · Prisma contra Postgres', () => {
   });
 
   it('suppression list: al tercer rebote duro la dirección queda suprimida; lift la libera', async () => {
-    const opts = { errorCode: 'Bounce', threshold: 3 };
+    const opts = { userId: null, errorCode: 'Bounce', threshold: 3 };
     expect(await emailBounceSuppressionRepository.registerHardBounce(TAG, opts)).toMatchObject({
       bounceCount: 1,
       suppressed: false

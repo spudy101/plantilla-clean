@@ -87,7 +87,7 @@ jest.mock('../repositories/user-session.repository', () => ({
   closeSession: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../notification/notify', () => ({
+jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -142,7 +142,7 @@ import RefreshTokenStoreModule from '../utils/refresh-token-store.util';
 const RefreshTokenStore = mocked(RefreshTokenStoreModule);
 import userSessionRepositoryModule from '../repositories/user-session.repository';
 const userSessionRepository = mocked(userSessionRepositoryModule);
-import NotificationUtilModule from '../../notification/notify';
+import NotificationUtilModule from '../../notification/infrastructure/legacy/notifier';
 const notifier = mocked(NotificationUtilModule);
 import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;

@@ -13,16 +13,16 @@ import profilePaths from '../../modules/person/presentation/http/docs/profile.pa
 import mfaPaths from '../../modules/iam/docs/mfa.paths';
 
 // ─── Módulos Notification (compartidos con client) ────────────
-import notificationSharedPaths from '../../modules/notification/docs/notification.paths';
-import notificationPreferencePaths from '../../modules/notification/docs/notification-preference.paths';
-import sendVerificationPaths from '../../modules/notification/docs/send-verification.paths';
+import notificationSharedPaths from '../../modules/notification/presentation/http/docs/notification.paths';
+import notificationPreferencePaths from '../../modules/notification/presentation/http/docs/notification-preference.paths';
+import sendVerificationPaths from '../../modules/notification/presentation/http/docs/send-verification.paths';
 
 // ─── Módulos Admin — Privacidad ───────────────────────────────
 import privacyPolicyPaths from '../../modules/legal/presentation/http/docs/privacy-policy-admin.paths';
 
 // ─── Módulos Admin — KYC ──────────────────────────────────────
 import personPaths from '../../modules/person/presentation/http/docs/admin-person.paths';
-import notificationTypePaths from '../../modules/notification/docs/notification-type.paths';
+import notificationTypePaths from '../../modules/notification/presentation/http/docs/notification-type.paths';
 
 // ─── Módulos Admin — Auditoría ────────────────────────────────
 import adminAuthSessionPaths from '../../modules/iam/docs/admin-auth-session.paths';
@@ -33,8 +33,8 @@ import auditActionCatalogPaths from '../../modules/audit/presentation/http/docs/
 import sessionTracePaths from '../../modules/audit/presentation/http/docs/session-trace.paths';
 import operationPaths from '../../modules/audit/presentation/http/docs/operation.paths';
 import integrationMonitoringPaths from '../../modules/integration/presentation/http/docs/integration-monitoring.paths';
-import notificationDeliveryPaths from '../../modules/notification/docs/notification-delivery.paths';
-import notificationCategoryPaths from '../../modules/notification/docs/notification-category.paths';
+import notificationDeliveryPaths from '../../modules/notification/presentation/http/docs/notification-delivery.paths';
+import notificationCategoryPaths from '../../modules/notification/presentation/http/docs/notification-category.paths';
 
 // ─── Módulos Admin — Consentimientos ──────────────────────────
 import consentTypePaths from '../../modules/legal/presentation/http/docs/consent-type.paths';

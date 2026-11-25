@@ -38,7 +38,7 @@ jest.mock('../repositories/credential-reset.repository', () => ({
   findValidTokenWithUser: jest.fn(),
   markAsUsed: jest.fn()
 }));
-jest.mock('../../notification/repositories/user-notification-preference.repository', () => ({
+jest.mock('../../notification/infrastructure/persistence/prisma-preference.repository', () => ({
   upsert: jest.fn()
 }));
 jest.mock('../../catalogs/infrastructure/persistence/prisma-country.repository', () => ({
@@ -56,7 +56,7 @@ jest.mock('../../legal/infrastructure/persistence/prisma-consent-type.repository
 jest.mock('../../catalogs/infrastructure/persistence/prisma-gender.repository', () => ({
   exists: jest.fn()
 }));
-jest.mock('../../notification/repositories/verification-code.repository', () => ({
+jest.mock('../../notification/infrastructure/persistence/prisma-verification-code.repository', () => ({
   findVerifiedByContact: jest.fn(),
   deleteVerifiedByContact: jest.fn()
 }));
@@ -81,7 +81,7 @@ jest.mock('../../person/infrastructure/legacy/kyc-shared.util', () => ({
 jest.mock('../utils/token-blacklist.util', () => ({
   invalidateUserSessions: jest.fn()
 }));
-jest.mock('../../notification/notify', () => ({
+jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
   notify: jest.fn(),
   notifyEmail: jest.fn()
 }));
@@ -124,7 +124,7 @@ const documentTypeRepositoryModule = catalogsModule.documentTypeRepository;
 const documentTypeRepository = mocked(documentTypeRepositoryModule);
 import resetCredentialsRepositoryModule from '../repositories/credential-reset.repository';
 const credentialResetRepository = mocked(resetCredentialsRepositoryModule);
-import userNotificationPreferenceRepositoryModule from '../../notification/repositories/user-notification-preference.repository';
+const userNotificationPreferenceRepositoryModule = jest.requireMock<import('../../notification/infrastructure/persistence/prisma-preference.repository').PrismaNotificationPreferenceRepository>('../../notification/infrastructure/persistence/prisma-preference.repository');
 const userNotificationPreferenceRepository = mocked(userNotificationPreferenceRepositoryModule);
 const countryRepositoryModule = catalogsModule.countryRepository;
 const countryRepository = mocked(countryRepositoryModule);
@@ -136,7 +136,7 @@ const consentTypeRepositoryModule = jest.requireMock<import('../../legal/infrast
 const consentTypeRepository = mocked(consentTypeRepositoryModule);
 const genderRepositoryModule = catalogsModule.genderRepository;
 const genderRepository = mocked(genderRepositoryModule);
-import verificationCodeRepositoryModule from '../../notification/repositories/verification-code.repository';
+const verificationCodeRepositoryModule = jest.requireMock<import('../../notification/infrastructure/persistence/prisma-verification-code.repository').PrismaVerificationCodeRepository>('../../notification/infrastructure/persistence/prisma-verification-code.repository');
 const verificationCodeRepository = mocked(verificationCodeRepositoryModule);
 import roleRepositoryModule from '../repositories/role.repository';
 const roleRepository = mocked(roleRepositoryModule);
@@ -150,7 +150,7 @@ import KycSharedUtilModule from '../../person/infrastructure/legacy/kyc-shared.u
 const KycSharedUtil = mocked(KycSharedUtilModule);
 import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
-import NotificationUtilModule from '../../notification/notify';
+import NotificationUtilModule from '../../notification/infrastructure/legacy/notifier';
 const notifier = mocked(NotificationUtilModule);
 import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);

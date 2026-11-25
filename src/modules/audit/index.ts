@@ -1,5 +1,5 @@
 // API pública del módulo audit para los módulos que todavía no están en Clean Architecture (iam,
-// notification, approvals).
+// approvals).
 //
 // En Clean, audit no se usa importando este index: src/main/container.ts arma el módulo (createAuditModule en
 // audit.module.ts) y entrega su AuditTrail a los módulos migrados. Lo que queda acá es TRANSITORIO: la

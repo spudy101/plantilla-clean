@@ -18,8 +18,9 @@ jest.mock('../../iam/repositories/user.repository', () => ({
   findActiveUsersByRoleNames: jest.fn().mockResolvedValue([])
 }));
 
-jest.mock('../../notification/services/notification-creation.service', () => ({
-  crearNotificacion: jest.fn().mockResolvedValue(undefined)
+jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
+  notify: jest.fn().mockResolvedValue(undefined),
+  notifyEmail: jest.fn().mockResolvedValue(undefined)
 }));
 
 jest.mock('../../../shared/infrastructure/observability/logger.util', () => ({

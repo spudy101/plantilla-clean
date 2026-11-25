@@ -29,7 +29,7 @@ jest.mock('../../audit/infrastructure/persistence/prisma-user-login-attempt.repo
   checkIfBlocked: jest.fn()
 }));
 
-jest.mock('../../notification/repositories/verification-code.repository', () => ({
+jest.mock('../../notification/infrastructure/persistence/prisma-verification-code.repository', () => ({
   secondsUntilNewCode: jest.fn(),
   create: jest.fn(),
   findActiveByContact: jest.fn(),
@@ -141,11 +141,11 @@ jest.mock('../utils/login-rate-limiter.util', () => ({
 }));
 
 // ── Notificaciones / SMS ─────────────────────────────────────────────────────
-jest.mock('../../notification/notify', () => ({
+jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
-jest.mock('../../notification/services/sms.service', () => ({
+jest.mock('../../notification/infrastructure/legacy/sms-service', () => ({
   resolveE164: jest.fn().mockResolvedValue('+56911112222'),
   enviarSmsOtp: jest.fn().mockResolvedValue({ success: true })
 }));
@@ -199,7 +199,7 @@ import userRepositoryModule from '../repositories/user.repository';
 const userRepository = mocked(userRepositoryModule);
 const userLoginAttemptRepositoryModule = jest.requireMock<import('../../audit/infrastructure/persistence/prisma-user-login-attempt.repository').PrismaUserLoginAttemptRepository>('../../audit/infrastructure/persistence/prisma-user-login-attempt.repository');
 const userLoginAttemptRepository = mocked(userLoginAttemptRepositoryModule);
-import verificationCodeRepositoryModule from '../../notification/repositories/verification-code.repository';
+const verificationCodeRepositoryModule = jest.requireMock<import('../../notification/infrastructure/persistence/prisma-verification-code.repository').PrismaVerificationCodeRepository>('../../notification/infrastructure/persistence/prisma-verification-code.repository');
 const verificationCodeRepository = mocked(verificationCodeRepositoryModule);
 import userSessionRepositoryModule from '../repositories/user-session.repository';
 const userSessionRepository = mocked(userSessionRepositoryModule);
@@ -219,9 +219,9 @@ import TokenBlacklistUtilModule from '../utils/token-blacklist.util';
 const TokenBlacklistUtil = mocked(TokenBlacklistUtilModule);
 import redisClientModule from '../../../shared/infrastructure/cache/redis.util';
 const redisClient = mocked(redisClientModule);
-import NotificationUtilModule from '../../notification/notify';
+import NotificationUtilModule from '../../notification/infrastructure/legacy/notifier';
 const notifier = mocked(NotificationUtilModule);
-import SmsServiceModule from '../../notification/services/sms.service';
+import SmsServiceModule from '../../notification/infrastructure/legacy/sms-service';
 const SmsService = mocked(SmsServiceModule);
 import LoginRateLimiterModule from '../utils/login-rate-limiter.util';
 const LoginRateLimiter = mocked(LoginRateLimiterModule);

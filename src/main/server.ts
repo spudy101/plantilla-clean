@@ -8,8 +8,6 @@ import constantsModule from '../shared/infrastructure/config';
 const { server, workers } = constantsModule;
 import errorMessageModule from '../shared/kernel/error-message.util';
 const { errorMessage } = errorMessageModule;
-import notificationModule from '../modules/notification';
-const { NotificationWorker, NotificationEmitter } = notificationModule;
 import iamModule from '../modules/iam';
 const { SessionExpirationWorker } = iamModule;
 import approvalsModule from '../modules/approvals';
@@ -30,7 +28,7 @@ async function connectInfrastructure() {
   await databaseHealth.checkDatabase();
   logger.info('✅ Base de datos conectada');
 
-  await NotificationEmitter.initialize();
+  await container.notification.unreadCounts.initialize();
 }
 
 function startWorkers() {
@@ -38,7 +36,7 @@ function startWorkers() {
     logger.info('ℹ️  Workers deshabilitados');
     return;
   }
-  NotificationWorker.iniciar();
+  container.notification.worker.start();
   SessionExpirationWorker.iniciar();
   container.audit.retentionWorker.start();
   DualApprovalExpirationWorker.iniciar();
@@ -67,7 +65,7 @@ function setupShutdown(httpServer: Server) {
       });
       await databaseHealth.closeDatabase();
       await redisClient.disconnect();
-      await NotificationEmitter.close();
+      await container.notification.unreadCounts.close();
       logger.info('✅ Apagado completo');
       process.exit(0);
     } catch (error) {

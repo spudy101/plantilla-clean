@@ -6,7 +6,7 @@ import {
   NotificationCategorySchema,
   NotificationSchema,
   NotificationTypeSchema
-} from '../../../modules/notification/responses/notification-components.response';
+} from '../../../modules/notification/presentation/http/responses/notification-components.response';
 
 export default {
   NotificationCategory: toOpenApi(NotificationCategorySchema, 'output'),

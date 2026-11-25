@@ -12,7 +12,7 @@ import { createAuditModule } from '../modules/audit/audit.module';
 import { auditSessionsAdapter, tracedEntitiesAdapter } from './adapters/audit-sources.adapter';
 import type { SettingsModule } from '../modules/settings/settings.module';
 import { notifierAdapter } from './adapters/notifier.adapter';
-import { routeGuardsAdapter } from './adapters/route-guards.adapter';
+import { externalGuardsAdapter, routeGuardsAdapter } from './adapters/route-guards.adapter';
 import redisClient from '../shared/infrastructure/cache/redis.util';
 import { createCatalogsModule } from '../modules/catalogs/catalogs.module';
 import {
@@ -39,6 +39,8 @@ import {
   roleDirectoryAdapter
 } from './adapters/person-sources.adapter';
 import approvalsModule from '../modules/approvals';
+import { createNotificationModule } from '../modules/notification/notification.module';
+import { phonePrefixesAdapter, recipientDirectoryAdapter } from './adapters/notification-sources.adapter';
 
 const { logger } = loggerUtilModule;
 
@@ -55,6 +57,20 @@ export function createContainer() {
     retentionSettings: { read: () => (settingsModule ? settingsModule.useCases.getAuditRetention.execute() : Promise.resolve(null)) },
     operationsRetentionDays: constantsModule.logging.operationsRetentionDays,
     notificationLogoUrl: constantsModule.notifications.ses.logoUrl
+  });
+
+  // notification va segundo: los demás avisan por su Notifier (notifierAdapter lo busca al usarse)
+  const notification = createNotificationModule({
+    audit: audit.trail,
+    logger,
+    unitOfWork,
+    guards: routeGuardsAdapter,
+    externalGuards: externalGuardsAdapter,
+    recipients: recipientDirectoryAdapter,
+    phonePrefixes: phonePrefixesAdapter,
+    notificationLogoUrl: constantsModule.notifications.ses.logoUrl,
+    mockProviders: constantsModule.MOCKS.EXTERNAL_PROVIDERS,
+    bounceTopicArn: constantsModule.notifications.sns.bounceTopicArn
   });
 
   const settings = createSettingsModule({
@@ -120,7 +136,7 @@ export function createContainer() {
 
   settingsModule = settings;
 
-  return { audit, settings, catalogs, banners, legal, integration, person };
+  return { audit, notification, settings, catalogs, banners, legal, integration, person };
 }
 
 export type Container = ReturnType<typeof createContainer>;

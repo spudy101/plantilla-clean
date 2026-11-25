@@ -83,7 +83,7 @@ jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo.test/x.png' } }
 }));
 
-jest.mock('../../notification/notify', () => ({
+jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -132,7 +132,7 @@ import prismaModule from '../../../shared/infrastructure/database/prisma';
 const prisma = mocked(prismaModule);
 import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
-import NotificationCreationServiceModule from '../../notification/notify';
+import NotificationCreationServiceModule from '../../notification/infrastructure/legacy/notifier';
 const notifier = mocked(NotificationCreationServiceModule);
 import DualApprovalServiceModule from '../../approvals/services/dual-approval.service';
 const DualApprovalService = mocked(DualApprovalServiceModule);

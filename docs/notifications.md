@@ -1,13 +1,16 @@
 # Sistema de Notificaciones — guía de onboarding
 
 > El detalle vive aquí.
-> Punto de entrada único: **`NotificationCreationService`** (`src/modules/notification/services/notification-creation.service.ts`).
+> Punto de entrada único: el puerto **`Notifier`** (`shared/application/ports/notifier.port.ts`): `notify({ type, userId, … })`
+> y `notifyEmail({ type, email, … })`. Lo implementa el caso de uso `CreateNotification`
+> (`src/modules/notification/application/use-cases/create-notification.use-case.ts`); `src/main/container.ts` lo
+> conecta a cada módulo. Los módulos sin migrar (iam, approvals) usan `notificationModule.notifier`.
 
 ## Idea general
 
 Cada notificación se define por un **`NotificationType`** (fila en `notification_types`, identificada por
-`code`), que **pertenece a una `NotificationCategory`**. Un service de negocio dispara
-`crearNotificacion({ tipoNotificacion: 'CODE', ... })`; el sistema resuelve el tipo por `code`, renderiza los
+`code`), que **pertenece a una `NotificationCategory`**. Un caso de uso dispara
+`notifier.notify({ type: 'CODE', ... })`; el sistema resuelve el tipo por `code`, renderiza los
 templates con `metadata`, guarda la notificación in-app y **una entrega por cada canal externo** que
 corresponda (push/email/**sms**), y las envía respetando la preferencia del usuario, su horario de silencio
 y los reintentos.
@@ -19,7 +22,7 @@ y los reintentos.
 > solo aporta su contenido (los templates). La **preferencia del usuario** es una sola, global.
 
 ```
-Service ──crearNotificacion()──> resuelve NotificationType por code (+ su categoría)
+Caso de uso ──notify()──> resuelve NotificationType por code (+ su categoría)
                                   └─ render {{variables}} con metadata
                                   └─ en UNA transacción: Notification (in-app) + NotificationDelivery por canal
                                   └─ tras confirmar: envía las entregas en segundo plano (push SNS / email SES / sms SNS)
@@ -56,15 +59,15 @@ Ejemplo canónico real — `admin-person.service.ts`, al activar/desactivar la c
 ```js
 setImmediate(() => {
   // 1) al cliente afectado: se entera de la decisión sobre su cuenta
-  NotificationCreationService.crearNotificacion({
-    tipoNotificacion: userNotificationType, // ACCOUNT_ACTIVATED | ACCOUNT_DEACTIVATED
+  notifier.notify({
+    type: userNotificationType, // ACCOUNT_ACTIVATED | ACCOUNT_DEACTIVATED
     userId: affectedUserId
     /* ... */
   }).catch(/* ... */);
 
   // 2) interna para el admin que actuó: queda registrado que él lo hizo
-  NotificationCreationService.crearNotificacion({
-    tipoNotificacion: 'PERSON_ADMIN_ACTION',
+  notifier.notify({
+    type: 'PERSON_ADMIN_ACTION',
     userId: adminUserId
     /* ... */
   }).catch(/* ... */);
@@ -73,9 +76,9 @@ setImmediate(() => {
 
 Otros `target-client` reales (admin actúa → el cliente se entera): `ACCOUNT_BLOCKED`, `NATIONAL_ID_CHANGED`, `EMAIL_CHANGED_NEW`/`_OLD`, `PASSWORD_RESET_ADMIN`, `AUTH_SESSION_REVOKED_CLIENT`. En IAM (gestión de usuarios internos): `IAM_ADMIN_ROLE_CHANGED`, `IAM_ADMIN_STATUS_CHANGED`, `IAM_ADMIN_USER_CREATED`.
 
-### Destinatarios que no son "un usuario" → `crearNotificacionDirecta`
+### Destinatarios que no son "un usuario" → `notifyEmail`
 
-Cuando el destinatario no tiene cuenta (o no debe pasar por la preferencia ni el horario de silencio) se usa `crearNotificacionDirecta({ tipoNotificacion, email, metadata })` — email puro, sin persistir `Notification`. Casos reales del template: confirmación de cuenta eliminada (`CUENTA_ELIMINADA`) y solicitudes de reset de credenciales por email (`CODIGO_VERIFICACION`).
+Cuando el destinatario no tiene cuenta (o no debe pasar por la preferencia ni el horario de silencio) se usa `notifyEmail({ type, email, metadata })` — email puro, sin persistir `Notification`. Casos reales del template: confirmación de cuenta eliminada (`CUENTA_ELIMINADA`) y solicitudes de reset de credenciales por email (`CODIGO_VERIFICACION`).
 
 ### Disparadas por workers/system (sin actor humano)
 
@@ -83,53 +86,57 @@ Eventos de tiempo/lote emitidos por un worker con `userId:'system'`: el destinat
 
 ### Resumen del criterio
 
-> Notifica cuando el evento le importe a alguien como hecho personal/operativo. **Interno siempre; correo/push por sensibilidad.** Cliente → al propio cliente. Admin → interno del admin, **y además** al cliente si la acción le concierne (doble notificación). Sin cuenta → `crearNotificacionDirecta`. Reads/listados → **no** notifican.
+> Notifica cuando el evento le importe a alguien como hecho personal/operativo. **Interno siempre; correo/push por sensibilidad.** Cliente → al propio cliente. Admin → interno del admin, **y además** al cliente si la acción le concierne (doble notificación). Sin cuenta → `notifyEmail`. Reads/listados → **no** notifican.
 
 ## Arquitectura de archivos
 
+En Clean Architecture (docs/CLEAN-ARCHITECTURE.md):
+
 ```
 src/modules/notification/
-  services/      notification-creation*  ← ENTRADA
-                 notification-delivery   ← canales, horario de silencio, intentos, despachador
-                 email-notification / push-notification / sms  (proveedores)
-                 notification-preference / notification-batch (globales) / notification-cleanup / email-suppression
-                 admin-notification-*    (categorías, tipos, consulta de entregas)
-  repositories/  notification (bandeja) / notification-delivery / notification-category / notification-type
-                 global-notification / user-notification-preference / user-push-token / ...
-  workers/       notification-worker.ts (despachador + limpiezas)
-  utils/         notification-content.util.ts (render {{var}}) / quiet-hours.util.ts / notification-emitter.util.ts (SSE)
+  domain/          tipos y categorías (plantillas {{var}}, canales), preferencia y horario de silencio,
+                   entregas (plan, reintentos), email (layout), OTP, supresión, feed de rebotes, envío masivo
+  application/
+    use-cases/     create-notification ← ENTRADA (CreateNotification, SendDirectEmail)
+                   deliveries (programar, intentar, despachador) / broadcast (globales) / send-templated-email
+                   inbox (bandeja y contador) / preferences / verification-codes / bounce-feed / cleanup
+                   notification-catalog y admin-notifications (panel: categorías, tipos, avisos, entregas)
+    ports/         repositorios, proveedores de cada canal, destinatarios (iam) y prefijos (catalogs)
+  infrastructure/  persistence (Prisma) / providers (SES, SNS push y SMS, rate limit) / realtime (SSE) /
+                   workers (despachador + limpiezas) / legacy (lo que iam y approvals usan por el index.ts)
+  presentation/http/  rutas, controllers, requests/responses Zod y docs OpenAPI
+  notification.module.ts  composición
 ```
 
 Preferencia por usuario: tabla `user_notification_preferences`, **una fila por usuario** (`user_id` UNIQUE).
 
-## API — `NotificationCreationService`
+## API — el puerto `Notifier`
 
-### `crearNotificacion(data, transaction = null)`
+### `notify({ type, userId, relatedEntity, metadata })`
 
 ```ts
-import NotificationCreationService from '../../../schemas/notification/services/notification-creation.service';
-import constantsModule from '../../../../shared/infrastructure/config/';
-const { notifications } = constantsModule;
+// En un caso de uso, el Notifier llega por constructor (src/main/container.ts lo conecta); en un módulo sin
+// migrar: const { notifier } = notificationModule;
 
 setImmediate(() => {
-  NotificationCreationService.crearNotificacion({
-    tipoNotificacion: 'IAM_ADMIN_ROLE_CHANGED', // code del NotificationType (requerido)
+  notifier.notify({
+    type: 'IAM_ADMIN_ROLE_CHANGED', // code del NotificationType (requerido)
     userId: user.user_id, // null => notificación GLOBAL a todos los activos
     relatedEntity: { type: 'User', id: user.user_id }, // ⚠️ OBJETO { type, id } — no un string
-    metadata: { nombre: 'Ana', nuevoRol: 'AUDITOR', logoUrl: notifications.ses.logoUrl }
+    metadata: { nombre: 'Ana', nuevoRol: 'AUDITOR', logoUrl } // el logo de las plantillas también llega por configuración
   }).catch(err => logger.error('Error notificando', { error: err.message }));
 });
 ```
 
-- **`tipoNotificacion`** (req): `code` del tipo.
+- **`type`** (req): `code` del tipo.
 - **`userId`** (opcional): si `null` → **notificación global** (una fila en `global_notifications` que todos ven in-app + envío masivo por push/email a todos los clientes activos; ver "Notificaciones globales"). Cuidado: es masivo.
 - **`relatedEntity`** (opcional): `{ type, id }`. Se persiste en `related_entity_type` / `related_entity_id`. (Algunos casos legacy pasan un string; la forma correcta es el objeto.)
 - **`metadata`** (opcional): valores que reemplazan los `{{placeholders}}` de los templates. Pasar **todas** las variables que usan los templates o saldrán literales.
 
-Internamente: valida el code, busca el `NotificationType`, renderiza `title/body` (+ email subject/body) con `notification-content.util`, guarda la notificación y sus entregas en una transacción y las envía tras confirmar (ver "Entregas por canal"). Si se llama dentro de un `unitOfWork.run()`, la notificación se crea en esa transacción y las entregas las envía el despachador después del commit. Retorna `{ estadoSolicitud, message }` + **una sola** de las dos ids, según el caso:
+Internamente: valida el code, busca el `NotificationType`, renderiza `title/body` (+ email subject/body) con las plantillas del tipo (`domain/notification-type.ts`), guarda la notificación y sus entregas en una transacción y las envía tras confirmar (ver "Entregas por canal"). Si se llama dentro de un `unitOfWork.run()`, la notificación se crea en esa transacción y las entregas las envía el despachador después del commit. Retorna `{ estadoSolicitud, message }` + **una sola** de las dos ids, según el caso:
 `notificationId` (individual) o `globalNotificationId` (global) — son mutuamente excluyentes.
 
-### `crearNotificacionDirecta({ tipoNotificacion, email, metadata })`
+### `notifyEmail({ type, email, metadata })`
 
 Email directo a un destinatario **sin userId** (no persiste en BD, no respeta el horario de silencio ni se reintenta). Para: acuse de PQRS/contacto a alguien sin cuenta, confirmación de cuenta eliminada, avisos a un email administrativo/externo.
 
@@ -137,13 +144,13 @@ Email directo a un destinatario **sin userId** (no persiste en BD, no respeta el
 
 Los adjuntos son **ortogonales al diseño**: el layout de la categoría es el mismo lleve o no adjunto. Como
 el adjunto suele ser específico del usuario y del momento (un comprobante, un estado de cuenta), **viaja en
-`metadata.attachments`** y `enviarNotificacion` lo detecta automáticamente — no hay que marcar nada en el tipo:
+`metadata.attachments`** y el envío del email (`SendTemplatedEmail`) lo detecta automáticamente — no hay que marcar nada en el tipo:
 
 ```js
 // El adjunto va en la metadata de la notificación. content = Buffer o string ya en base64.
 setImmediate(() => {
-  NotificationCreationService.crearNotificacion({
-    tipoNotificacion: 'COMPROBANTE_TRANSFERENCIA',
+  notifier.notify({
+    type: 'COMPROBANTE_TRANSFERENCIA',
     userId: user.user_id,
     metadata: {
       nombre: 'Ana',
@@ -153,13 +160,11 @@ setImmediate(() => {
 });
 ```
 
-- Si `metadata.attachments` trae adjuntos válidos, `enviarNotificacion` usa `enviarEmailConAdjuntos` →
+- Si `metadata.attachments` trae adjuntos válidos, el proveedor (`infrastructure/providers/ses-email.gateway.ts`) usa
   `SendRawEmailCommand` (MIME multipart/mixed, cuerpo + adjuntos en base64, límite 10 MB de SES, respeta la
-  suppression list). Si no hay adjuntos, usa `enviarEmail` → `SendEmailCommand` (envío simple de siempre).
+  suppression list). Si no hay adjuntos, `SendEmailCommand` (envío simple de siempre).
 - Cada adjunto es `{ filename, contentType, content }` donde `content` es un `Buffer` o un string ya en base64
   (una metadata JSON no puede transportar un Buffer). Los inválidos (sin `filename` o sin contenido) se descartan.
-- `enviarEmailConPdf(destinatario, asunto, html, pdfBuffer, filename)` sigue existiendo como wrapper
-  retrocompatible (un solo PDF) — por dentro delega en `enviarEmailConAdjuntos`.
 - Extensión futura marcada en el código: soportar `url` en el adjunto (descargar el binario antes de adjuntar).
 
 ## Modelo `NotificationCategory` — campos (fuente de verdad)
@@ -177,7 +182,7 @@ setImmediate(() => {
 
 | Campo                                            | Notas                                                                                 |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| `code` STRING UNIQUE                             | Identificador usado en `crearNotificacion()`                                           |
+| `code` STRING UNIQUE                             | Identificador usado en `notify()`                                           |
 | `notification_category_id`                       | **Categoría a la que pertenece** — de ahí salen canales, criticidad y layout de email |
 | `name`, `description`                            | Legibles                                                                               |
 | `title_template` / `body_template`               | Push / in-app, con `{{variable}}`                                                      |
@@ -292,7 +297,7 @@ masivo** por push/email a todos los clientes activos (`CLIENT_ROLE_NAMES`), seg�
   `SES_RATE_LIMIT_PER_MINUTE` (200): ajustarlos a la cuota real de la cuenta de AWS. Cada tanda suma su
   tamaño con un `INCRBY` atómico de Redis (compartido entre instancias); si se pasa, espera al minuto
   siguiente. Sin Redis cuenta en el proceso.
-- **SSE (contador de no leídas):** `notification-emitter.util.ts` transporta `count-updated` (Redis Pub/Sub, fallback EventEmitter local; se inicializa en `src/main/server.ts`); el stream es `GET /notification/notifications/count/stream` (`notification.controller.ts`). El punto único de refresco es `notification-count.util.ts` (`emitCountUpdate(userId)`), invocado vía `setImmediate` en cada flujo que altera el contador: crear notificación individual (`notification-creation.service.ts`), marcar leídas al listar personal/global/mixto (`notification.service.ts`), además del emit propio de `getUnreadCount`. La **notificación global** (1 fila para todos) no hace fan-out por usuario: publica un broadcast `{ global: true }` y cada conexión SSE abierta recalcula su propio count (`computeUnreadCount`: dos `COUNT`, sin re-emitir ni auditar) tras una espera al azar de hasta 5 s, para que miles de conexiones no consulten la base en el mismo instante. **Auth por cookie** (`access_token`, canal web): el front abre el stream con `fetch` + `credentials:'include'` (no `EventSource` nativo, que no puede mandar la cookie cross-site). **Heartbeat:** el stream emite un comentario SSE `: ping` cada 25 s (`SSE_HEARTBEAT_MS`) para que el idle timeout del reverse proxy (ALB/nginx, ~60 s) no cierre la conexión en periodos sin eventos y congele el contador; se limpia en `req.on('close')` junto con el listener.
+- **SSE (contador de no leídas):** `infrastructure/realtime/unread-count.emitter.ts` (puerto `UnreadCountChannel`) transporta `count-updated` (Redis Pub/Sub, fallback EventEmitter local; se inicializa en `src/main/server.ts`); el stream es `GET /notification/notifications/count/stream` (`presentation/http/notification.controllers.ts`). El punto único de refresco es `UnreadCounter.refresh(userId)` (`application/use-cases/unread-counter.ts`), invocado vía `setImmediate` en cada flujo que altera el contador: crear notificación individual (`CreateNotification`), marcar leídas al listar personal/global/mixto (`inbox.use-cases.ts`), además del aviso propio de `GetUnreadCount`. La **notificación global** (1 fila para todos) no hace fan-out por usuario: publica un broadcast `{ global: true }` y cada conexión SSE abierta recalcula su propio count (`UnreadCounter.compute`: dos `COUNT`, sin re-emitir ni auditar) tras una espera al azar de hasta 5 s, para que miles de conexiones no consulten la base en el mismo instante. **Auth por cookie** (`access_token`, canal web): el front abre el stream con `fetch` + `credentials:'include'` (no `EventSource` nativo, que no puede mandar la cookie cross-site). **Heartbeat:** el stream emite un comentario SSE `: ping` cada 25 s (`SSE_HEARTBEAT_MS`) para que el idle timeout del reverse proxy (ALB/nginx, ~60 s) no cierre la conexión en periodos sin eventos y congele el contador; se limpia en `req.on('close')` junto con el listener.
 
 ## Criticidad (`is_critical`)
 
@@ -323,7 +328,7 @@ su código en `CATEGORY_BY_TYPE`, y `npm run db:seed`.
 ## Reglas
 
 - ❌ Nunca instanciar `SESClient`/`SNSClient` directo — usar `EmailNotificationService` / `PushNotificationService`.
-- ❌ Nunca `await crearNotificacion()` en el flujo principal — siempre `setImmediate(() => ...).catch(...)`.
+- ❌ Nunca `await notify()` en el flujo principal — siempre `setImmediate(() => ...).catch(...)`.
 - ✅ Los tipos y sus templates se definen en el seed (`prisma/seeds/notification-types/`) — no hardcodear templates.
 - ✅ Los tipos se consultan por `code`, nunca por id.
 - ✅ `relatedEntity` es `{ type, id }`.

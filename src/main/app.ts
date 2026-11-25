@@ -26,8 +26,6 @@ const { version } = packageModule;
 // ── Rutas compartidas (admin + client) ─────────────────────────────────────
 import iamModule from '../modules/iam';
 const { authLoginRoutes, mfaRoutes, adminAuthSessionRoutes, adminUserRoutes, adminRbacRoutes, authRegisterRoutes, authBiometricRoutes } = iamModule;
-import notificationModule from '../modules/notification';
-const { notificationPreferenceRoutes, notificationRoutes, sendVerificationRoutes, adminNotificationTypeRoutes, adminNotificationCategoryRoutes, adminNotificationDeliveryRoutes, emailBounceWebhookRoutes } = notificationModule;
 // ── Rutas admin ────────────────────────────────────────────────────────────
 import approvalsModule from '../modules/approvals';
 const { adminApprovalRequestRoutes } = approvalsModule;
@@ -46,10 +44,9 @@ function audienceRouter(audience: Audience, container: Container) {
   router.use('/api/v1/auth', authLoginRoutes);
   router.use('/api/v1/kyc', mfaRoutes);
   router.use('/api/v1/kyc', container.person.profileRouter);
-  router.use('/api/v1/kyc', notificationPreferenceRoutes);
+  router.use('/api/v1/kyc', container.notification.preferenceRouter);
   router.use('/api/v1/kyc', container.catalogs.router);
-  router.use('/api/v1/notification', notificationRoutes);
-  router.use('/api/v1/notification', sendVerificationRoutes);
+  router.use('/api/v1/notification', container.notification.inboxRouter);
   return router;
 }
 
@@ -59,9 +56,7 @@ function adminRouter(container: Container) {
   router.use('/api/v1/kyc', container.person.adminRouter);
   router.use('/api/v1/kyc', adminUserRoutes);
   router.use('/api/v1/kyc', adminRbacRoutes);
-  router.use('/api/v1/notification', adminNotificationTypeRoutes);
-  router.use('/api/v1/notification', adminNotificationCategoryRoutes);
-  router.use('/api/v1/notification', adminNotificationDeliveryRoutes);
+  router.use('/api/v1/notification', container.notification.adminRouter);
   router.use('/api/v1/records', container.legal.adminRouter);
   router.use('/api/v1/records', container.audit.adminRouter);
   router.use('/api/v1/core', container.settings.adminRouter);
@@ -75,7 +70,7 @@ function clientRouter(container: Container) {
   const router = audienceRouter('client', container);
   router.use('/api/v1/auth', authRegisterRoutes);
   router.use('/api/v1/auth', authBiometricRoutes);
-  router.use('/api/v1/notification', emailBounceWebhookRoutes);
+  router.use('/api/v1/notification', container.notification.webhookRouter);
   router.use('/api/v1/kyc', container.person.clientRouter);
   router.use('/api/v1/records', container.legal.clientRouter);
   router.use('/api/v1/records', container.audit.clientRouter);

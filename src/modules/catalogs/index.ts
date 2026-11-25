@@ -1,5 +1,5 @@
 // API pública del módulo catalogs para los módulos que todavía no están en Clean Architecture
-// (iam, notification) y para los adaptadores de src/main/ que conectan a person.
+// (iam) y para los adaptadores de src/main/ que conectan a person y notification.
 //
 // En Clean, catalogs no se usa importando este index: src/main/container.ts arma el módulo
 // (createCatalogsModule en catalogs.module.ts). Lo que queda acá es TRANSITORIO: búsquedas puntuales por id
@@ -83,7 +83,7 @@ export default {
     });
   },
 
-  /** @deprecated Transitorio para notification (SMS). */
+  /** Los prefijos de los SMS de notification (por src/main/adapters/notification-sources.adapter.ts). */
   get phonePrefixRepository(): PrismaPhonePrefixRepository {
     return lazy('phonePrefix', () => {
       const m =

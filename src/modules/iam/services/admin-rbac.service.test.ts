@@ -31,7 +31,7 @@ jest.mock('../../../shared/infrastructure/config', () => ({
   notifications: { ses: { logoUrl: 'https://logo.test/x.png' } }
 }));
 
-jest.mock('../../notification/notify', () => ({
+jest.mock('../../notification/infrastructure/legacy/notifier', () => ({
   notify: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -56,7 +56,7 @@ import RbacServiceModule from './rbac.service';
 const RbacService = mocked(RbacServiceModule);
 import auditServiceModule from '../../audit/infrastructure/legacy/audit-recorder';
 const logAudit = mocked(auditServiceModule).record;
-import NotificationCreationServiceModule from '../../notification/notify';
+import NotificationCreationServiceModule from '../../notification/infrastructure/legacy/notifier';
 const notifier = mocked(NotificationCreationServiceModule);
 import overrideRepoModule from '../repositories/role-permission-override.repository';
 const overrideRepo = mocked(overrideRepoModule);

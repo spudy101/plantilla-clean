@@ -1,7 +1,7 @@
 // Adaptador: el puerto FailedProcessCounter de integration con los intentos de entrega de notification.
 //
 // Solo se sabe cuántos procesos fallaron para los productos con tabla de intentos propia (hoy SMS); para el
-// resto, null. Cuando notification se migre a Clean, esto llamará a un caso de uso suyo; integration no cambia.
+// resto, null.
 import notificationModule from '../../modules/notification';
 import type { FailedProcessCounter } from '../../modules/integration/application/ports/failed-process-counter.port';
 

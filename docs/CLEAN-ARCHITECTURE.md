@@ -5,9 +5,9 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
 > **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners`, `legal`,
-> `integration`, `audit` y `person` están migrados completos (moldes: escritura, solo lectura, agregado + archivos
-> en S3, un módulo que otros usan, uno que reacciona a eventos de infraestructura, uno del que dependen todos y
-> uno que trabaja sobre los datos de otro).
+> `integration`, `audit`, `person` y `notification` están migrados completos (moldes: escritura, solo lectura,
+> agregado + archivos en S3, un módulo que otros usan, uno que reacciona a eventos de infraestructura, uno del que
+> dependen todos, uno que trabaja sobre los datos de otro y uno que envía por proveedores externos en segundo plano).
 > Los demás módulos siguen con
 > la estructura en capas de la plantilla original y se migran uno por uno. Ver
 > [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
@@ -200,7 +200,7 @@ cliente) y un worker de retención.
   (`shared/domain/pii/masking.util.ts`), `loadUserRefs` es infraestructura de base de datos
   (`shared/infrastructure/database/user-ref.ts`), `buildAuditDiff` es kernel y `adminAuditContext` es
   presentación HTTP.
-- **Transitorio:** iam, notification y approvals todavía escriben con `audit.record` del `index.ts`
+- **Transitorio:** iam y approvals todavía escriben con `audit.record` del `index.ts`
   (el mismo caso de uso, armado en `infrastructure/legacy/audit-recorder.ts`), iam lee intentos de
   autenticación e historial de cambios por el index, y los intentos de login (que son de iam) viven en audit
   hasta migrar iam.
@@ -238,20 +238,49 @@ iam (username, contraseña, estado, rol, MFA, baja).
   que necesita adaptadores de otros módulos (la baja, la bitácora) lo deja armado `person.module.ts` en
   `infrastructure/legacy/legacy-bindings.ts`.
 
+## Un módulo que envía por proveedores externos (notification)
+
+`notification` crea las notificaciones de todos los módulos (bandeja in-app + entregas por push, email y SMS), las
+envía en segundo plano con reintentos, hace el envío masivo de las globales, verifica contactos con códigos OTP, lleva
+la suppression list de correo (rebotes de SES por un webhook de SNS) y tiene su panel admin.
+
+- **El puerto de todos:** `notification.module.ts` devuelve `notifier` (`Notifier` y `EmailNotifier` de
+  `shared/application`), armado con los casos de uso `CreateNotification` y `SendDirectEmail`. Los demás módulos
+  avisan por ese puerto; ninguno conoce plantillas, canales ni preferencias.
+- **Reglas en el dominio:** las plantillas `{{variable}}` y los canales de cada categoría (`notification-type.ts`),
+  la preferencia y el horario de silencio (`notification-preference.ts`), el plan de entregas y la tabla de
+  reintentos (`delivery.ts`), el email con el layout de la categoría (`email-message.ts`), el OTP (vigencia,
+  intentos, código parcial), la supresión por rebotes, la lectura del feed de SES y el paginado del envío masivo.
+- **Cada proveedor es un puerto:** `EmailGateway` (SES, con adjuntos por SendRawEmail), `PushGateway` y `SmsGateway`
+  (SNS), y `ProviderErrorClassifier`: los casos de uso deciden si un fallo es definitivo sin conocer los códigos de
+  AWS. El tope por minuto del envío masivo (`SendRateLimiter`, Redis), el aviso en tiempo real del contador
+  (`UnreadCountChannel`, Redis Pub/Sub) y la transacción en curso (`TransactionProbe`) también.
+- **Lo que es de otros módulos llega por puertos:** el contacto de un usuario y los clientes del envío masivo
+  (`RecipientDirectory`, iam) y los prefijos telefónicos (`PhonePrefixes`, catalogs); los implementa
+  `src/main/adapters/notification-sources.adapter.ts`. Las guardas de quien no es un usuario (X-API-Key de otro
+  sistema, apikey del webhook) llegan con las demás (`externalGuardsAdapter`).
+- **Workers y tiempo real:** `infrastructure/workers/notification.worker.ts` programa el despachador y las limpiezas
+  (`container.notification.worker`); `server.ts` conecta y cierra el canal del contador (`unreadCounts`).
+- **Transitorio:** iam y approvals mandan notificaciones y SMS por el `index.ts` (los casos de uso que deja armados
+  `infrastructure/legacy/legacy-bindings.ts`), e iam usa los códigos OTP, la preferencia inicial del registro y el
+  registro del dispositivo push del login. Los adaptadores de `src/main/` leen por el index los tipos (catalogs), las
+  preferencias de la traza de sesión (audit), los códigos verificados (person) y los SMS fallidos (integration).
+
 ## Errores
 
 El dominio lanza errores que dicen **qué regla se rompió**, sin status HTTP:
 
 ```ts
 // shared/domain/errors/domain-error.ts
-NotFoundError · ConflictError · RuleViolationError · ForbiddenError · UnauthorizedError
+NotFoundError · ConflictError · RuleViolationError · InvalidInputError · ForbiddenError · UnauthorizedError
+TooManyRequestsError   // con los segundos a esperar (sale como Retry-After)
 
 // modules/settings/domain/errors.ts
 export class ActiveConfigNotFoundError extends NotFoundError { … }
 ```
 
 `shared/presentation/http/domain-error.mapper.ts` los traduce (not_found → 404, conflict → 409,
-rule_violation → 422, forbidden → 403, unauthorized → 401) y el manejador de errores responde con el mismo
+rule_violation → 422, invalid_input → 400, forbidden → 403, unauthorized → 401, rate_limited → 429) y el manejador de errores responde con el mismo
 contrato de siempre (docs/errors-and-retries.md). El mismo caso de uso sirve igual desde un worker o un CLI.
 
 ## Tests
@@ -303,8 +332,9 @@ Usar `settings` como molde. Por cada módulo:
 | `integration` | ✅ migrado (ventanas de fallback del circuit breaker por un listener; procesos afectados por el puerto FailedProcessCounter; respuestas verificadas idénticas a plantilla-base) |
 | `audit` | ✅ migrado (RecordAuditEvent detrás del AuditTrail de todos; sesiones, traza y retención por puertos; respuestas y Swagger verificados idénticos a plantilla-base, salvo el arreglo de la exportación CSV/XLSX) |
 | `person` | ✅ migrado (las cuentas de iam por el puerto ClientAccounts; la baja que reanuda la doble aprobación; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
-| `notification`, `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
-| `index.ts` transitorios de `settings`, `catalogs`, `legal`, `audit` y `person` (lo que usan iam, notification, approvals y los adaptadores de `src/main/`) | ⏳ se borran al migrar esos módulos |
+| `notification` | ✅ migrado (el puerto Notifier de todos; cada proveedor detrás de un puerto; destinatarios de iam y prefijos de catalogs por puertos; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
+| `approvals`, `iam` | ⏳ estructura en capas (orden sugerido) |
+| `index.ts` transitorios de `settings`, `catalogs`, `legal`, `audit`, `person` y `notification` (lo que usan iam, approvals y los adaptadores de `src/main/`) | ⏳ se borran al migrar esos módulos |
 | Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
 
 Mientras dure la migración conviven las dos formas: los módulos con `domain/` siguen estas reglas y los
