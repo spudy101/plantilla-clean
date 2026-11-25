@@ -12,7 +12,8 @@ export type DomainErrorKind =
   | 'invalid_input'
   | 'forbidden'
   | 'unauthorized'
-  | 'rate_limited';
+  | 'rate_limited'
+  | 'internal';
 
 export abstract class DomainError extends Error {
   abstract readonly kind: DomainErrorKind;
@@ -73,4 +74,13 @@ export class TooManyRequestsError extends DomainError {
   ) {
     super(message, code);
   }
+}
+
+/**
+ * El sistema no está en condiciones de atender la operación por algo que no depende de quien la pide (falta un dato
+ * de referencia que debería existir, una escritura que no se pudo completar). Es un defecto o una configuración
+ * incompleta, no una regla de negocio: se responde como error interno.
+ */
+export class InternalError extends DomainError {
+  readonly kind = 'internal' as const;
 }

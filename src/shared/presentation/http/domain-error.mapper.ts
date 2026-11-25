@@ -10,13 +10,15 @@ const STATUS_BY_KIND: Record<DomainErrorKind, number> = {
   invalid_input: 400,
   forbidden: 403,
   unauthorized: 401,
-  rate_limited: 429
+  rate_limited: 429,
+  internal: 500
 };
 
 /** El AppError equivalente (mismo mensaje, código y detalle) para el manejador de errores HTTP. */
 export function toHttpError(error: DomainError): AppError {
-  // isOperational=false: es un error de negocio esperado (se loguea como info/warn, no como error)
-  const httpError = new AppError(error.message, STATUS_BY_KIND[error.kind], error.code, error.details, false);
+  // isOperational=false: es un error de negocio esperado (se loguea como info/warn, no como error). Un error
+  // interno sí es grave: se loguea como error, igual que un AppError.internal.
+  const httpError = new AppError(error.message, STATUS_BY_KIND[error.kind], error.code, error.details, error.kind === 'internal');
   httpError.stack = error.stack;
   if (error instanceof TooManyRequestsError) {
     // Sale en el header Retry-After

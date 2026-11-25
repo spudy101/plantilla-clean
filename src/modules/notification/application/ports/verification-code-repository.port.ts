@@ -18,6 +18,10 @@ export interface VerificationCodeRepository {
   /** Suma un intento si sigue vigente y sin verificar. */
   incrementAttempts(verificationCodeId: string): Promise<number>;
   markAsVerified(verificationCodeId: string): Promise<VerificationCode | null>;
+  /** Último código ya verificado del contacto (así confirman iam y person un email o un teléfono). */
+  findVerifiedByContact(type: VerificationCodeType, contactValue: string): Promise<VerificationCode | null>;
+  /** Consume los verificados del contacto (una vez usados para registrarse o cambiar el contacto). */
+  deleteVerifiedByContact(type: VerificationCodeType, contactValue: string): Promise<number>;
   /** Borra los vencidos sin verificar; devuelve cuántos. */
   deleteExpired(): Promise<number>;
   /** Borra los verificados hace más de `retentionDays` días; devuelve cuántos. */

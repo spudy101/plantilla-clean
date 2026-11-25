@@ -2,7 +2,7 @@
 import { z } from '../../../../../shared/presentation/validation/z';
 import { dateTime } from '../../../../../shared/presentation/validation/output';
 import piiMaskingDoc from '../../../../../shared/presentation/validation/pii-masking.doc';
-import { PersonContactSchema, PersonLocationSchema, PersonSchema, UserSchema } from './person-components.response';
+import { PersonContactSchema, PersonLocationSchema, PersonSchema, UserSchema } from '../../../../../shared/presentation/validation/account.schemas';
 
 const { MASKED_EMAIL_DESC, MASKED_PHONE_DESC } = piiMaskingDoc;
 

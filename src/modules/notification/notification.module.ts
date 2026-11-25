@@ -10,6 +10,14 @@
 // Lo que viene de afuera (destinatarios de iam, prefijos de catalogs, auditoría, logger, transacciones, guardas)
 // llega por parámetro desde src/main/. Notification no importa ningún otro módulo.
 import type { RequestHandler, Router } from 'express';
+import {
+  CountFailedSms,
+  CreateDefaultPreference,
+  FindPreferencesByIds,
+  ListNotificationTypeEntries,
+  OtpCodes,
+  RegisterPushDevice
+} from './application/use-cases/module-services.use-cases';
 import type { AuditTrail } from '../../shared/application/ports/audit-trail.port';
 import type { Logger } from '../../shared/application/ports/logger.port';
 import type { EmailNotifier, Notifier } from '../../shared/application/ports/notifier.port';
@@ -37,7 +45,6 @@ import {
 } from './infrastructure/providers/aws-runtime.adapters';
 import { UnreadCountEmitter } from './infrastructure/realtime/unread-count.emitter';
 import { createNotificationWorker, type NotificationWorker } from './infrastructure/workers/notification.worker';
-import { bindLegacyNotification } from './infrastructure/legacy/legacy-bindings';
 import { UnreadCounter } from './application/use-cases/unread-counter';
 import { EmailSuppressionList } from './application/use-cases/email-suppression.use-cases';
 import { SendTemplatedEmail } from './application/use-cases/send-templated-email.use-case';
@@ -116,6 +123,16 @@ export interface NotificationModule {
   worker: NotificationWorker;
   /** El aviso en tiempo real del contador: se conecta a Redis al arrancar y se cierra al apagar. */
   unreadCounts: { initialize(): Promise<void>; close(): Promise<void> };
+  /** Lo que usan otros módulos (por los adaptadores de src/main/). */
+  useCases: {
+    otpCodes: OtpCodes;
+    sms: SmsSender;
+    registerPushDevice: RegisterPushDevice;
+    createDefaultPreference: CreateDefaultPreference;
+    findPreferencesByIds: FindPreferencesByIds;
+    listNotificationTypes: ListNotificationTypeEntries;
+    countFailedSms: CountFailedSms;
+  };
 }
 
 /** Los repositorios Prisma del módulo. */
@@ -128,7 +145,8 @@ function createRepositories() {
     deliveries: new PrismaDeliveryRepository(),
     preferences: new PrismaNotificationPreferenceRepository(),
     pushTokens: new PrismaPushTokenRepository(),
-    codes: new PrismaVerificationCodeRepository()
+    codes: new PrismaVerificationCodeRepository(),
+    smsAttempts: new PrismaSmsAttemptRepository()
   };
 }
 
@@ -142,7 +160,7 @@ function createSending(deps: NotificationModuleDeps, repos: Repositories, unread
   const unread = new UnreadCounter(personal, globals, unreadChannel, logger);
   const suppressionList = new EmailSuppressionList(new PrismaEmailSuppressionRepository(), contactCipher, audit, logger);
   const email = new SendTemplatedEmail(new SesEmailGateway(), suppressionList, audit, logger);
-  const sms = new SmsSender(new SnsSmsGateway(new PrismaSmsAttemptRepository()), deps.phonePrefixes);
+  const sms = new SmsSender(new SnsSmsGateway(repos.smsAttempts), deps.phonePrefixes);
   const attempts = new DeliveryAttempts({
     deliveries,
     notifications: personal,
@@ -181,7 +199,7 @@ function createSending(deps: NotificationModuleDeps, repos: Repositories, unread
     logger
   });
   const sendDirectEmail = new SendDirectEmail(repos.types, email, contactCipher, logger);
-  return { unread, suppressionList, sms, attempts, broadcast, createNotification, sendDirectEmail };
+  return { push, unread, suppressionList, sms, attempts, broadcast, createNotification, sendDirectEmail };
 }
 
 type Sending = ReturnType<typeof createSending>;
@@ -261,10 +279,7 @@ export function createNotificationModule(deps: NotificationModuleDeps): Notifica
   const repos = createRepositories();
   const unreadChannel = new UnreadCountEmitter();
   const sending = createSending(deps, repos, unreadChannel);
-  const { createNotification, sendDirectEmail, sms } = sending;
-
-  // Transitorio: lo que iam usa por el index.ts
-  bindLegacyNotification({ createNotification, sendDirectEmail, sms });
+  const { createNotification, sendDirectEmail } = sending;
 
   return {
     ...createUserRouters(deps, repos, sending, unreadChannel),
@@ -286,6 +301,15 @@ export function createNotificationModule(deps: NotificationModuleDeps): Notifica
       },
       deps.logger
     ),
-    unreadCounts: unreadChannel
+    unreadCounts: unreadChannel,
+    useCases: {
+      otpCodes: new OtpCodes(repos.codes),
+      sms: sending.sms,
+      registerPushDevice: new RegisterPushDevice(sending.push, repos.pushTokens),
+      createDefaultPreference: new CreateDefaultPreference(repos.preferences),
+      findPreferencesByIds: new FindPreferencesByIds(repos.preferences),
+      listNotificationTypes: new ListNotificationTypeEntries(repos.types),
+      countFailedSms: new CountFailedSms(repos.smsAttempts)
+    }
   };
 }

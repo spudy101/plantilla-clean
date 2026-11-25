@@ -1,5 +1,5 @@
 // Unicidad de los datos que identifican a una persona: documento, email y teléfono. La usan los casos de uso
-// de person y, por el index.ts transitorio, el alta de usuarios internos de iam.
+// de person y el alta de usuarios internos de iam (por src/main/adapters/iam-sources.adapter.ts).
 import type { PersonContactRepository } from '../ports/person-contact-repository.port';
 import type { PersonRepository } from '../ports/person-repository.port';
 import { belongsToAnother } from '../../domain/person-contact';

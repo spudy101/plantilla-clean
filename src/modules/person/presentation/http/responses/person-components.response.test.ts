@@ -1,5 +1,6 @@
 // La salida de cada constructor de person (application/dto) cumple su esquema (y por lo tanto su documentación).
-import { PersonContactSchema, PersonLocationSchema, PersonReferenceSchema, PersonSchema, UserSchema } from './person-components.response';
+import { PersonContactSchema, PersonLocationSchema, PersonSchema, UserSchema } from '../../../../../shared/presentation/validation/account.schemas';
+import { PersonReferenceSchema } from './person-components.response';
 import {
   AdminEmailChangedSchema,
   AdminMfaDisabledSchema,
@@ -13,7 +14,8 @@ import {
 } from './admin-person.response';
 import { EmailUpdatedSchema, NamesUpdatedSchema, PhoneUpdatedSchema, profileSchema } from './profile.response';
 import { MyConsentCatalogItemSchema } from '../../../../legal/presentation/http/responses/legal.response';
-import { toContactOutput, toLocationOutput, toPersonOutput, toReferenceOutput, toUserOutput } from '../../../application/dto/person.output';
+import { toContactOutput, toLocationOutput, toPersonOutput, toUserOutput } from '../../../../../shared/application/account-views';
+import { toReferenceOutput } from '../../../application/dto/person.output';
 import {
   toAccountCreatedOutput,
   toAccountDetailOutput,

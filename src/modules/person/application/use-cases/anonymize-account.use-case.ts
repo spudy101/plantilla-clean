@@ -1,6 +1,6 @@
 // Caso de uso compartido: eliminar una cuenta (derecho de supresión). Ofusca persona, usuario y contacto,
-// borra la dirección y revoca los consentimientos. Lo usan el titular, el panel de clientes y, por el
-// index.ts transitorio, la baja de usuarios internos de iam. Corre dentro de la unidad de trabajo de quien
+// borra la dirección y revoca los consentimientos. Lo usan el titular, el panel de clientes y la baja de usuarios
+// internos de iam (por src/main/adapters/iam-sources.adapter.ts). Corre dentro de la unidad de trabajo de quien
 // lo llama.
 import type { AccountChangeLog } from '../ports/account-change-log.port';
 import type { ClientAccounts } from '../ports/client-accounts.port';

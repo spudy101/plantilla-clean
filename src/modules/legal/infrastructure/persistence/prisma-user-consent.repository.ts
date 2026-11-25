@@ -95,9 +95,7 @@ export class PrismaUserConsentRepository extends PrismaRepository implements Use
     });
   }
 
-  // ── Transitorio para módulos sin migrar (ver index.ts) ─────────────────────
-
-  /** @deprecated Hidratación del session-trace de audit; pasará a un puerto de audit al migrarlo. */
+  /** Por id (la traza de una sesión de audit). */
   async findByIds(ids: readonly string[]): Promise<UserConsent[]> {
     if (ids.length === 0) {
       return [];
@@ -106,7 +104,7 @@ export class PrismaUserConsentRepository extends PrismaRepository implements Use
     return rows.map(toDomain);
   }
 
-  /** @deprecated Derecho de supresión (person); pasará a un caso de uso al migrar person. */
+  /** Derecho de supresión (la baja de una cuenta en person). */
   async revokeAll(userId: string): Promise<number> {
     const { count } = await (await this.db()).userConsent.updateMany({
       where: { userId, isCurrent: true },

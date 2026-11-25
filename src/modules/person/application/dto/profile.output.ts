@@ -5,7 +5,7 @@ import type { ClientAccount } from '../../domain/client-account';
 import type { PhoneType } from '../../domain/person-contact';
 import type { Person } from '../../domain/person';
 import type { ConsentCatalogItem } from '../ports/profile-consents.port';
-import { toContactOutput, toLocationOutput, toPersonOutput, toUserOutput } from './person.output';
+import { toContactOutput, toLocationOutput, toPersonOutput, toUserOutput } from '../../../../shared/application/account-views';
 
 export interface ProfileOutput {
   user: ReturnType<typeof toUserOutput>;

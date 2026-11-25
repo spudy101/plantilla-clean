@@ -15,7 +15,6 @@ import type { ApproverDirectory } from './application/ports/approver-directory.p
 import type { ApprovalThresholds } from './application/ports/approval-thresholds.port';
 import { PrismaApprovalRequestRepository } from './infrastructure/persistence/prisma-approval-request.repository';
 import { createDualApprovalExpirationWorker, type DualApprovalExpirationWorker } from './infrastructure/workers/dual-approval-expiration.worker';
-import { bindLegacyApprovals } from './infrastructure/legacy/dual-approval';
 import { ApprovalHandlers } from './application/use-cases/approval-handlers';
 import { ApprovalNotices } from './application/use-cases/approval-notices';
 import { GateOperation } from './application/use-cases/gate-operation.use-case';
@@ -72,12 +71,6 @@ export function createApprovalsModule(deps: ApprovalsModuleDeps): ApprovalsModul
     new GetApprovalPolicy(deps.thresholds, audit, logger),
     new ResolveApprovalRequest(requests, handlers, notices, audit)
   );
-
-  // Transitorio: lo que iam usa por el index.ts
-  bindLegacyApprovals({
-    gate: (operationKey, input) => gate.execute(operationKey, input),
-    findPending: (entityType, entityIds) => findPending.execute(entityType, entityIds)
-  });
 
   return {
     adminRouter: createApprovalRequestRouter(controller, deps.guards),

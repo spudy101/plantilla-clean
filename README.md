@@ -2,8 +2,8 @@
 
 > **Versión Clean Architecture** de la plantilla base: misma API y funcionalidades, organizada en
 > `domain → application → infrastructure / presentation` con un composition root en `src/main/`.
-> Guía: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). Migración en curso: `shared/`, `settings`, `catalogs`, `banners`, `legal`, `integration`, `audit`, `person`, `notification` y `approvals`
-> ya están en Clean; solo falta `iam`.
+> Guía: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). Migración terminada: `shared/` y los diez módulos
+> (`settings`, `catalogs`, `banners`, `legal`, `integration`, `audit`, `person`, `notification`, `approvals` e `iam`) están en Clean.
 
 > Plantilla base de API REST en Node.js para arrancar proyectos nuevos con el núcleo transversal ya
 > resuelto y endurecido: **autenticación propia (JWT RS256 + sesiones), MFA, RBAC, doble aprobación
@@ -120,13 +120,12 @@ Todo lo transversal que un proyecto necesita el día 1, ya construido y probado:
 ## 🏛️ Arquitectura
 
 **Monolito modular**: un solo proceso y un solo despliegue, dividido en **módulos por dominio**. Cada módulo
-es dueño de todo lo suyo (rutas, lógica, datos, workers, documentación) y expone una API pública en su
-`index.ts`. `shared/` es infraestructura técnica que no conoce el negocio.
+es dueño de todo lo suyo (rutas, lógica, datos, workers, documentación) y ninguno importa a otro: lo que otro módulo
+necesita lo pide por un puerto y `src/main/` lo conecta. `shared/` es lo transversal y no conoce el negocio.
 
-**Clean Architecture:** dentro de cada módulo migrado, el dominio y los casos de uso no conocen Prisma ni
+**Clean Architecture:** dentro de cada módulo, el dominio y los casos de uso no conocen Prisma ni
 Express; dependen de puertos (interfaces) que implementa la infraestructura, y `src/main/container.ts` conecta
-todo. Guía y receta de migración: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). Los módulos aún
-sin migrar siguen [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). **Léelas antes de agregar código.**
+todo. Guía: [`docs/CLEAN-ARCHITECTURE.md`](docs/CLEAN-ARCHITECTURE.md). **Léela antes de agregar código.**
 
 ### Flujo por capas (dentro de un request)
 
@@ -157,8 +156,8 @@ Detalle del pipeline: [`docs/request-flow.md`](docs/request-flow.md) · auditor�
 .
 ├── src/
 │   ├── main/                   # composition root: container (DI), adapters, app, server, swagger
-│   ├── modules/                # un módulo por dominio; migrados: domain/ application/ infrastructure/ presentation/
-│   │   ├── iam/                # usuarios, roles, RBAC, sesiones, login, MFA, biometría
+│   ├── modules/                # un módulo por dominio: domain/ application/ infrastructure/ presentation/
+│   │   ├── iam/                # usuarios, roles, RBAC, sesiones, login, MFA, biometría  ✅ Clean
 │   │   ├── person/             # persona, contactos, ubicación, referencias, perfil  ✅ Clean
 │   │   ├── catalogs/           # países, ciudades, géneros, tipos de documento, avatares  ✅ Clean
 │   │   ├── notification/       # tipos, envío (email/SMS/push), preferencias, rebotes  ✅ Clean
@@ -367,11 +366,11 @@ Toda la documentación técnica vive en [`docs/`](docs/). El README es el mapa; 
 
 ## 📐 Convenciones
 
-- **Capas estrictas**: controller → service → repository → model. La lógica vive en el service.
-- **Errores**: siempre `AppError`; sin try/catch en controllers (usar `asyncHandler`).
+- **Capas**: domain → application (casos de uso + puertos) → infrastructure / presentation. Las reglas viven en el dominio.
+- **Errores**: el dominio lanza `DomainError`; la presentación decide el status HTTP. Sin try/catch en controllers (usar `asyncHandler`).
 - **Respuestas**: `ApiResponse` (camelCase, PII enmascarada, aplanado automático de listados).
-- **Auditoría**: `audit.record` en el service por cada hecho de negocio, con `entityType`/`entityTable`.
-- **Fronteras**: entre módulos, solo el `index.ts` del otro; `shared/` nunca importa `modules/`.
+- **Auditoría**: el puerto `AuditTrail` en el caso de uso por cada hecho de negocio, con `entityType`/`entityTable`.
+- **Fronteras**: un módulo no importa otro (puertos + adaptadores de `src/main/`); `shared/` nunca importa `modules/`.
 - **BD**: editar la migración original + `db:reset` (no acumular `ALTER TABLE`).
 - **Swagger** en el mismo pase que el código.
 - Estilo: **ES6+**, ESLint + Prettier, Conventional Commits.

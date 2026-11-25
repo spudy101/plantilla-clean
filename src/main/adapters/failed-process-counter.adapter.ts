@@ -2,14 +2,16 @@
 //
 // Solo se sabe cuántos procesos fallaron para los productos con tabla de intentos propia (hoy SMS); para el
 // resto, null.
-import notificationModule from '../../modules/notification';
 import type { FailedProcessCounter } from '../../modules/integration/application/ports/failed-process-counter.port';
+import type { ModuleRegistry } from './module-registry';
 
-export const failedProcessCounterAdapter: FailedProcessCounter = {
-  countFailedBetween(product, from, to) {
-    if (product !== 'aws_sms') {
-      return Promise.resolve(null);
+export function failedProcessCounterAdapter(modules: ModuleRegistry): FailedProcessCounter {
+  return {
+    countFailedBetween(product, from, to) {
+      if (product !== 'aws_sms') {
+        return Promise.resolve(null);
+      }
+      return modules.notification.useCases.countFailedSms.execute(from, to);
     }
-    return notificationModule.smsDeliveryAttemptRepository.countFailedBetween(from, to);
-  }
-};
+  };
+}

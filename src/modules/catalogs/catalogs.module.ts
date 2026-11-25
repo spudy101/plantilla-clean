@@ -12,6 +12,7 @@ import * as output from './application/dto/catalog.output';
 import { ListCatalog } from './application/use-cases/list-catalog.use-case';
 import { ListClientDocumentTypes } from './application/use-cases/list-client-document-types.use-case';
 import { GetActivePrivacyPolicy } from './application/use-cases/get-active-privacy-policy.use-case';
+import { FindCatalogEntry, FindCatalogEntryByCode } from './application/use-cases/find-catalog-entry.use-case';
 import { PrismaGenderRepository } from './infrastructure/persistence/prisma-gender.repository';
 import { PrismaDocumentTypeRepository } from './infrastructure/persistence/prisma-document-type.repository';
 import { PrismaPhonePrefixRepository } from './infrastructure/persistence/prisma-phone-prefix.repository';
@@ -34,30 +35,36 @@ export interface CatalogsModuleDeps {
 
 export function createCatalogsModule({ audit, cache, roles, notificationTypes, privacyPolicies }: CatalogsModuleDeps) {
   const documentTypes = new PrismaDocumentTypeRepository();
+  const genders = new PrismaGenderRepository();
+  const phonePrefixes = new PrismaPhonePrefixRepository();
+  const avatars = new PrismaAvatarRepository();
+  const countries = new PrismaCountryRepository();
+  const departments = new PrismaDepartmentRepository();
+  const cities = new PrismaCityRepository();
 
   const useCases = {
-    listGenders: new ListCatalog(new PrismaGenderRepository(), audit, 'MAINTAINER_GENDERS_VIEWED', output.toGenderOutput),
+    listGenders: new ListCatalog(genders, audit, 'MAINTAINER_GENDERS_VIEWED', output.toGenderOutput),
     listPhonePrefixes: new ListCatalog(
-      new PrismaPhonePrefixRepository(),
+      phonePrefixes,
       audit,
       'MAINTAINER_PHONE_PREFIXES_VIEWED',
       output.toPhonePrefixOutput
     ),
-    listAvatars: new ListCatalog(new PrismaAvatarRepository(), audit, 'MAINTAINER_AVATARS_VIEWED', output.toAvatarOutput),
+    listAvatars: new ListCatalog(avatars, audit, 'MAINTAINER_AVATARS_VIEWED', output.toAvatarOutput),
     listAvatarThemes: new ListCatalog(
       new PrismaAvatarThemeRepository(),
       audit,
       'MAINTAINER_AVATAR_THEMES_VIEWED',
       output.toAvatarThemeOutput
     ),
-    listCountries: new ListCatalog(new PrismaCountryRepository(), audit, 'MAINTAINER_COUNTRIES_VIEWED', output.toCountryOutput),
+    listCountries: new ListCatalog(countries, audit, 'MAINTAINER_COUNTRIES_VIEWED', output.toCountryOutput),
     listDepartments: new ListCatalog(
-      new PrismaDepartmentRepository(),
+      departments,
       audit,
       'MAINTAINER_DEPARTMENTS_VIEWED',
       output.toDepartmentOutput
     ),
-    listCities: new ListCatalog(new PrismaCityRepository(), audit, 'MAINTAINER_CITIES_VIEWED', output.toCityOutput),
+    listCities: new ListCatalog(cities, audit, 'MAINTAINER_CITIES_VIEWED', output.toCityOutput),
     listRoles: new ListCatalog(roles, audit, 'MAINTAINER_ROLES_VIEWED', output.toRoleOutput),
     listNotificationTypes: new ListCatalog(
       notificationTypes,
@@ -72,7 +79,19 @@ export function createCatalogsModule({ audit, cache, roles, notificationTypes, p
   const controller = new CatalogsController(useCases);
   const router: Router = createCatalogsRouter(controller);
 
-  return { router, useCases };
+  // Lo que leen otros módulos (por los adaptadores de src/main/): una entrada puntual por id o por código
+  const lookups = {
+    avatar: new FindCatalogEntry(avatars),
+    gender: new FindCatalogEntry(genders),
+    documentType: new FindCatalogEntry(documentTypes),
+    documentTypeByCode: new FindCatalogEntryByCode(documentTypes),
+    department: new FindCatalogEntry(departments),
+    city: new FindCatalogEntry(cities),
+    countryByCode: new FindCatalogEntryByCode(countries),
+    phonePrefix: new FindCatalogEntry(phonePrefixes)
+  };
+
+  return { router, useCases, lookups };
 }
 
 export type CatalogsModule = ReturnType<typeof createCatalogsModule>;

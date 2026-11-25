@@ -10,8 +10,10 @@ import prisma from '../../src/shared/infrastructure/database/prisma';
 import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
 import { PrismaAuditLogRepository } from '../../src/modules/audit/infrastructure/persistence/prisma-audit-log.repository';
 import { PrismaAuditAlertRepository } from '../../src/modules/audit/infrastructure/persistence/prisma-audit-alert.repository';
-import { PrismaUserLoginAttemptRepository } from '../../src/modules/audit/infrastructure/persistence/prisma-user-login-attempt.repository';
-import audit from '../../src/modules/audit/infrastructure/legacy/audit-recorder';
+import { PrismaLoginAttemptRepository } from '../../src/modules/iam/infrastructure/persistence/prisma-login-attempt.repository';
+import { RecordAuditEvent } from '../../src/modules/audit/application/use-cases/record-audit-event.use-case';
+import { operationContextAdapter } from '../../src/modules/audit/infrastructure/context/operation-context.adapter';
+import loggerUtilModule from '../../src/shared/infrastructure/observability/logger.util';
 import requestContext from '../../src/shared/infrastructure/observability/request-context.util';
 import { page } from '../helpers/page';
 import type { NewAuditLog } from '../../src/modules/audit/domain/audit-log';
@@ -25,7 +27,10 @@ let userId: string;
 
 const auditLogRepository = new PrismaAuditLogRepository();
 const auditAlertRepository = new PrismaAuditAlertRepository();
-const userLoginAttemptRepository = new PrismaUserLoginAttemptRepository();
+const userLoginAttemptRepository = new PrismaLoginAttemptRepository();
+/** El AuditTrail real (el que audit entrega a todos los módulos), armado con sus adaptadores Prisma. */
+const recordAuditEvent = new RecordAuditEvent(auditLogRepository, auditAlertRepository, operationContextAdapter, loggerUtilModule.logger);
+const audit = { record: (action: string, fact: Parameters<RecordAuditEvent['execute']>[1]) => recordAuditEvent.execute(action, fact) };
 
 const base = { risk: 'low' as const, outcome: 'success' as const, source: 'http', module: TAG };
 /** Un registro nuevo con lo mínimo (el resto en null). */
@@ -147,11 +152,11 @@ describe('Auditoría · Prisma contra Postgres', () => {
 
   it('intentos de login: el documento se guarda cifrado y el bloqueo se busca por su hash', async () => {
     const nationalId = `${Date.now()}`;
-    await userLoginAttemptRepository.recordAttempt({ userId, usernameAttempt: TAG, nationalId, success: false, blockedUntil: new Date(Date.now() + 10 * 60 * 1000) });
+    await userLoginAttemptRepository.record({ userId, usernameAttempt: TAG, nationalId, success: false, blockedUntil: new Date(Date.now() + 10 * 60 * 1000) });
 
     const stored = await prisma.userLoginAttempt.findFirst({ where: { usernameAttempt: TAG } });
     expect(stored?.nationalId).not.toBe(nationalId);
-    expect(await userLoginAttemptRepository.checkIfBlocked(nationalId)).toMatchObject({ blocked: true });
-    expect(await userLoginAttemptRepository.checkIfBlocked(`${nationalId}9`)).toBeNull();
+    expect(await userLoginAttemptRepository.findBlock(nationalId)).toMatchObject({ blocked: true });
+    expect(await userLoginAttemptRepository.findBlock(`${nationalId}9`)).toBeNull();
   });
 });

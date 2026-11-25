@@ -9,6 +9,7 @@
 // Lo que viene de afuera (sesiones de iam, filas de dominio de la traza, política de retención de settings,
 // avisos, logger, guardas) llega por parámetro desde src/main/.
 import type { Router } from 'express';
+import { ListAccountChangeHistory, ListAuthAttemptRecords } from './application/use-cases/account-history.use-cases';
 import type { AuditTrail } from '../../shared/application/ports/audit-trail.port';
 import type { Logger } from '../../shared/application/ports/logger.port';
 import type { Notifier } from '../../shared/application/ports/notifier.port';
@@ -75,6 +76,11 @@ export interface AuditModule {
   /** La bitácora de cambios de cuentas (iam, person). */
   recordAccountChange(change: AccountChange): Promise<void>;
   retentionWorker: AuditRetentionWorker;
+  /** Lo que leen las vistas admin de iam: los intentos de autenticación y la bitácora de un usuario. */
+  useCases: {
+    listAuthAttempts: ListAuthAttemptRecords;
+    listAccountChanges: ListAccountChangeHistory;
+  };
 }
 
 export function createAuditModule(deps: AuditModuleDeps): AuditModule {
@@ -129,6 +135,7 @@ export function createAuditModule(deps: AuditModuleDeps): AuditModule {
     clientRouter,
     trail,
     recordAccountChange: change => recordChange.execute(change),
-    retentionWorker
+    retentionWorker,
+    useCases: { listAuthAttempts: new ListAuthAttemptRecords(logs), listAccountChanges: new ListAccountChangeHistory(changes) }
   };
 }

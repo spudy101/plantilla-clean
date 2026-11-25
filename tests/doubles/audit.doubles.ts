@@ -160,6 +160,9 @@ export class InMemoryAuditLogs implements AuditLogRepository {
   async findById(id: string) {
     return this.rows.find(r => r.auditLogId === id) ?? null;
   }
+  async findAuthAttempts(_criteria: unknown, _page: PageRequest) {
+    return { rows: this.rows, count: this.rows.length };
+  }
   async findForExport(filters: AuditLogFilters, limit: number) {
     this.track('findForExport', filters, limit);
     return this.rows.slice(0, limit);

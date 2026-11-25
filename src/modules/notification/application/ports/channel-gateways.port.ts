@@ -36,6 +36,13 @@ export interface PushGateway {
   sendToDevice(endpoint: string, message: PushMessage, notificationId?: string | null): Promise<void>;
   /** A muchos (envío masivo): nunca lanza, devuelve cuántos llegaron. */
   sendToMany(endpoints: readonly string[], message: PushMessage): Promise<BulkPushResult>;
+  /** Da de alta (o actualiza) el dispositivo en el proveedor; devuelve su endpoint. */
+  registerDevice(deviceToken: string, platform: string, userId: string): Promise<string | undefined>;
+}
+
+/** Los intentos de SMS (la ventana de una caída del proveedor la mide integration). */
+export interface SmsAttemptLog {
+  countFailedBetween(from: Date | null, to: Date): Promise<number>;
 }
 
 export interface OutgoingSms {

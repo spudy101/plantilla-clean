@@ -1,42 +1,23 @@
 // Adaptadores: lo que notification necesita de otros módulos. Viven acá porque conectan módulos; notification no
 // los importa.
 //
-//   recipientDirectoryAdapter   RecipientDirectory con los usuarios de iam (contacto de un usuario, clientes del
-//                               envío masivo)
-//   phonePrefixesAdapter        PhonePrefixes con los prefijos telefónicos de catalogs
-//
-// Cuando iam se migre, esto llamará a sus casos de uso en vez de a su repositorio; notification no cambia.
-import iamModule from '../../modules/iam';
-import catalogsModule from '../../modules/catalogs';
-import rbacModule from '../../shared/domain/constants/rbac';
+//   recipientDirectory   RecipientDirectory con las cuentas de iam (contacto de un usuario, clientes del envío masivo)
+//   phonePrefixes        PhonePrefixes con los prefijos telefónicos de catalogs
 import type { PhonePrefixes, RecipientDirectory } from '../../modules/notification/application/ports/recipient-directory.port';
+import type { ModuleRegistry } from './module-registry';
 
-const { CLIENT_ROLE_NAMES } = rbacModule;
+export function recipientDirectoryAdapter(modules: ModuleRegistry): RecipientDirectory {
+  return {
+    findRecipient: userId => modules.iam.directories.accounts.findRecipient(userId),
+    /** Solo clientes finales, nunca usuarios internos. */
+    activeClientsAfter: (afterUserId, limit) => modules.iam.directories.accounts.activeClientsAfter(afterUserId, limit)
+  };
+}
 
-export const recipientDirectoryAdapter: RecipientDirectory = {
-  async findRecipient(userId) {
-    const user = await iamModule.userRepository.findByUserId(userId, 'minimal');
-    if (!user) {
-      return null;
+export function phonePrefixesAdapter(modules: ModuleRegistry): PhonePrefixes {
+  return {
+    async prefixOf(phonePrefixId) {
+      return (await modules.catalogs.lookups.phonePrefix.execute(phonePrefixId))?.prefix ?? null;
     }
-    const contact = user.person?.contact ?? null;
-    return {
-      userId: user.userId,
-      isActive: Boolean(user.isActive),
-      email: contact?.email ?? null,
-      phone: contact?.phonePrimary ? { number: contact.phonePrimary, prefixId: contact.phonePrimaryPrefixId ?? null } : null
-    };
-  },
-
-  /** Solo clientes finales, nunca usuarios internos. */
-  async activeClientsAfter(afterUserId, limit) {
-    const users = await iamModule.userRepository.findActivePageByRoleNames(CLIENT_ROLE_NAMES, afterUserId, limit);
-    return users.map(user => ({ userId: user.userId, email: user.person?.contact?.email ?? null }));
-  }
-};
-
-export const phonePrefixesAdapter: PhonePrefixes = {
-  async prefixOf(phonePrefixId) {
-    return (await catalogsModule.phonePrefixRepository.findById(phonePrefixId))?.prefix ?? null;
-  }
-};
+  };
+}

@@ -35,14 +35,14 @@ const ConsentTypeListDTO = (record: ConsentTypeRow) => ({ id: record.consentType
 La función existe para elegir campo a campo qué sale de una fila (que no se filtren hashes ni columnas internas) y
 para enmascarar PII. Si el service devuelve una confirmación armada a mano (`{ sessionId, status }`,
 `{ closedCount }`, `{ userId, deleted: true }`), no hay nada que filtrar: una función `XxxDTO()` solo agregaría una
-vuelta. Ahí basta con el esquema en `responses/` y que el service lo use para tipar su resultado:
+vuelta. Ahí basta con el esquema en `responses/` y que el caso de uso lo use para tipar su resultado:
 
 ```ts
 // responses/auth-login.response.ts
 export const SessionClosedSchema = z.object({ sessionId: z.uuid(), status: z.literal('closed') });
 export type SessionClosed = z.infer<typeof SessionClosedSchema>;
 
-// services/auth-login/session-control.service.ts
+// application/use-cases/sessions.ts (SessionControl)
 return { sessionId, status: 'closed' } satisfies SessionClosed;
 ```
 

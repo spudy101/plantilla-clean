@@ -1,7 +1,7 @@
 // Entrada del módulo person: administración de clientes (admin), perfil propio y referencias personales.
 import { z, withHint } from '../../../../../shared/presentation/validation/z';
 import { email, input, optionalBool, optionalUuid, pageQuery, searchQuery, uuid } from '../../../../../shared/presentation/validation/fields';
-import { currentPassword, firstName, lastName, nationalId, optionalBirthDate, optionalMiddleName, optionalSecondLastName, phone } from './person.fields';
+import { currentPassword, firstName, lastName, nationalId, optionalBirthDate, optionalMiddleName, optionalSecondLastName, phone } from '../../../../../shared/presentation/validation/identity.fields';
 import { newPassword } from '../../../../../shared/presentation/validation/password.fields';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

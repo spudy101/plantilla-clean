@@ -20,10 +20,11 @@ import { PrismaNotificationPreferenceRepository } from '../../src/modules/notifi
 import { PrismaVerificationCodeRepository } from '../../src/modules/notification/infrastructure/persistence/prisma-verification-code.repository';
 import { PrismaEmailSuppressionRepository } from '../../src/modules/notification/infrastructure/persistence/prisma-email-suppression.repository';
 import { PrismaPushTokenRepository } from '../../src/modules/notification/infrastructure/persistence/prisma-push-token.repository';
-import userRepository from '../../src/modules/iam/repositories/user.repository';
+import { PrismaUserRepository } from '../../src/modules/iam/infrastructure/persistence/prisma-user.repository';
 import { page as listPage } from '../helpers/page';
 
 const notificationRepository = new PrismaPersonalNotificationRepository();
+const userRepository = new PrismaUserRepository();
 const deliveryRepository = new PrismaDeliveryRepository();
 const notificationTypeRepository = new PrismaNotificationTypeRepository();
 const notificationCategoryRepository = new PrismaNotificationCategoryRepository();

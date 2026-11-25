@@ -46,15 +46,4 @@ export class PrismaPersonContactRepository extends PrismaRepository implements P
   async update(personContactId: string, changes: ContactChanges): Promise<void> {
     await (await this.db()).personContact.updateMany({ where: { personContactId }, data: changes });
   }
-
-  /**
-   * @deprecated Transitorio para iam (reset de credenciales): el contacto por email con la persona y su usuario.
-   * Cuando iam se migre, lo pedirá por un puerto propio.
-   */
-  async findByEmailWithUser(email: string) {
-    return (await this.db()).personContact.findFirst({
-      where: { emailHash: hashValue(email) },
-      include: { person: { select: { personId: true, firstName: true, user: { select: { userId: true, isActive: true } } } } }
-    });
-  }
 }

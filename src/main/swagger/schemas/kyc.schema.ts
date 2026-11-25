@@ -17,7 +17,7 @@ import {
   PersonLocationSchema,
   PersonSchema,
   UserSchema
-} from '../../../modules/person/presentation/http/responses/person-components.response';
+} from '../../../shared/presentation/validation/account.schemas';
 import { profileSchema } from '../../../modules/person/presentation/http/responses/profile.response';
 import { MyConsentCatalogItemSchema } from '../../../modules/legal/presentation/http/responses/legal.response';
 import {
@@ -25,7 +25,7 @@ import {
   UserChangeLogSchema,
   UserSessionSchema,
   VerificationCodeSchema
-} from '../../../modules/iam/responses/auth-components.response';
+} from '../../../modules/iam/presentation/http/responses/auth-components.response';
 
 /** El perfil documenta sus consentimientos con el esquema de legal. */
 const ProfileSchema = profileSchema(MyConsentCatalogItemSchema);

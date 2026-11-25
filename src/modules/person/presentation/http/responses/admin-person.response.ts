@@ -2,7 +2,7 @@
 import { z } from '../../../../../shared/presentation/validation/z';
 import { dateTime } from '../../../../../shared/presentation/validation/output';
 import piiMaskingDoc from '../../../../../shared/presentation/validation/pii-masking.doc';
-import { PersonSchema, UserSchema } from './person-components.response';
+import { PersonSchema, UserSchema } from '../../../../../shared/presentation/validation/account.schemas';
 
 const { MASKED_DOCUMENT_DESC, MASKED_EMAIL_DESC } = piiMaskingDoc;
 const maskedEmail = z.string().nullable().meta({ example: '****n@example.com', description: MASKED_EMAIL_DESC });

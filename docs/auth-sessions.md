@@ -20,15 +20,15 @@ propios** (`JwtUtil`) + estado en Redis (`TokenBlacklistUtil`, `RefreshTokenStor
 | Pieza                                                             | Archivo                                                                  |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Emisión/verificación JWT RS256 (access + refresh)                 | `src/shared/infrastructure/security/jwt.util.ts`                                               |
-| Store de JTIs de refresh en Redis (rotación + reuse)              | `src/modules/iam/utils/refresh-token-store.util.ts`                               |
-| Blacklist de tokens / umbrales de invalidación                    | `src/modules/iam/utils/token-blacklist.util.ts`                                   |
-| Validación por request (firma + blacklist + inactividad 15 min)   | `src/modules/iam/middlewares/auth.middleware.ts`                                  |
-| Login / refresh / logout / logout-all / sesiones                  | `src/modules/iam/services/auth-login.service.ts`        |
-| Login biométrico                                                  | `src/modules/iam/services/auth-biometric.service.ts`              |
-| Recuperación de credenciales (reset)                              | `src/modules/iam/services/auth-register.service.ts`               |
-| Revocación de sesión por admin                                    | `src/modules/iam/services/admin-auth-session.service.ts`           |
-| Worker de expiración (inactividad + tope absoluto)                | `src/modules/iam/workers/session-expiration.worker.ts`           |
-| Modelo de sesión                                                  | `src/modules/iam/models/user-session.model.ts` (`user_sessions`) |
+| Store de JTIs de refresh en Redis (rotación + reuse)              | `src/modules/iam/infrastructure/security/redis-refresh-token.store.ts`                               |
+| Blacklist de tokens / umbrales de invalidación                    | `src/modules/iam/infrastructure/security/redis-token-revocations.ts`                                   |
+| Validación por request (firma + blacklist + inactividad 15 min)   | `src/modules/iam/application/use-cases/authentication.use-cases.ts` (guarda: `presentation/http/auth.guards.ts`)                                  |
+| Login / refresh / logout / logout-all / sesiones                  | `src/modules/iam/application/use-cases/login.use-cases.ts`, `session-lifecycle.use-cases.ts`, `sessions.ts`        |
+| Login biométrico                                                  | `src/modules/iam/application/use-cases/biometric.use-cases.ts`              |
+| Recuperación de credenciales (reset)                              | `src/modules/iam/application/use-cases/registration.use-cases.ts`               |
+| Revocación de sesión por admin                                    | `src/modules/iam/application/use-cases/admin-sessions.use-cases.ts`           |
+| Worker de expiración (inactividad + tope absoluto)                | `src/modules/iam/infrastructure/workers/session-expiration.worker.ts` (caso de uso `ExpireSessions`)           |
+| Modelo de sesión                                                  | `src/modules/iam/domain/session.ts` + `infrastructure/persistence/prisma-user-session.repository.ts` (`user_sessions`) |
 
 ---
 

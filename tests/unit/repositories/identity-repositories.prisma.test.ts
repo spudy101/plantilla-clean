@@ -1,4 +1,4 @@
-// tests/unit/modules/schemas/kyc/repositories/identity-repositories.prisma.test.ts
+// tests/unit/repositories/identity-repositories.prisma.test.ts
 //
 // Repositorios del grupo 6 (núcleo de identidad) sobre Prisma (docs/prisma-migration.md, fase 5): se
 // mockea el cliente único. Incluye los casos que antes cubrían query-encapsulation y
@@ -13,23 +13,34 @@ const mockDb = {
   userTrustedDevice: { findFirst: jest.fn(), updateManyAndReturn: jest.fn() },
   credentialReset: { updateMany: jest.fn() },
   biometricChallenge: { updateMany: jest.fn() },
-  personLocation: { upsert: jest.fn() }
+  personLocation: { upsert: jest.fn() },
+  userLoginAttempt: { create: jest.fn(), findFirst: jest.fn() }
 };
 
 jest.mock('../../../src/shared/infrastructure/database/prisma', () => mockDb);
 
-import roleRepository from '../../../src/modules/iam/repositories/role.repository';
-import userRepository from '../../../src/modules/iam/repositories/user.repository';
+import { PrismaRoleRepository } from '../../../src/modules/iam/infrastructure/persistence/prisma-role.repository';
+import { PrismaUserRepository } from '../../../src/modules/iam/infrastructure/persistence/prisma-user.repository';
 import { PrismaChangeLogRepository } from '../../../src/modules/audit/infrastructure/persistence/prisma-change-log.repository';
-import userSessionRepository from '../../../src/modules/iam/repositories/user-session.repository';
-import trustedDeviceRepository from '../../../src/modules/iam/repositories/auth-trusted-device.repository';
-import credentialResetRepository from '../../../src/modules/iam/repositories/credential-reset.repository';
-import biometricRepositories from '../../../src/modules/iam/repositories/biometric.repository';
+import { PrismaUserSessionRepository } from '../../../src/modules/iam/infrastructure/persistence/prisma-user-session.repository';
+import { PrismaTrustedDeviceRepository } from '../../../src/modules/iam/infrastructure/persistence/prisma-trusted-device.repository';
+import { PrismaCredentialResetRepository } from '../../../src/modules/iam/infrastructure/persistence/prisma-credential-reset.repository';
+import { PrismaBiometricChallengeRepository } from '../../../src/modules/iam/infrastructure/persistence/prisma-biometric.repositories';
+import { PrismaLoginAttemptRepository } from '../../../src/modules/iam/infrastructure/persistence/prisma-login-attempt.repository';
+import { bcryptPasswordHasher } from '../../../src/modules/iam/infrastructure/security/security.adapters';
+import { DeviceNotFoundError } from '../../../src/modules/iam/domain/errors';
 import { PrismaPersonLocationRepository } from '../../../src/modules/person/infrastructure/persistence/prisma-person-location.repository';
+import EncryptionUtil from '../../../src/shared/infrastructure/security/encryption.util';
 import HashUtil from '../../../src/shared/infrastructure/security/hash.util';
 import { page } from '../../helpers/page';
 
-const { biometricChallengeRepository } = biometricRepositories;
+const roleRepository = new PrismaRoleRepository();
+const userRepository = new PrismaUserRepository();
+const userSessionRepository = new PrismaUserSessionRepository();
+const trustedDeviceRepository = new PrismaTrustedDeviceRepository();
+const credentialResetRepository = new PrismaCredentialResetRepository();
+const biometricChallengeRepository = new PrismaBiometricChallengeRepository();
+const loginAttemptRepository = new PrismaLoginAttemptRepository();
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -60,7 +71,7 @@ describe('PrismaChangeLogRepository (vista sobre audit_logs): filtros', () => {
   const whereOfLastQuery = () => mockDb.auditLog.findMany.mock.calls.at(-1)[0].where;
 
   it('siempre filtra por la acción USER_FIELD_CHANGED; el usuario afectado es entity_id', async () => {
-    await changeLogRepository.findByUserId('user-1', page());
+    await changeLogRepository.list({ userId: 'user-1' }, page(), null);
     expect(whereOfLastQuery()).toMatchObject({ action: 'USER_FIELD_CHANGED', entityId: 'user-1' });
   });
 
@@ -78,25 +89,25 @@ describe('PrismaChangeLogRepository (vista sobre audit_logs): filtros', () => {
   });
 });
 
-describe('UserRepository.findAllPaginated', () => {
+describe('PrismaUserRepository.list', () => {
   const andOfLastQuery = () => mockDb.user.findMany.mock.calls.at(-1)[0].where.AND;
 
   it('excluye eliminados por defecto y filtra el documento por su hash (va cifrado)', async () => {
-    await userRepository.findAllPaginated({ nationalId: '123' }, page());
+    await userRepository.list({ nationalId: '123' }, page(), null);
     expect(andOfLastQuery()).toEqual(
       expect.arrayContaining([{ deletedAt: null }, { person: { nationalIdHash: HashUtil.hashForSearch('123') } }])
     );
   });
 
   it('onlyDeleted trae solo eliminados; excludeUserId pisa a userId', async () => {
-    await userRepository.findAllPaginated({ onlyDeleted: true, userId: 'u-1', excludeUserId: 'u-2' }, page());
+    await userRepository.list({ onlyDeleted: true, userId: 'u-1', excludeUserId: 'u-2' }, page(), null);
     const and = andOfLastQuery();
     expect(and).toEqual(expect.arrayContaining([{ deletedAt: { not: null } }, { userId: { not: 'u-2' } }]));
     expect(and).not.toContainEqual({ userId: 'u-1' });
   });
 
   it('busca por username, nombre y apellido sin distinguir mayúsculas', async () => {
-    await userRepository.findAllPaginated({}, page(), 'ana');
+    await userRepository.list({}, page(), 'ana');
     const contains = { contains: 'ana', mode: 'insensitive' };
     expect(andOfLastQuery()).toContainEqual({
       OR: [{ username: contains }, { person: { firstName: contains } }, { person: { lastName: contains } }]
@@ -104,40 +115,42 @@ describe('UserRepository.findAllPaginated', () => {
   });
 });
 
-describe('UserRepository.update', () => {
+describe('PrismaUserRepository.update', () => {
   it('devuelve null si la fila no existe', async () => {
     mockDb.user.updateManyAndReturn.mockResolvedValue([]);
     await expect(userRepository.update('u-x', { isActive: false })).resolves.toBeNull();
   });
 
-  it('verifyPassword: sin hash guardado nunca coincide', async () => {
-    await expect(userRepository.verifyPassword('x', null)).resolves.toBe(false);
+  it('la contraseña: sin hash guardado nunca coincide', async () => {
+    await expect(bcryptPasswordHasher.matches('x', null)).resolves.toBe(false);
   });
 });
 
-describe('UserSessionRepository', () => {
-  it('closeSession solo cierra si sigue activa y devuelve cuántas cerró', async () => {
+describe('PrismaUserSessionRepository', () => {
+  it('close solo cierra si sigue activa y devuelve cuántas cerró', async () => {
     mockDb.userSession.updateMany.mockResolvedValue({ count: 0 });
-    await expect(userSessionRepository.closeSession('s-1', 'logout')).resolves.toBe(0);
+    await expect(userSessionRepository.close('s-1', 'logout')).resolves.toBe(0);
     expect(mockDb.userSession.updateMany).toHaveBeenCalledWith({
       where: { userSessionId: 's-1', status: 'active' },
       data: expect.objectContaining({ status: 'closed', closeReason: 'logout' })
     });
   });
 
-  it('buildWhere: un estado fuera del enum no devuelve filas (Postgres lo rechazaría)', () => {
-    expect(userSessionRepository.buildWhere({ status: 'zzz' })).toEqual({ status: { in: [] } });
-    expect(userSessionRepository.buildWhere({ status: 'active', ip: '1.1.1.1' })).toEqual({
-      status: 'active',
-      ipAddress: '1.1.1.1'
-    });
+  it('listado admin: un estado fuera del enum no devuelve filas (Postgres lo rechazaría)', async () => {
+    mockDb.userSession.findMany.mockResolvedValue([]);
+    mockDb.userSession.count.mockResolvedValue(0);
+    const whereOfLastQuery = () => mockDb.userSession.findMany.mock.calls.at(-1)[0].where;
+    await userSessionRepository.findPaginatedWithDeviceAndUser({ status: 'zzz' }, page());
+    expect(whereOfLastQuery()).toEqual({ status: { in: [] } });
+    await userSessionRepository.findPaginatedWithDeviceAndUser({ status: 'active', ip: '1.1.1.1' }, page());
+    expect(whereOfLastQuery()).toEqual({ status: 'active', ipAddress: '1.1.1.1' });
   });
 });
 
-describe('TrustedDeviceRepository', () => {
-  it('approve lanza 404 si el dispositivo no existe', async () => {
+describe('PrismaTrustedDeviceRepository', () => {
+  it('approve rechaza si el dispositivo no existe (404)', async () => {
     mockDb.userTrustedDevice.updateManyAndReturn.mockResolvedValue([]);
-    await expect(trustedDeviceRepository.approve('d-x', 'd-1')).rejects.toMatchObject({ statusCode: 404 });
+    await expect(trustedDeviceRepository.approve('d-x', 'd-1')).rejects.toBeInstanceOf(DeviceNotFoundError);
   });
 });
 
@@ -170,5 +183,29 @@ describe('PrismaPersonLocationRepository.save', () => {
       create: { personId: 'p-1', ...data },
       update: data
     });
+  });
+});
+
+describe('PrismaLoginAttemptRepository', () => {
+  it('record cifra el documento y guarda su hash de búsqueda', async () => {
+    mockDb.userLoginAttempt.create.mockResolvedValue({});
+    await loginAttemptRepository.record({ userId: 'u-1', usernameAttempt: 'ana', nationalId: '123', success: false, failureReason: 'x' });
+
+    const { data } = mockDb.userLoginAttempt.create.mock.calls[0][0];
+    expect(data.nationalId).not.toBe('123');
+    expect(EncryptionUtil.safeDecrypt(data.nationalId)).toBe('123');
+    expect(data.nationalIdHash).toBe(HashUtil.hashForSearch('123'));
+    expect(data).toMatchObject({ userId: 'u-1', usernameAttempt: 'ana', success: false, attemptedAt: expect.any(Date) });
+  });
+
+  it('findBlock busca el último intento por hash y devuelve los minutos restantes', async () => {
+    mockDb.userLoginAttempt.findFirst
+      .mockResolvedValueOnce({ blockedUntil: new Date(Date.now() + 5 * 60 * 1000) })
+      .mockResolvedValueOnce({ blockedUntil: null });
+    await expect(loginAttemptRepository.findBlock('123')).resolves.toMatchObject({ blocked: true, remainingMinutes: 5 });
+    await expect(loginAttemptRepository.findBlock('123')).resolves.toBeNull();
+    expect(mockDb.userLoginAttempt.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { nationalIdHash: HashUtil.hashForSearch('123') }, orderBy: { attemptedAt: 'desc' } })
+    );
   });
 });

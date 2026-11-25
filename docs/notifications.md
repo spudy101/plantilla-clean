@@ -4,7 +4,7 @@
 > Punto de entrada único: el puerto **`Notifier`** (`shared/application/ports/notifier.port.ts`): `notify({ type, userId, … })`
 > y `notifyEmail({ type, email, … })`. Lo implementa el caso de uso `CreateNotification`
 > (`src/modules/notification/application/use-cases/create-notification.use-case.ts`); `src/main/container.ts` lo
-> conecta a cada módulo. El módulo sin migrar (iam) usa `notificationModule.notifier`.
+> conecta a cada módulo (iam incluido).
 
 ## Idea general
 

@@ -8,8 +8,6 @@ import constantsModule from '../shared/infrastructure/config';
 const { server, workers } = constantsModule;
 import errorMessageModule from '../shared/kernel/error-message.util';
 const { errorMessage } = errorMessageModule;
-import iamModule from '../modules/iam';
-const { SessionExpirationWorker } = iamModule;
 import app, { container } from './app';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -34,7 +32,7 @@ function startWorkers() {
     return;
   }
   container.notification.worker.start();
-  SessionExpirationWorker.iniciar();
+  container.iam.sessionExpirationWorker.start();
   container.audit.retentionWorker.start();
   container.approvals.expirationWorker.start();
   logger.info('✅ Workers iniciados');

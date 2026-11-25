@@ -10,6 +10,16 @@ export interface Page<T> {
   count: number;
 }
 
+/** Los intentos de autenticación (la vista de sesiones de iam): por acciones o, sin ellas, por categoría. */
+export interface AuthAttemptCriteria {
+  from: Date;
+  to: Date;
+  actions?: string[];
+  category?: string;
+  userId?: string;
+  outcome?: string;
+}
+
 /** Filtros del listado y la exportación (solo los que llegaron). */
 export interface AuditLogFilters {
   dateFrom?: Date | string;
@@ -37,6 +47,7 @@ export interface AuditLogRepository {
 
   search(filters: AuditLogFilters, page: PageRequest): Promise<Page<AuditLogWithExecutor>>;
   findById(auditLogId: string): Promise<AuditLogWithExecutor | null>;
+  findAuthAttempts(criteria: AuthAttemptCriteria, page: PageRequest): Promise<Page<AuditLogWithExecutor>>;
   /** Para exportar: los más recientes primero, hasta `limit`. */
   findForExport(filters: AuditLogFilters, limit: number): Promise<AuditLogEntry[]>;
 

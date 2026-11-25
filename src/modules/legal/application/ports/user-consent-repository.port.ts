@@ -39,4 +39,10 @@ export interface UserConsentRepository {
 
   /** Revoca el consentimiento vigente del usuario para el tipo; null si no había uno. */
   revokeCurrent(revocation: ConsentRevocation): Promise<UserConsent | null>;
+
+  /** Por id (los que muestra la traza de una sesión de audit). */
+  findByIds(ids: readonly string[]): Promise<UserConsent[]>;
+
+  /** Derecho de supresión: revoca todos los vigentes del usuario; devuelve cuántos. */
+  revokeAll(userId: string): Promise<number>;
 }

@@ -4,7 +4,7 @@
 // conoce el valor (lo acaba de escribir).
 import MaskingUtil from '../../../../shared/domain/pii/masking.util';
 import type { AccountTarget, ClientAccount, RoleRef } from '../../domain/client-account';
-import { toContactOutput, toLocationOutput, toPersonOutput, toUserOutput } from './person.output';
+import { toContactOutput, toLocationOutput, toPersonOutput, toUserOutput } from '../../../../shared/application/account-views';
 
 /** Un rol como sale en el resto de la API (mismo formato que el catálogo de roles). */
 export function toRoleOutput(role: RoleRef | null | undefined) {

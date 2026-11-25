@@ -1,9 +1,9 @@
 # Principios SOLID en la plantilla
 
 > Qué principio se aplica, **dónde** está en el código y **cómo** seguirlo al crear un feature nuevo.
-> La arquitectura sigue siendo **modular por capas** (`routes → controllers → services → repositories → Prisma`).
-> SOLID no cambia esa arquitectura: la deja lista para migrar a hexagonal/clean si el dominio lo pide
-> (ver [§ Camino a hexagonal](#camino-a-hexagonal)).
+> Se escribió para la plantilla **modular por capas** (`routes → controllers → services → repositories → Prisma`),
+> como el paso previo a hexagonal/clean (ver [§ Camino a hexagonal](#camino-a-hexagonal)). Ese paso ya se dio: todos
+> los módulos están en Clean Architecture (docs/CLEAN-ARCHITECTURE.md); los principios siguen valiendo igual.
 
 | Principio | Idea en una línea | Dónde se ve en la plantilla |
 |---|---|---|
@@ -23,47 +23,26 @@ Las reglas se **verifican automáticamente** en `tests/unit/guards/solid-archite
 **Antes:** `auth-login.service.ts` tenía ~1600 líneas (login, MFA, refresh, logout, dispositivos,
 sesiones) y `admin-person.service.ts` ~1000. Cualquier cambio en sesiones obligaba a tocar el archivo del login.
 
-**Ahora:** cada responsabilidad vive en su propio service y el original queda como **fachada**:
+**Ahora:** cada responsabilidad vive en su propio archivo (iam ya está en Clean Architecture, docs/CLEAN-ARCHITECTURE.md):
 
 ```
-src/modules/iam/services/
-├── auth-login.service.ts                 ← fachada: flujo de login + delegación
-└── auth-login/
-    ├── token-refresh.service.ts          ← rotación de refresh / reuse attack
-    ├── auth-logout.service.ts            ← logout / logoutAll
-    ├── trusted-device-management.service.ts
-    ├── session-control.service.ts        ← cierre selectivo y límite de sesiones
-    ├── login-device.service.ts           ← dispositivo durante el login
-    ├── sms-login-challenge.service.ts    ← MFA por SMS en el login
-    ├── login-policy-gate.service.ts      ← política de privacidad al iniciar sesión (también biométrico)
-    └── session-issuer.service.ts         ← tokens + JTI + user_session (también biométrico y registro)
-
-src/modules/iam/services/
-├── mfa.service.ts                        ← fachada: estado, método preferido, validar contraseña
-└── mfa/
-    ├── totp-mfa.service.ts               ← setup / activación / verificación / baja TOTP
-    ├── sms-mfa.service.ts                ← código de activación / confirmación / baja SMS
-    └── mfa-account.ts                    ← lecturas del usuario + bitácora de cambios de MFA
-
-src/modules/iam/services/
-├── auth-register.service.ts              ← registro (crea persona/contacto/usuario/consentimientos)
-├── auth-register/
-│   └── credential-reset.service.ts       ← reset de contraseña / MFA por enlace de un solo uso
-└── auth-biometric.service.ts             ← enrolamiento + login biométrico (delegando sesión,
-                                            política y criptografía en servicios compartidos)
+src/modules/iam/application/use-cases/
+├── login.use-cases.ts                    ← Login y VerifyMfaLogin (segundo factor)
+├── login-steps.ts                        ← LoginPolicyGate (política), LoginDeviceResolver (dispositivo),
+│                                           SmsLoginChallenge (MFA por SMS); también los usa el biométrico
+├── sessions.ts                           ← SessionIssuer (tokens + JTI + user_session) y SessionControl
+│                                           (una sesión por dispositivo, límite de sesiones, cierres)
+├── session-lifecycle.use-cases.ts        ← refresh (rotación / reuse attack), logout, logout-all, sesiones propias
+├── trusted-devices.use-cases.ts          ← listar, renombrar, bloquear, desbloquear, aprobar
+├── mfa.use-cases.ts                      ← TOTP, SMS, estado, método preferido (MfaAccount: lecturas + bitácora)
+├── registration.use-cases.ts             ← registro y reset de contraseña / MFA por enlace de un solo uso
+├── biometric.use-cases.ts                ← enrolamiento + login biométrico (con las piezas de sesión y política)
+├── internal-users.use-cases.ts           ← usuarios internos (InternalUserGuards: interno / superadmin / eliminado)
+└── admin-sessions.use-cases.ts, rbac.use-cases.ts, authentication.use-cases.ts
 
 src/modules/person/                       ← ya en Clean Architecture (docs/CLEAN-ARCHITECTURE.md): un caso
                                             de uso por acción en application/use-cases/ y las reglas
                                             ("cuenta eliminada es intocable", baja, nombres) en domain/
-
-src/modules/iam/services/
-├── admin-user.service.ts                 ← fachada (usuarios internos)
-└── admin-user/
-    ├── internal-user-query.service.ts    ← listados, detalle, roles, sesiones, bitácora
-    ├── internal-user-profile.service.ts  ← alta y edición
-    ├── internal-user-access.service.ts   ← rol (doble aprobación), estado, cierre de sesiones
-    ├── internal-user-deletion.service.ts ← eliminación (re-auth + doble aprobación + ofuscación)
-    └── internal-user-guards.ts           ← interno / superadmin / eliminado / invalidar sesiones
 
 src/modules/approvals/                    ← ya en Clean Architecture: el gate (GateOperation), la resolución
                                             (ResolveApprovalRequest), las reanudaciones (ApprovalHandlers) y
@@ -73,24 +52,17 @@ src/modules/approvals/                    ← ya en Clean Architecture: el gate 
 src/shared/infrastructure/security/es256-signature.util.ts      ← verificación ES256 (pura), extraída de auth-biometric
 ```
 
-La fachada mantiene **la misma API pública**, así controllers y tests no cambian:
-
-```js
-// auth-login.service.ts
-refreshToken(refreshTokenStr) {
-  return this.tokenRefresh.refreshToken(refreshTokenStr);
-}
-```
+Las piezas compartidas se arman una sola vez en `iam.module.ts` y cada caso de uso las recibe por constructor.
 
 También se eliminó lógica **duplicada** entre los tres flujos de autenticación
 (contraseña, biométrico, registro):
 
 | Lógica | Estaba copiada en | Ahora vive en |
 |---|---|---|
-| Registro de consentimientos | `auth-login`, `auth-register`, `auth-biometric` | `schemas/records/legal/services/consent-recorder.service.ts` |
-| Una sesión por dispositivo + límite de sesiones | `auth-login`, `auth-biometric` | `auth-login/session-control.service.ts` |
-| Emisión de tokens + sesión | `auth-login`, `auth-biometric`, `auth-register` | `auth-login/session-issuer.service.ts` |
-| Compuerta de política de privacidad | `auth-login`, `auth-biometric` | `auth-login/login-policy-gate.service.ts` |
+| Registro de consentimientos | `auth-login`, `auth-register`, `auth-biometric` | legal (`GrantPrivacyPolicyConsent`…), que iam usa por su puerto `ConsentRecorder` |
+| Una sesión por dispositivo + límite de sesiones | `auth-login`, `auth-biometric` | `SessionControl` (`iam/application/use-cases/sessions.ts`) |
+| Emisión de tokens + sesión | `auth-login`, `auth-biometric`, `auth-register` | `SessionIssuer` (`iam/application/use-cases/sessions.ts`) |
+| Compuerta de política de privacidad | `auth-login`, `auth-biometric` | `LoginPolicyGate` (`iam/application/use-cases/login-steps.ts`) |
 
 **Regla práctica:** si un service supera ~400 líneas o su nombre necesita un "y" para describirlo
 ("login **y** sesiones **y** dispositivos"), se divide.

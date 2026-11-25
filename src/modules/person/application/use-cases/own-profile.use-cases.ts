@@ -11,7 +11,7 @@ import type { ProfileConsents } from '../ports/profile-consents.port';
 import type { CatalogChecks } from './catalog-checks';
 import { sendLater, type NoticeDeps } from './person-notices';
 import { USER_AUDIT_ENTITY } from './person-audit';
-import { toContactOutput, toLocationOutput } from '../dto/person.output';
+import { toContactOutput, toLocationOutput } from '../../../../shared/application/account-views';
 import { toNamesUpdatedOutput, toProfileOutput } from '../dto/profile.output';
 import { fullNameOf, namesChanges, withNames, type NamesInput } from '../../domain/person';
 import { locationData, locationSnapshot } from '../../domain/person-location';

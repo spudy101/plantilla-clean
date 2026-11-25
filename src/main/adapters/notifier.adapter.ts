@@ -1,15 +1,13 @@
 // Adaptador: los puertos Notifier y EmailNotifier (shared/application) implementados con el módulo notification.
 //
-// Los módulos se arman antes que notification (audit) o sin depender del orden: el aviso busca los casos de uso
-// de notification al usarse (los deja armados createNotificationModule en el container).
-import notificationModule from '../../modules/notification';
+// Los módulos se arman antes que notification (iam, audit) o sin depender del orden: el aviso busca el notifier de
+// notification al usarse.
 import type { EmailNotifier, Notifier } from '../../shared/application/ports/notifier.port';
+import type { ModuleRegistry } from './module-registry';
 
-export const notifierAdapter: Notifier & EmailNotifier = {
-  notify: async notification => {
-    await notificationModule.notifier.notify(notification);
-  },
-  notifyEmail: async notification => {
-    await notificationModule.notifier.notifyEmail(notification);
-  }
-};
+export function notifierAdapter(modules: ModuleRegistry): Notifier & EmailNotifier {
+  return {
+    notify: notification => modules.notification.notifier.notify(notification),
+    notifyEmail: notification => modules.notification.notifier.notifyEmail(notification)
+  };
+}

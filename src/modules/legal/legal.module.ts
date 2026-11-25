@@ -30,6 +30,7 @@ import { GetUserConsentHistory } from './application/use-cases/get-user-consent-
 import { VerifyConsent } from './application/use-cases/verify-consent.use-case';
 import { GrantPrivacyPolicyConsent } from './application/use-cases/grant-privacy-policy-consent.use-case';
 import { GrantCommercialCommunicationsConsent } from './application/use-cases/grant-commercial-communications-consent.use-case';
+import { FindActivePrivacyPolicy, FindConsentsByIds, GetConsentCatalog, RevokeAllConsents } from './application/use-cases/consent-records.use-cases';
 import { ConsentTypeController } from './presentation/http/consent-type.controller';
 import { PrivacyPolicyAdminController } from './presentation/http/privacy-policy-admin.controller';
 import { AdminUserConsentController } from './presentation/http/admin-user-consent.controller';
@@ -58,18 +59,10 @@ export interface LegalModule {
   useCases: {
     grantPrivacyPolicyConsent: GrantPrivacyPolicyConsent;
     grantCommercialCommunicationsConsent: GrantCommercialCommunicationsConsent;
-  };
-}
-
-/** Los casos de uso que otros módulos usan para dejar constancia de un consentimiento. */
-export function createConsentRecorders(
-  consentTypes = new PrismaConsentTypeRepository(),
-  userConsents = new PrismaUserConsentRepository(),
-  policies = new PrismaPrivacyPolicyRepository()
-) {
-  return {
-    grantPrivacyPolicyConsent: new GrantPrivacyPolicyConsent(consentTypes, userConsents, policies),
-    grantCommercialCommunicationsConsent: new GrantCommercialCommunicationsConsent(consentTypes, userConsents)
+    findActivePrivacyPolicy: FindActivePrivacyPolicy;
+    getConsentCatalog: GetConsentCatalog;
+    revokeAllConsents: RevokeAllConsents;
+    findConsentsByIds: FindConsentsByIds;
   };
 }
 
@@ -108,6 +101,14 @@ export function createLegalModule(deps: LegalModuleDeps): LegalModule {
     ),
     clientRouter: createLegalClientRouter(userConsentController, guards),
     requireConsent: createRequireConsent(new VerifyConsent(consentTypes, userConsents, audit, logger)),
-    useCases: createConsentRecorders(consentTypes, userConsents, policies)
+    // Lo que usan otros módulos (por los adaptadores de src/main/)
+    useCases: {
+      grantPrivacyPolicyConsent: new GrantPrivacyPolicyConsent(consentTypes, userConsents, policies),
+      grantCommercialCommunicationsConsent: new GrantCommercialCommunicationsConsent(consentTypes, userConsents),
+      findActivePrivacyPolicy: new FindActivePrivacyPolicy(policies),
+      getConsentCatalog: new GetConsentCatalog(consentTypes, userConsents),
+      revokeAllConsents: new RevokeAllConsents(userConsents),
+      findConsentsByIds: new FindConsentsByIds(userConsents)
+    }
   };
 }

@@ -7,7 +7,9 @@
 import { randomUUID } from 'node:crypto';
 import prisma from '../../src/shared/infrastructure/database/prisma';
 import unitOfWork from '../../src/shared/infrastructure/database/unit-of-work';
-import userRepository from '../../src/modules/iam/repositories/user.repository';
+import { PrismaUserRepository } from '../../src/modules/iam/infrastructure/persistence/prisma-user.repository';
+
+const userRepository = new PrismaUserRepository();
 import { PrismaUserConsentRepository } from '../../src/modules/legal/infrastructure/persistence/prisma-user-consent.repository';
 import { PrismaPrivacyPolicyRepository } from '../../src/modules/legal/infrastructure/persistence/prisma-privacy-policy.repository';
 import { page } from '../helpers/page';
@@ -96,7 +98,7 @@ describe('Legal (consentimientos y política) · Prisma contra Postgres', () => 
   it('dentro de una unidad, el consentimiento de un usuario recién creado se confirma con él', async () => {
     const personId = await newPerson();
     const userIdInUnit = await unitOfWork.run(async () => {
-      const user = await userRepository.createWithPassword({ username: `${TAG}-uow`, personId, roleId, password: 'Secret123!' });
+      const user = await userRepository.create({ username: `${TAG}-uow`, personId, roleId, passwordHash: 'hash' });
       await grant({ userId: user.userId, consentTypeId });
       return user.userId;
     });
@@ -108,7 +110,7 @@ describe('Legal (consentimientos y política) · Prisma contra Postgres', () => 
     const username = `${TAG}-rb`;
     await expect(
       unitOfWork.run(async () => {
-        const user = await userRepository.createWithPassword({ username, personId, roleId, password: 'Secret123!' });
+        const user = await userRepository.create({ username, personId, roleId, passwordHash: 'hash' });
         await grant({ userId: user.userId, consentTypeId });
         throw new Error('falla del alta');
       })

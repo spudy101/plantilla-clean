@@ -4,14 +4,12 @@ Este repositorio es la versión **Clean Architecture** de [plantilla-base](https
 (misma API, mismas funcionalidades). Este documento explica cómo está organizado y dónde va cada cosa.
 Si el código lo contradice, falla un test: `tests/unit/guards/clean-architecture.test.ts`.
 
-> **Estado de la migración:** `shared/` ya está repartido en capas; `settings`, `catalogs`, `banners`, `legal`,
-> `integration`, `audit`, `person`, `notification` y `approvals` están migrados completos (moldes: escritura, solo lectura,
-> agregado + archivos en S3, un módulo que otros usan, uno que reacciona a eventos de infraestructura, uno del que
-> dependen todos, uno que trabaja sobre los datos de otro, uno que envía por proveedores externos en segundo plano y
-> uno que reanuda casos de uso de otros módulos).
-> Los demás módulos siguen con
-> la estructura en capas de la plantilla original y se migran uno por uno. Ver
-> [§ Estado y siguientes pasos](#estado-y-siguientes-pasos).
+> **Estado de la migración:** terminada. `shared/` está repartido en capas y los diez módulos (`settings`,
+> `catalogs`, `banners`, `legal`, `integration`, `audit`, `person`, `notification`, `approvals` e `iam`) están en
+> Clean (moldes: escritura, solo lectura, agregado + archivos en S3, un módulo que otros usan, uno que reacciona a
+> eventos de infraestructura, uno del que dependen todos, uno que trabaja sobre los datos de otro, uno que envía por
+> proveedores externos en segundo plano, uno que reanuda casos de uso de otros módulos y el que autentica a todos).
+> Ningún módulo importa a otro. Ver [§ Estado](#estado).
 
 ## La idea en una frase
 
@@ -38,7 +36,8 @@ Prisma, Postgres, Express, Redis ni AWS. Los detalles dependen del negocio, nunc
 src/
   main/                    composition root: el único lugar que conecta todo
     container.ts             crea cada módulo y le pasa sus dependencias (los `new` viven acá)
-    adapters/                implementan puertos con otros módulos (auditoría → audit, avisos → notification)
+    adapters/                implementan puertos con otros módulos (auditoría → audit, avisos → notification);
+                             leen los módulos ya armados por el registro de `module-registry.ts`
     app.ts                   Express: middlewares globales + monta los routers
     server.ts                arranque, workers y apagado ordenado
     swagger/                 documentación OpenAPI de toda la API
@@ -54,8 +53,8 @@ src/
       (providers/, workers/) integraciones externas y tareas periódicas, cuando el módulo las tenga
     presentation/
       http/                  rutas (factory), controller, requests/ y responses/ (Zod), docs/ (OpenAPI)
-    <dominio>.module.ts      composición del módulo: crea adaptadores → casos de uso → controller → router
-    index.ts                 API transitoria para los módulos aún no migrados
+    <dominio>.module.ts      composición del módulo: crea adaptadores → casos de uso → controller → router;
+                             lo que usan otros módulos lo devuelve en `useCases` (no hay `index.ts`)
 
   shared/                  lo transversal, también en capas
     kernel/                  helpers puros sin dependencias (mensajes de error, concurrencia, interop)
@@ -152,8 +151,8 @@ iniciar sesión, person muestra los consentimientos en el perfil y audit los mue
   cambia una edición parcial, si un consentimiento se puede revocar y si se puede exigir (la Ley 1581 prohíbe
   exigir uno opcional). `PrivacyPolicy.documentKey()` decide dónde vive el PDF de cada versión.
 - **Lo que otros usan son casos de uso:** `GrantPrivacyPolicyConsent` y `GrantCommercialCommunicationsConsent`
-  (antes un "ConsentRecorder" con repositorios concretos). `legal.module.ts` los devuelve en `useCases`.
-  Mientras iam no esté migrado, los recibe por el `index.ts` transitorio.
+  (antes un "ConsentRecorder" con repositorios concretos). `legal.module.ts` los devuelve en `useCases` e iam los
+  recibe por su puerto `ConsentRecorder` (`src/main/adapters/iam-sources.adapter.ts`).
 - **Un módulo invalida lo que otro cachea:** al publicar una versión hay que borrar la política vigente que
   catalogs guarda en caché. Legal declara el puerto `ActivePrivacyPolicyCache` (`invalidate()`), y
   `src/main/adapters/privacy-policy-cache.adapter.ts` lo implementa con la clave de catalogs. Ninguno de los
@@ -201,10 +200,9 @@ cliente) y un worker de retención.
   (`shared/domain/pii/masking.util.ts`), `loadUserRefs` es infraestructura de base de datos
   (`shared/infrastructure/database/user-ref.ts`), `buildAuditDiff` es kernel y `adminAuditContext` es
   presentación HTTP.
-- **Transitorio:** iam todavía escribe con `audit.record` del `index.ts`
-  (el mismo caso de uso, armado en `infrastructure/legacy/audit-recorder.ts`), iam lee intentos de
-  autenticación e historial de cambios por el index, y los intentos de login (que son de iam) viven en audit
-  hasta migrar iam.
+- **Lo que iam lee de audit, por puertos:** los intentos de autenticación y la bitácora de cambios de una cuenta
+  (`AuthAttemptLog`, `AccountChangeHistory`, con los casos de uso de audit) y el registro de un cambio
+  (`AccountChangeLog`). Los intentos de login (`user_login_attempts`) son de iam: su repositorio vive en iam.
 
 ## Un módulo que trabaja sobre los datos de otro (person)
 
@@ -227,17 +225,17 @@ iam (username, contraseña, estado, rol, MFA, baja).
   baja (`account-deletion.ts`: qué se ofusca y cómo), qué cambios del perfil van a la bitácora
   (`profile-changes.ts`), la ciudad del departamento y el tope de referencias.
 - **Casos de uso compartidos:** `ChangeContactEmail` (el titular con OTP, el admin sin él), `AnonymizeAccount` (la
-  baja del titular, la del panel y, por el index, la de los usuarios internos de iam) e `IdentityChecks`
+  baja del titular, la del panel y la de los usuarios internos de iam) e `IdentityChecks`
   (unicidad de documento, email y teléfono).
 - **La doble aprobación reanuda un caso de uso:** `person.module.ts` devuelve `ExecuteClientAccountDeletion` y
   `src/main/container.ts` lo registra como handler de `CLIENT_ACCOUNT_DELETE` (antes lo registraba el bootstrap de
   approvals importando person).
 - **Un esquema que es de otro módulo:** el perfil documenta sus consentimientos con el esquema de legal, así que
   `profile.response.ts` exporta `profileSchema(item)` y `src/main/swagger` le pasa el de legal.
-- **Transitorio:** iam usa por el `index.ts` los repositorios con los que crea personas y contactos, la unicidad de
-  documento y email, la baja de usuarios internos, la bitácora y las piezas de salida y de entrada de person. Lo
-  que necesita adaptadores de otros módulos (la baja, la bitácora) lo deja armado `person.module.ts` en
-  `infrastructure/legacy/legacy-bindings.ts`.
+- **Lo que iam usa de person, por puertos:** crear la persona y el contacto de una cuenta nueva y cambiarle los
+  nombres (`AccountHolders`), la unicidad de documento y email (`IdentityChecks`), la baja de un usuario interno
+  (`AccountAnonymizer`) y las contraseñas temporales (`TemporaryPasswords`). Los implementa
+  `src/main/adapters/iam-sources.adapter.ts` con los casos de uso que `person.module.ts` devuelve en `useCases`.
 
 ## Un módulo que envía por proveedores externos (notification)
 
@@ -262,10 +260,11 @@ la suppression list de correo (rebotes de SES por un webhook de SNS) y tiene su 
   sistema, apikey del webhook) llegan con las demás (`externalGuardsAdapter`).
 - **Workers y tiempo real:** `infrastructure/workers/notification.worker.ts` programa el despachador y las limpiezas
   (`container.notification.worker`); `server.ts` conecta y cierra el canal del contador (`unreadCounts`).
-- **Transitorio:** iam manda notificaciones y SMS por el `index.ts` (los casos de uso que deja armados
-  `infrastructure/legacy/legacy-bindings.ts`), e iam usa los códigos OTP, la preferencia inicial del registro y el
-  registro del dispositivo push del login. Los adaptadores de `src/main/` leen por el index los tipos (catalogs), las
-  preferencias de la traza de sesión (audit), los códigos verificados (person) y los SMS fallidos (integration).
+- **Lo que usan los demás, por puertos:** iam avisa por `Notifier` y usa los códigos OTP, el SMS, el dispositivo
+  push del login y la preferencia inicial del registro (`VerificationCodes`, `SmsSender`, `PushDevices`,
+  `NotificationPreferences`). Los tipos (catalogs), las preferencias de la traza de sesión (audit), los códigos
+  verificados (person) y los SMS fallidos (integration) los leen los adaptadores de `src/main/` en los `useCases` de
+  `notification.module.ts`.
 
 ## Un módulo que reanuda casos de uso de otros (approvals)
 
@@ -288,9 +287,37 @@ resolución) y un worker que vence las solicitudes. Detalle funcional en `docs/d
   iam) y el umbral configurado de una operación THRESHOLD (`ApprovalThresholds`, la configuración global; ninguna
   operación lo usa hoy, así que el adaptador no tiene valores y vale el default). Con esto se borró el acceso crudo a
   `system_global_config` que settings dejaba en su `index.ts` para approvals.
-- **Transitorio:** iam gatea el cambio de rol y la baja de usuarios internos, y anota el badge `pendingApproval` de
-  su listado, por el `index.ts` (`dualApproval.gate` y `dualApproval.annotatePending`, con los casos de uso que deja
-  armados `infrastructure/legacy/dual-approval.ts`).
+- **iam gatea por su propio puerto:** el cambio de rol y la baja de usuarios internos pasan por `DualApproval`
+  (`gate`, y `findPending` para el badge `pendingApproval` del listado), que `src/main/adapters/iam-sources.adapter.ts`
+  conecta con los casos de uso de approvals. Las reanudaciones (`ExecuteInternalRoleChange`,
+  `ExecuteInternalUserDeletion`) las registra `src/main/adapters/approval-sources.adapter.ts`.
+
+## El módulo que autentica a todos (iam)
+
+`iam` es la identidad y el acceso: login por contraseña con segundo factor (TOTP o SMS) y por huella (WebAuthn,
+ES256), registro de clientes, reset de credenciales, sesiones y dispositivos de confianza, MFA, usuarios internos,
+RBAC y las guardas HTTP con las que se protegen las rutas de todos los módulos.
+
+- **Reglas en el dominio:** a qué portal entra cada rol y cuándo la política de privacidad bloquea el login
+  (`login.ts`); la vida de una sesión (inactividad, tope absoluto, throttle de `last_access_at`, el barrido del
+  worker: `session.ts`); qué dispositivo puede gestionar a cuál y que siempre quede uno trusted
+  (`trusted-device.ts`); a qué factor cae la preferencia de MFA al apagar otro (`mfa.ts`); el challenge biométrico y
+  el `sign_count` anti-replay (`biometric.ts`); la matriz RBAC con sus overrides (`rbac.ts`); y los errores con los
+  mensajes, códigos y detalles de siempre (`errors.ts`).
+- **Casos de uso por flujo**, con las piezas que comparten: `SessionIssuer` (par de tokens + JTI + fila de sesión),
+  `SessionControl` (una sesión por dispositivo, el límite de sesiones simultáneas, los cierres), `LoginPolicyGate`,
+  `LoginDeviceResolver` y `SmsLoginChallenge`. El login por contraseña y el biométrico usan las mismas.
+- **Cada detalle de seguridad es un puerto:** tokens RS256 (`TokenService`), refresh con rotación y ventana de gracia
+  (`RefreshTokenStore`), blacklist y umbrales (`TokenRevocations`), blocklist de dispositivos, rate limit del login,
+  bcrypt, TOTP, cifrado del secreto, firmas ES256 y HMAC, aleatoriedad, API keys. Los implementa
+  `infrastructure/security/` (Redis, bcrypt y las utilidades de `shared/infrastructure/security`: JWT, TOTP,
+  cifrado); sin Redis, la autenticación valida contra la base (política A).
+- **Lo demás de otros módulos, por puertos** (`src/main/adapters/iam-sources.adapter.ts`): la persona (person), la
+  política y los consentimientos (legal), OTP, SMS, push y preferencias (notification), catálogos, la bitácora y los
+  intentos (audit) y la doble aprobación (approvals).
+- **Lo que iam ofrece a los demás:** las guardas HTTP (`guards`, que `src/main/adapters/route-guards.adapter.ts`
+  entrega a cada módulo) y los directorios `AccountDirectory`, `RoleDirectory` y `SessionDirectory`, que leen
+  person, catalogs, approvals, notification y audit por sus propios puertos.
 
 ## Errores
 
@@ -340,12 +367,12 @@ Usar `settings` como molde. Por cada módulo:
    requests/responses Zod y docs a `presentation/http/`.
 6. **Composición.** `<dominio>.module.ts` con `create<Dominio>Module(deps)` y registrarlo en
    `src/main/container.ts`. Los routers se montan desde el container en `src/main/app.ts`.
-7. **Lo que otros módulos usaban.** Si un módulo sin migrar usaba algo de este, se deja en `index.ts` como
-   transitorio (marcado `@deprecated`) o se le pasa un caso de uso desde el container.
+7. **Lo que otros módulos usan.** Se devuelve en `useCases` del módulo; el otro módulo declara su puerto y un
+   adaptador de `src/main/adapters/` lo implementa leyendo el registro de módulos (`module-registry.ts`).
 8. **Tests.** Dobles en memoria en `tests/doubles/`, tests de dominio y de casos de uso sin `jest.mock`.
    El guard de arquitectura empieza a aplicar las reglas apenas existe la carpeta `domain/`.
 
-## Estado y siguientes pasos
+## Estado
 
 | Parte | Estado |
 |---|---|
@@ -360,13 +387,13 @@ Usar `settings` como molde. Por cada módulo:
 | `person` | ✅ migrado (las cuentas de iam por el puerto ClientAccounts; la baja que reanuda la doble aprobación; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
 | `notification` | ✅ migrado (el puerto Notifier de todos; cada proveedor detrás de un puerto; destinatarios de iam y prefijos de catalogs por puertos; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
 | `approvals` | ✅ migrado (el gate y la resolución como casos de uso; las reanudaciones de person e iam las registra el container; aprobadores de iam y umbrales de settings por puertos; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
-| `iam` | ⏳ estructura en capas (el último) |
-| `index.ts` transitorios de `catalogs`, `legal`, `audit`, `person`, `notification` y `approvals` (lo que usan iam y los adaptadores de `src/main/`) | ⏳ se borran al migrar iam |
-| Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` al migrar sus usuarios |
+| `iam` | ✅ migrado (login, MFA, biometría, sesiones, dispositivos, usuarios internos y RBAC como casos de uso; cada detalle de seguridad detrás de un puerto; las guardas de todos; respuestas, estado final de la base y Swagger verificados idénticos a plantilla-base) |
+| `index.ts` transitorios y `infrastructure/legacy/` de `catalogs`, `legal`, `audit`, `person`, `notification` y `approvals` | ✅ borrados: lo que otros usan sale de `useCases` y lo conectan los adaptadores de `src/main/` |
+| Utilidades de `shared/infrastructure` que lanzan `AppError` (HTTP) | ⏳ deuda conocida, listada en el guard: pasan a errores de `shared/application` |
 
-Mientras dure la migración conviven las dos formas: los módulos con `domain/` siguen estas reglas y los
-demás siguen docs/ARCHITECTURE.md (capas). Cuando el último módulo se migre, se borran los `index.ts`
-transitorios, los singletons y las reglas de capas del guard `solid-architecture.test.ts`.
+Todos los módulos siguen estas reglas: `clean-architecture.test.ts` falla si alguno vuelve a la estructura en capas
+o tiene un `index.ts`. `solid-architecture.test.ts` quedó con lo que no es de capas: que `shared/` no importe módulos
+y las guardas del acceso a datos (Prisma solo en repositorios).
 
 ## Clean vs. la plantilla en capas
 

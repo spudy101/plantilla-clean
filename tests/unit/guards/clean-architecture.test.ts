@@ -14,8 +14,8 @@
 // - presentation: llama a los casos de uso; no conoce la infraestructura.
 // - Un módulo en Clean no importa otros módulos: lo que necesita le llega por puertos desde src/main/.
 //
-// Un módulo está "en Clean" cuando tiene carpeta domain/. Desde ese momento se le aplican todas las reglas
-// y ya no puede tener las carpetas de la arquitectura en capas (services/, repositories/, …).
+// Todos los módulos están en Clean (tienen carpeta domain/): cada uno tiene solo sus cuatro capas y su composición,
+// sin index.ts ni las carpetas de la arquitectura en capas (services/, repositories/, …).
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -105,6 +105,11 @@ describe('Clean Architecture — regla de dependencias', () => {
     expect(cleanModules.length).toBeGreaterThan(0);
   });
 
+  it('todos los módulos están en Clean (no queda ninguno en capas)', () => {
+    const modules = fs.readdirSync(MODULES, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name);
+    expect(modules.filter(name => !cleanModules.includes(name))).toEqual([]);
+  });
+
   describe('shared/', () => {
     it.each(['domain', 'application'] as const)('shared/%s solo depende de capas interiores, sin paquetes npm', layer => {
       expect(violations(walk(path.join(SHARED, layer)), layer, null)).toEqual([]);
@@ -169,13 +174,9 @@ describe('Clean Architecture — regla de dependencias', () => {
       expect(offenders).toEqual([]);
     });
 
-    it('solo tiene las cuatro capas, su composición (<módulo>.module.ts) y su index.ts', () => {
+    it('solo tiene las cuatro capas y su composición (<módulo>.module.ts)', () => {
       const entries = fs.readdirSync(moduleDir).sort();
-      expect(
-        entries.filter(
-          e => !['domain', 'application', 'infrastructure', 'presentation', `${name}.module.ts`, 'index.ts'].includes(e)
-        )
-      ).toEqual([]);
+      expect(entries.filter(e => !['domain', 'application', 'infrastructure', 'presentation', `${name}.module.ts`].includes(e))).toEqual([]);
     });
 
     it('la aplicación no crea sus dependencias (`new`): las recibe por constructor', () => {
@@ -204,11 +205,7 @@ describe('Clean Architecture — regla de dependencias', () => {
             return false;
           }
           const owner = cleanModules.find(m => within(target, path.join(MODULES, m)));
-          if (!owner || within(file, path.join(MODULES, owner))) {
-            return false;
-          }
-          // El index.ts transitorio (para los módulos sin migrar) sí se puede importar
-          return target !== path.join(MODULES, owner) && target !== path.join(MODULES, owner, 'index');
+          return Boolean(owner) && !within(file, path.join(MODULES, owner as string));
         })
         .map(({ spec }) => `${rel(file)} → ${spec}`)
     );

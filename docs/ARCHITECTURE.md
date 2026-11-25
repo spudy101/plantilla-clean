@@ -1,8 +1,9 @@
 # Arquitectura
 
-> **Este repositorio está migrando a Clean Architecture.** La referencia es [CLEAN-ARCHITECTURE.md](CLEAN-ARCHITECTURE.md):
-> `shared/` y los módulos que tienen carpeta `domain/` (hoy: `settings`, `catalogs` y `banners`) ya la siguen. Este documento describe la
-> estructura **en capas** de la plantilla original, que siguen los módulos todavía sin migrar.
+> **Este repositorio está en Clean Architecture.** La referencia es [CLEAN-ARCHITECTURE.md](CLEAN-ARCHITECTURE.md): `shared/` y
+> todos los módulos ya la siguen. Este documento describe la estructura **en capas** de la plantilla original
+> (plantilla-base); se conserva como referencia de lo que se migró y de lo que sigue igual (monolito modular, contrato
+> de la API, convenciones de base de datos y de Swagger).
 
 Este documento es la referencia de cómo está organizado el proyecto y dónde va cada cosa.
 Si algo del código lo contradice, el código está mal (o este documento está desactualizado: arréglalo).

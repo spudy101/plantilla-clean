@@ -7,19 +7,19 @@ import constantsModule from '../../shared/infrastructure/config';
 const { server } = constantsModule;
 
 // ─── Módulos KYC (compartidos con admin) ──────────────────────
-import authLoginPaths from '../../modules/iam/docs/auth-login.paths';
+import authLoginPaths from '../../modules/iam/presentation/http/docs/auth-login.paths';
 import catalogPaths from '../../modules/catalogs/presentation/http/docs/catalogs.paths';
 import profilePaths from '../../modules/person/presentation/http/docs/profile.paths';
-import mfaPaths from '../../modules/iam/docs/mfa.paths';
+import mfaPaths from '../../modules/iam/presentation/http/docs/mfa.paths';
 
 // ─── Módulos Notification (compartidos con admin) ─────────────
 import notificationSharedPaths from '../../modules/notification/presentation/http/docs/notification.paths';
 import notificationPreferencePaths from '../../modules/notification/presentation/http/docs/notification-preference.paths';
 
 // ─── Módulos Client ───────────────────────────────────────────
-import authRegisterPaths from '../../modules/iam/docs/auth-register.paths';
+import authRegisterPaths from '../../modules/iam/presentation/http/docs/auth-register.paths';
 import sendVerificationPaths from '../../modules/notification/presentation/http/docs/send-verification.paths';
-import authBiometricPaths from '../../modules/iam/docs/auth-biometric.paths';
+import authBiometricPaths from '../../modules/iam/presentation/http/docs/auth-biometric.paths';
 import personReferencePaths from '../../modules/person/presentation/http/docs/person-reference.paths';
 
 // ─── Módulos Client — Consentimientos ─────────────────────────

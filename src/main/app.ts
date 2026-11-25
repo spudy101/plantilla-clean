@@ -23,10 +23,6 @@ import swaggerClientDocs from './swagger/swagger.client';
 import packageModule from '../../package.json';
 const { version } = packageModule;
 
-// ── Rutas de iam (sin migrar: se cablean solas) ────────────────────────────
-import iamModule from '../modules/iam';
-const { authLoginRoutes, mfaRoutes, adminAuthSessionRoutes, adminUserRoutes, adminRbacRoutes, authRegisterRoutes, authBiometricRoutes } = iamModule;
-
 type Audience = 'admin' | 'client';
 
 /** Router de una audiencia: marca req.serverContext (el login valida el rol contra ella) y monta su Swagger. */
@@ -38,8 +34,8 @@ function audienceRouter(audience: Audience, container: Container) {
   });
   (audience === 'admin' ? swaggerAdminDocs : swaggerClientDocs)(router);
 
-  router.use('/api/v1/auth', authLoginRoutes);
-  router.use('/api/v1/kyc', mfaRoutes);
+  router.use('/api/v1/auth', container.iam.authRouter);
+  router.use('/api/v1/kyc', container.iam.mfaRouter);
   router.use('/api/v1/kyc', container.person.profileRouter);
   router.use('/api/v1/kyc', container.notification.preferenceRouter);
   router.use('/api/v1/kyc', container.catalogs.router);
@@ -49,10 +45,10 @@ function audienceRouter(audience: Audience, container: Container) {
 
 function adminRouter(container: Container) {
   const router = audienceRouter('admin', container);
-  router.use('/api/v1/auth', adminAuthSessionRoutes);
+  router.use('/api/v1/auth', container.iam.adminSessionRouter);
   router.use('/api/v1/kyc', container.person.adminRouter);
-  router.use('/api/v1/kyc', adminUserRoutes);
-  router.use('/api/v1/kyc', adminRbacRoutes);
+  router.use('/api/v1/kyc', container.iam.adminUserRouter);
+  router.use('/api/v1/kyc', container.iam.adminRbacRouter);
   router.use('/api/v1/notification', container.notification.adminRouter);
   router.use('/api/v1/records', container.legal.adminRouter);
   router.use('/api/v1/records', container.audit.adminRouter);
@@ -65,8 +61,8 @@ function adminRouter(container: Container) {
 
 function clientRouter(container: Container) {
   const router = audienceRouter('client', container);
-  router.use('/api/v1/auth', authRegisterRoutes);
-  router.use('/api/v1/auth', authBiometricRoutes);
+  router.use('/api/v1/auth', container.iam.registerRouter);
+  router.use('/api/v1/auth', container.iam.biometricRouter);
   router.use('/api/v1/notification', container.notification.webhookRouter);
   router.use('/api/v1/kyc', container.person.clientRouter);
   router.use('/api/v1/records', container.legal.clientRouter);

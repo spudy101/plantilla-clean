@@ -27,3 +27,13 @@ export interface ClientDocumentTypeReader {
 export interface ActivePrivacyPolicyReader {
   findActive(): Promise<ActivePrivacyPolicy | null>;
 }
+
+/** Una entrada del catálogo por su id (la leen otros módulos: person, iam, notification). */
+export interface CatalogEntryFinder<T> {
+  findById(id: string): Promise<T | null>;
+}
+
+/** Una entrada activa del catálogo por su código (p. ej. el país 'COL' o el tipo de documento 'SYSTEM'). */
+export interface CatalogCodeFinder<T> {
+  findByCode(code: string): Promise<T | null>;
+}

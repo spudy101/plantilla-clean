@@ -11,7 +11,7 @@ import type {
   Prisma
 } from '../../../../shared/infrastructure/database/generated/prisma/client';
 import { loadUserRefs } from '../../../../shared/infrastructure/database/user-ref';
-import type { AuditLogFilters, AuditLogRepository, Page } from '../../application/ports/audit-log-repository.port';
+import type { AuditLogFilters, AuditLogRepository, AuthAttemptCriteria, Page } from '../../application/ports/audit-log-repository.port';
 import type { AuditLogEntry, AuditLogWithExecutor, NewAuditLog } from '../../domain/audit-log';
 import type { OwnActivity } from '../../domain/activity-feed';
 import type { EntityRef } from '../../domain/session-trace';
@@ -50,18 +50,8 @@ export function auditLogWhere(filters: AuditLogFilters = {}): Prisma.AuditLogWhe
   return where as Prisma.AuditLogWhereInput;
 }
 
-/** @deprecated Criterios del listado de intentos de autenticación de iam (ver findAuthAttemptsPaginated). */
-export interface AuthAttemptsCriteria {
-  from: Date;
-  to: Date;
-  actions?: string[];
-  category?: string;
-  userId?: string;
-  outcome?: string;
-}
-
-/** @deprecated WHERE de intentos de autenticación: por acciones (o, sin ellas, por categoría), usuario y resultado. */
-export function authAttemptsWhere({ from, to, actions, category, userId, outcome }: AuthAttemptsCriteria): Prisma.AuditLogWhereInput {
+/** WHERE de intentos de autenticación: por acciones (o, sin ellas, por categoría), usuario y resultado. */
+export function authAttemptsWhere({ from, to, actions, category, userId, outcome }: AuthAttemptCriteria): Prisma.AuditLogWhereInput {
   return {
     createdAt: { gte: from, lte: to },
     ...(actions && actions.length ? { action: { in: actions } } : category ? { category } : {}),
@@ -179,10 +169,8 @@ export class PrismaAuditLogRepository extends PrismaRepository implements AuditL
     });
   }
 
-  // ── Transitorio para módulos sin migrar (ver index.ts) ──
-
-  /** @deprecated Intentos de autenticación para la vista de sesiones de iam; pasará a un puerto de iam al migrarlo. */
-  findAuthAttemptsPaginated(criteria: AuthAttemptsCriteria, page: PageRequest): Promise<Page<AuditLogWithExecutor>> {
+  /** Intentos de autenticación (la vista de sesiones de iam). */
+  findAuthAttempts(criteria: AuthAttemptCriteria, page: PageRequest): Promise<Page<AuditLogWithExecutor>> {
     return this.pageWithExecutor(authAttemptsWhere(criteria), page);
   }
 

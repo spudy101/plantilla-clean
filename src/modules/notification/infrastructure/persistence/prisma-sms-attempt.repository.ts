@@ -2,8 +2,9 @@
 // cuenta sus fallos durante una caída.
 import PrismaRepository from '../../../../shared/infrastructure/database/prisma.repository';
 import type { SmsDeliveryAttempt } from '../../../../shared/infrastructure/database/generated/prisma/client';
+import type { SmsAttemptLog } from '../../application/ports/channel-gateways.port';
 
-export class PrismaSmsAttemptRepository extends PrismaRepository {
+export class PrismaSmsAttemptRepository extends PrismaRepository implements SmsAttemptLog {
   async createAttempt({
     userId,
     phoneHash,

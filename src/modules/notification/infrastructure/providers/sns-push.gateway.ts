@@ -1,5 +1,5 @@
 // Adaptador AWS SNS del puerto PushGateway (APNS + GCM en un mismo mensaje) y el registro de dispositivos, que
-// iam usa al iniciar sesión (por el index.ts transitorio). Cada llamada pasa por callProvider.
+// iam usa al iniciar sesión (por src/main/adapters/iam-sources.adapter.ts). Cada llamada pasa por callProvider.
 import {
   CreatePlatformEndpointCommand,
   GetEndpointAttributesCommand,

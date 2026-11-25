@@ -14,4 +14,6 @@ export interface PushTokenRepository {
   deactivate(tokens: readonly string[]): Promise<number>;
   /** Borra los inactivos sin cambios hace más de `days` días; devuelve cuántos. */
   deleteInactiveOlderThan(days: number): Promise<number>;
+  /** Registra el dispositivo al iniciar sesión: el que tenga ese deviceId (o ese token) cambia de dueño y se reactiva. */
+  upsertToken(userId: string, token: string, platform: string, deviceId: string | null): Promise<unknown>;
 }

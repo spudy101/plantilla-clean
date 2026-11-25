@@ -172,6 +172,14 @@ export class InMemoryUserConsents implements UserConsentRepository {
     this.consents.push(created);
     return created;
   }
+  async findByIds(ids: readonly string[]) {
+    return this.consents.filter(c => ids.includes(c.userConsentId));
+  }
+  async revokeAll(userId: string) {
+    const current = this.consents.filter(c => c.userId === userId && c.isCurrent);
+    this.consents = this.consents.map(c => (current.includes(c) ? userConsent({ ...c, isCurrent: false, revokedAt: new Date(), revocationReason: 'right_to_erasure' }) : c));
+    return current.length;
+  }
   async revokeCurrent({ userId, consentTypeId, reason }: ConsentRevocation) {
     const current = await this.findCurrentByUserAndType(userId, consentTypeId);
     if (!current) {

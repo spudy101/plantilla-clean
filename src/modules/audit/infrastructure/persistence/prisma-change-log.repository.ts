@@ -86,10 +86,4 @@ export class PrismaChangeLogRepository extends PrismaRepository implements Chang
     return { rows, count };
   }
 
-  // ── Transitorio para módulos sin migrar (ver index.ts) ──
-
-  /** @deprecated Historial de cambios de un usuario (detalle de usuario interno en iam). */
-  findByUserId(userId: string, page: PageRequest): Promise<Page<ChangeLogWithUsers>> {
-    return this.list({ userId }, page, null);
-  }
 }

@@ -1,13 +1,11 @@
 // Repositorios Prisma de audit con el cliente único mockeado: filtros de negocio → WHERE, append-only,
-// escritura dentro o fuera de la unidad de trabajo, retención (purga con SET LOCAL en la misma transacción) y
-// los intentos de login (documento cifrado, búsqueda por hash).
+// escritura dentro o fuera de la unidad de trabajo y retención (purga con SET LOCAL en la misma transacción).
 
 const mockDb = {
   $transaction: jest.fn(),
   $executeRaw: jest.fn(),
   auditLog: { create: jest.fn(), findMany: jest.fn(), count: jest.fn(), deleteMany: jest.fn(), groupBy: jest.fn() },
   auditAlert: { create: jest.fn(), updateMany: jest.fn() },
-  userLoginAttempt: { create: jest.fn(), findFirst: jest.fn() },
   user: { findMany: jest.fn() }
 };
 
@@ -15,16 +13,12 @@ jest.mock('../../../../shared/infrastructure/database/prisma', () => mockDb);
 
 import { auditLogWhere, authAttemptsWhere, PrismaAuditLogRepository } from './prisma-audit-log.repository';
 import { PrismaAuditAlertRepository } from './prisma-audit-alert.repository';
-import { PrismaUserLoginAttemptRepository } from './prisma-user-login-attempt.repository';
 import txContext from '../../../../shared/infrastructure/database/transaction-context';
-import EncryptionUtil from '../../../../shared/infrastructure/security/encryption.util';
-import HashUtil from '../../../../shared/infrastructure/security/hash.util';
 import { page } from 'tests/helpers/page';
 import type { NewAuditLog } from '../../domain/audit-log';
 
 const auditLogRepository = new PrismaAuditLogRepository();
 const auditAlertRepository = new PrismaAuditAlertRepository();
-const userLoginAttemptRepository = new PrismaUserLoginAttemptRepository();
 
 const AT = new Date('2026-01-01T00:00:00Z');
 const row = (over: Record<string, unknown> = {}) => ({ auditLogId: 'a-1', action: 'X', createdAt: AT, updatedAt: AT, userId: null, ...over });
@@ -161,27 +155,5 @@ describe('PrismaAuditAlertRepository.acknowledge', () => {
       where: { auditAlertId: { in: ['al-1'] }, acknowledged: false },
       data: { acknowledged: true, acknowledgedBy: 'admin-1', acknowledgedAt: expect.any(Date) }
     });
-  });
-});
-
-describe('PrismaUserLoginAttemptRepository', () => {
-  it('recordAttempt cifra el documento y guarda su hash de búsqueda', async () => {
-    mockDb.userLoginAttempt.create.mockResolvedValue({});
-    await userLoginAttemptRepository.recordAttempt({ userId: 'u-1', usernameAttempt: 'ana', nationalId: '123', success: false, failureReason: 'x' });
-
-    const { data } = mockDb.userLoginAttempt.create.mock.calls[0][0];
-    expect(data.nationalId).not.toBe('123');
-    expect(EncryptionUtil.safeDecrypt(data.nationalId)).toBe('123');
-    expect(data.nationalIdHash).toBe(HashUtil.hashForSearch('123'));
-    expect(data).toMatchObject({ userId: 'u-1', usernameAttempt: 'ana', success: false, attemptedAt: expect.any(Date) });
-  });
-
-  it('checkIfBlocked busca el último intento por hash y devuelve los minutos restantes', async () => {
-    mockDb.userLoginAttempt.findFirst.mockResolvedValueOnce({ blockedUntil: new Date(Date.now() + 5 * 60 * 1000) }).mockResolvedValueOnce({ blockedUntil: null });
-    await expect(userLoginAttemptRepository.checkIfBlocked('123')).resolves.toMatchObject({ blocked: true, remainingMinutes: 5 });
-    await expect(userLoginAttemptRepository.checkIfBlocked('123')).resolves.toBeNull();
-    expect(mockDb.userLoginAttempt.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { nationalIdHash: HashUtil.hashForSearch('123') }, orderBy: { attemptedAt: 'desc' } })
-    );
   });
 });

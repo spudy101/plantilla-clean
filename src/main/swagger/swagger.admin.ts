@@ -7,10 +7,10 @@ import constantsModule from '../../shared/infrastructure/config';
 const { server } = constantsModule;
 
 // ─── Módulos KYC (compartidos con client) ─────────────────────
-import authLoginPaths from '../../modules/iam/docs/auth-login.paths';
+import authLoginPaths from '../../modules/iam/presentation/http/docs/auth-login.paths';
 import catalogPaths from '../../modules/catalogs/presentation/http/docs/catalogs.paths';
 import profilePaths from '../../modules/person/presentation/http/docs/profile.paths';
-import mfaPaths from '../../modules/iam/docs/mfa.paths';
+import mfaPaths from '../../modules/iam/presentation/http/docs/mfa.paths';
 
 // ─── Módulos Notification (compartidos con client) ────────────
 import notificationSharedPaths from '../../modules/notification/presentation/http/docs/notification.paths';
@@ -25,7 +25,7 @@ import personPaths from '../../modules/person/presentation/http/docs/admin-perso
 import notificationTypePaths from '../../modules/notification/presentation/http/docs/notification-type.paths';
 
 // ─── Módulos Admin — Auditoría ────────────────────────────────
-import adminAuthSessionPaths from '../../modules/iam/docs/admin-auth-session.paths';
+import adminAuthSessionPaths from '../../modules/iam/presentation/http/docs/admin-auth-session.paths';
 import changeLogPaths from '../../modules/audit/presentation/http/docs/change-log.paths';
 import auditLogPaths from '../../modules/audit/presentation/http/docs/audit-log.paths';
 import auditAlertPaths from '../../modules/audit/presentation/http/docs/audit-alert.paths';
@@ -47,8 +47,8 @@ import systemGlobalConfigPaths from '../../modules/settings/presentation/http/do
 import promotionalBannerAdminPaths from '../../modules/banners/presentation/http/docs/admin-promotional-banner.paths';
 
 // ─── Módulos Admin — Usuarios internos & RBAC ─────────────────
-import adminUserPaths from '../../modules/iam/docs/admin-user.paths';
-import adminRbacPaths from '../../modules/iam/docs/admin-rbac.paths';
+import adminUserPaths from '../../modules/iam/presentation/http/docs/admin-user.paths';
+import adminRbacPaths from '../../modules/iam/presentation/http/docs/admin-rbac.paths';
 
 // ─── Módulos Admin — Doble aprobación global (maker-checker) ──
 import approvalRequestPaths from '../../modules/approvals/presentation/http/docs/approval-request.paths';

@@ -373,6 +373,9 @@ export class InMemoryPreferences implements NotificationPreferenceRepository {
   async findByUsers(userIds: readonly string[]) {
     return new Map(this.preferences.filter(p => userIds.includes(p.userId)).map(p => [p.userId, p]));
   }
+  async findByIds(ids: readonly string[]) {
+    return this.preferences.filter(p => ids.includes(p.userNotificationPreferenceId));
+  }
   async upsert(userId: string, changes: PreferenceChanges) {
     this.upserts.push({ userId, changes });
     const existing = await this.findByUser(userId);
@@ -402,6 +405,10 @@ export class InMemoryPushTokens implements PushTokenRepository {
     const hit = this.devices.filter(d => tokens.includes(d.token) && d.isActive);
     hit.forEach(d => (d.isActive = false));
     return hit.length;
+  }
+  async upsertToken(userId: string, token: string) {
+    this.devices.push({ userId, token, isActive: true });
+    return null;
   }
   async deleteInactiveOlderThan() {
     const before = this.devices.length;
@@ -433,6 +440,14 @@ export class InMemoryVerificationCodes implements VerificationCodeRepository {
     }
     code.attempts = (code.attempts ?? 0) + 1;
     return 1;
+  }
+  async findVerifiedByContact(type: string, contactValue: string) {
+    return this.codes.find(c => c.type === type && c.contactValue === contactValue && c.verifiedAt) ?? null;
+  }
+  async deleteVerifiedByContact(type: string, contactValue: string) {
+    const before = this.codes.length;
+    this.codes = this.codes.filter(c => !(c.type === type && c.contactValue === contactValue && c.verifiedAt));
+    return before - this.codes.length;
   }
   async markAsVerified(id: string) {
     const code = this.codes.find(c => c.verificationCodeId === id) ?? null;
@@ -501,6 +516,9 @@ export class FakePushGateway implements PushGateway {
       throw failure;
     }
     this.sent.push({ endpoint, message, notificationId });
+  }
+  async registerDevice(deviceToken: string) {
+    return `arn:endpoint:${deviceToken}`;
   }
   async sendToMany(endpoints: readonly string[], message: PushMessage) {
     this.bulk.push({ endpoints, message });

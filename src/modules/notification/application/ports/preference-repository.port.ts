@@ -9,4 +9,6 @@ export interface NotificationPreferenceRepository {
   findByUsers(userIds: readonly string[]): Promise<Map<string, NotificationPreference>>;
   /** Crea o actualiza la del usuario. */
   upsert(userId: string, changes: PreferenceChanges): Promise<NotificationPreference>;
+  /** Por id (las que muestra la traza de una sesión de audit). */
+  findByIds(ids: readonly string[]): Promise<NotificationPreference[]>;
 }

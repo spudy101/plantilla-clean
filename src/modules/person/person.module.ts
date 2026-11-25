@@ -25,8 +25,8 @@ import { PrismaPersonContactRepository } from './infrastructure/persistence/pris
 import { PrismaPersonLocationRepository } from './infrastructure/persistence/prisma-person-location.repository';
 import { PrismaPersonReferenceRepository } from './infrastructure/persistence/prisma-person-reference.repository';
 import { securePasswordGenerator } from './infrastructure/security/secure-password.generator';
-import { bindLegacyPerson } from './infrastructure/legacy/legacy-bindings';
 import { IdentityChecks } from './application/use-cases/identity-checks';
+import { AccountHolders } from './application/use-cases/account-holders.use-cases';
 import { CatalogChecks } from './application/use-cases/catalog-checks';
 import { ChangeContactEmail } from './application/use-cases/change-contact-email.use-case';
 import { AnonymizeAccount } from './application/use-cases/anonymize-account.use-case';
@@ -82,6 +82,10 @@ export interface PersonModule {
   useCases: {
     /** La baja real de una cuenta de cliente: la reanuda approvals cuando el segundo funcionario aprueba. */
     executeClientAccountDeletion: ExecuteClientAccountDeletion;
+    /** Lo que usa iam: la persona de las cuentas que crea, la unicidad de documento y email, y la baja de un interno. */
+    accountHolders: AccountHolders;
+    identityChecks: IdentityChecks;
+    anonymizeAccount: AnonymizeAccount;
   };
 }
 
@@ -136,13 +140,15 @@ export function createPersonModule(deps: PersonModuleDeps): PersonModule {
     remove: new RemoveReference(references, audit)
   });
 
-  // Transitorio: la baja y la bitácora que iam usa por el index.ts
-  bindLegacyPerson({ anonymizeAccount: anonymize, changeLog });
-
   return {
     adminRouter: createAdminPersonRouter(adminController, deps.guards),
     profileRouter: createProfileRouter(profileController, deps.guards),
     clientRouter: createPersonReferenceRouter(referenceController, deps.guards),
-    useCases: { executeClientAccountDeletion: executeDeletion }
+    useCases: {
+      executeClientAccountDeletion: executeDeletion,
+      accountHolders: new AccountHolders(persons, contacts),
+      identityChecks: identity,
+      anonymizeAccount: anonymize
+    }
   };
 }

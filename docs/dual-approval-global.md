@@ -53,8 +53,8 @@ requireDualApproval('OP_KEY', options)           // el gate como middleware de r
 expirationWorker.start()                         // cron diario: vence las pendientes (ExpireApprovalRequests)
 ```
 
-iam (todavía sin migrar) usa el gate y el badge por el `index.ts` transitorio de approvals:
-`dualApproval.gate(...)` y `dualApproval.annotatePending(entityType, rows, idField)`.
+iam usa el gate y el badge por su puerto `DualApproval` (`gate` y `findPending`), que conecta
+`src/main/adapters/iam-sources.adapter.ts` con estos casos de uso.
 
 ### Bypass por rol — `super_admin`
 
